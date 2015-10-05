@@ -208,14 +208,35 @@ public abstract class VecUtil {
 		return i.subtract(n.scale(2*(i.dot(n))));
 	}
 	
+	/**
+	 * Scales the given vector by the given scalar factor without modifying the given vector
+	 * 
+	 * @param vector Vector to scale
+	 * @param scalar Factor to scale the vector by
+	 * @return A new vector representing the given vector scaled by the given factor
+	 */
 	public static Vec2 scale(Vec2 vector, float scalar){
 		return new Vec2(vector).scale(scalar);
 	}
-	
+
+	/**
+	 * Scales the given vector by the given scalar factor without modifying the given vector
+	 * 
+	 * @param vector Vector to scale
+	 * @param scalar Factor to scale the vector by
+	 * @return A new vector representing the given vector scaled by the given factor
+	 */
 	public static Vec3 scale(Vec3 vector, float scalar){
 		return new Vec3(vector).scale(scalar);
 	}
-	
+
+	/**
+	 * Scales the given vector by the given scalar factor without modifying the given vector
+	 * 
+	 * @param vector Vector to scale
+	 * @param scalar Factor to scale the vector by
+	 * @return A new vector representing the given vector scaled by the given factor
+	 */
 	public static Vec4 scale(Vec4 vector, float scalar){
 		return new Vec4(vector).scale(scalar);
 	}

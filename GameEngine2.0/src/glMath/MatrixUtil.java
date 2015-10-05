@@ -226,7 +226,7 @@ public abstract class MatrixUtil {
 	 * @param z Z scale
 	 * @return A 4x4 matrix of type Mat4 representing a scaling matrix using the given scaling components
 	 */
-	public static Mat4 scale(float x, float y, float z){
+	public static Mat4 makeScale(float x, float y, float z){
 		return new Mat4(
 				new Vec4(x,0,0,0),
 				new Vec4(0,y,0,0),
@@ -241,7 +241,7 @@ public abstract class MatrixUtil {
 	 * @param scalars Vector containing the scalars for the matrix
 	 * @return A 4x4 matrix of type Mat4 representing a scaling matrix using the given scaling components
 	 */
-	public static Mat4 scale(Vec3 scalars){
+	public static Mat4 makeScale(Vec3 scalars){
 		return new Mat4(
 				new Vec4(scalars.x,0,0,0),
 				new Vec4(0,scalars.y,0,0),
@@ -257,7 +257,7 @@ public abstract class MatrixUtil {
 	 * @param y Y scale
 	 * @return A 3x3 matrix of type Mat3 representing a scaling matrix using the given scaling components
 	 */
-	public static Mat3 scale(float x, float y){
+	public static Mat3 makeScale(float x, float y){
 		return new Mat3(
 				new Vec3(x,0,0),
 				new Vec3(0,y,0),
@@ -271,7 +271,7 @@ public abstract class MatrixUtil {
 	 * @param scalars Vector containing the scalars for this matrix
 	 * @return A 3x3 matrix of type Mat3 representing a scaling matrix using the given scaling components
 	 */
-	public static Mat3 scale(Vec2 scalars){
+	public static Mat3 makeScale(Vec2 scalars){
 		return new Mat3(
 				new Vec3(scalars.x,0,0),
 				new Vec3(0,scalars.y,0),
@@ -287,7 +287,7 @@ public abstract class MatrixUtil {
 	 * @param z Z component to translate by
 	 * @return A 4x4 matrix representing a translation by the given components 
 	 */
-	public static Mat4 translate(float x, float y, float z){
+	public static Mat4 makeTranslate(float x, float y, float z){
 		return new Mat4(
 				new Mat3(1),
 				new Vec3(x, y, z)
@@ -300,7 +300,7 @@ public abstract class MatrixUtil {
 	 * @param vector Vector representing a direction and magnitude of translation in a 3 dimensional space
 	 * @return A 4x4 matrix representing a translation by the given vector
 	 */
-	public static Mat4 translate(Vec3 vector){
+	public static Mat4 makeTranslate(Vec3 vector){
 		return new Mat4(
 				new Mat3(1),
 				vector
@@ -314,7 +314,7 @@ public abstract class MatrixUtil {
 	 * @param y Y component to translate by
 	 * @return A 3x3 matrix representing a translation by the given components
 	 */
-	public static Mat3 translate(float x, float y){
+	public static Mat3 makeTranslate(float x, float y){
 		return new Mat3(
 				new Vec3(1,0,0),
 				new Vec3(0,1,0),
@@ -328,7 +328,7 @@ public abstract class MatrixUtil {
 	 * @param vector Vector representing a direction and magnitude of translation in a 2 dimensional space
 	 * @return A 3x3 matrix representing a translation by the given vector
 	 */
-	public static Mat3 translate(Vec2 vector){
+	public static Mat3 makeTranslate(Vec2 vector){
 		return new Mat3(
 				new Vec3(1,0,0),
 				new Vec3(0,1,0),
@@ -345,7 +345,7 @@ public abstract class MatrixUtil {
 	 * @param theta Angle of rotation in degrees
 	 * @return A 4x4 matrix representing a rotation of theta degrees around the given axis
 	 */
-	public static Mat4 rotate(float x, float y, float z, float theta){
+	public static Mat4 makeRotate(float x, float y, float z, float theta){
 		Vec3 axis = new Vec3(x, y, z);
 		axis.normalize();
 		return Quaternion.fromAxisAngle(axis, theta).asMatrix();
@@ -358,7 +358,7 @@ public abstract class MatrixUtil {
 	 * @param theta Angle to rotate about the axis in degrees
 	 * @return A 4x4 matrix representing a rotation of theta degrees around the given axis
 	 */
-	public static Mat4 rotate(Vec3 axis, float theta){
+	public static Mat4 makeRotate(Vec3 axis, float theta){
 		Vec3 nAxis = new Vec3(axis);
 		nAxis.normalize();
 		return Quaternion.fromAxisAngle(nAxis, theta).asMatrix();
@@ -370,7 +370,7 @@ public abstract class MatrixUtil {
 	 * @param theta Angle of rotation, in degrees,  around the z axis
 	 * @return A 3x3 matrix representing a rotation of theta degrees around the z axis
 	 */
-	public static Mat3 rotate(float theta){
+	public static Mat3 makeRotate(float theta){
 		float cos = (float)Math.cos(theta*Math.PI/180.0f);
 		float sin = (float)Math.sin(theta*Math.PI/180.0f);
 		

@@ -112,13 +112,6 @@ public interface Matrix {
 	public void setColumn(int index, Vector column);
 	
 	/**
-	 * Retrieves the underlying matrix that stores this matrix
-	 * 
-	 * @return Vector array used to store this matrix
-	 */
-	public Vector[] getMatrix();
-	
-	/**
 	 * Sets this matrix to the given matrix
 	 * 
 	 * @param mat Matrix to store into this matrix
@@ -133,6 +126,13 @@ public interface Matrix {
 	 * @param value Sets Matrix[col][row] to value
 	 */
 	public void setValueAt(int col, int row, float value);
+	
+	/**
+	 * Retrieves the underlying matrix that stores this matrix
+	 * 
+	 * @return Vector array used to store this matrix
+	 */
+	public Vector[] getMatrix();
 	
 	/**
 	 * Stores this matrix into a buffer 
