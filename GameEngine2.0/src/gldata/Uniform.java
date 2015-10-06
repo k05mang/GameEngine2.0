@@ -169,22 +169,26 @@ public class Uniform {
 		location = -1;
 	}
 	
-	/**
-	 * Sets the location of this uniform object as it relates to the GPU location index
-	 * 
-	 * @param loc New location index of this uniform on the GPU
-	 */
-	public void setLoc(int loc){
-		location = loc;
-	}
+//	/**
+//	 * Sets the location of this uniform object as it relates to the GPU location index
+//	 * 
+//	 * @param loc New location index of this uniform on the GPU
+//	 */
+//	public void setLoc(int loc){
+//		location = loc;
+//	}
 	
-	/**
-	 * Gets the location of this uniform object
-	 * 
-	 * @return Location on the GPU of this uniform object if it can be found
-	 */
-	public int getLoc(){
-		return location;
+//	/**
+//	 * Gets the location of this uniform object
+//	 * 
+//	 * @return Location on the GPU of this uniform object if it can be found
+//	 */
+//	public int getLoc(){
+//		return location;
+//	}
+	
+	public int getLocation(){
+		return 0;//TODO add opengl code for retrieving uniform location
 	}
 	
 	/**

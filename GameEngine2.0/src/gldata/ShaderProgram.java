@@ -232,37 +232,6 @@ public class ShaderProgram {
 		}
 	}
 	
-	private void genStruct(String name, String memberList, HashMap<String, ShaderStruct> structMap){
-		ShaderStruct struct = new ShaderStruct(name);
-		String[] members = memberList.trim().split(space0plus+";");
-		//iterate over the different groups of variables for the current structure
-		for(int curGroup = 0; curGroup < members.length; curGroup++){
-			//separate the type from the names
-			String[] type_names = members[curGroup].trim().replaceFirst(space1plus, "@").split("\\@");
-			String type = type_names[0];//store type
-			String[] names = type_names[1].split(space0plus+","+space0plus);//separate the names
-			//iterate over the names of the structure variables
-			for(int curName = 0; curName < names.length; curName++){
-				String curVar = names[curName].trim();
-				//determine if the name is an array type or not and store the names
-				if(!curVar.contains("[")){
-					struct.addField(type, curVar);
-				}
-				else{
-					int indexOfBrace1 = curVar.indexOf("[");
-					int indexOfBrace2 = curVar.indexOf("]");
-					int arraySize = Integer.parseInt(curVar.substring(indexOfBrace1+1, indexOfBrace2));
-					String varName = curVar.substring(0, indexOfBrace1);
-					//create the different names for each element of the array
-					for(int array = 0; array < arraySize; array++){
-						struct.addField(type, varName+"["+array+"]");
-					}
-				}
-			}
-		}
-		//store in the structures map passed to the function using the provided name
-		structMap.put(name, struct);
-	}
 	/**
 	 * 
 	 * @param structName
@@ -325,22 +294,5 @@ public class ShaderProgram {
 	
 	public void setUniform(String uniformName, boolean transpose, FloatBuffer data){
 		uniforms.get(uniformName).setMat(transpose, data);
-	}
-	
-	protected class ShaderStruct{
-		public String name;
-		public ArrayList<String> fields;
-		public ArrayList<String> fieldTypes;
-		
-		public ShaderStruct(String name){
-			this.name = name;
-			fields = new ArrayList<String>();
-			fieldTypes = new ArrayList<String>();
-		}
-		
-		public void addField(String fieldType, String field){
-			fieldTypes.add(fieldType.trim());
-			fields.add(field.trim());
-		}
 	}
 }
