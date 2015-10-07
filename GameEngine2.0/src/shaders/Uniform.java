@@ -1,9 +1,10 @@
-package gldata;
+package shaders;
 
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL21.*;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -169,26 +170,9 @@ public class Uniform {
 		location = -1;
 	}
 	
-//	/**
-//	 * Sets the location of this uniform object as it relates to the GPU location index
-//	 * 
-//	 * @param loc New location index of this uniform on the GPU
-//	 */
-//	public void setLoc(int loc){
-//		location = loc;
-//	}
-	
-//	/**
-//	 * Gets the location of this uniform object
-//	 * 
-//	 * @return Location on the GPU of this uniform object if it can be found
-//	 */
-//	public int getLoc(){
-//		return location;
-//	}
-	
-	public int getLocation(){
-		return 0;//TODO add opengl code for retrieving uniform location
+	public int getLocation(int program){
+		location = glGetUniformLocation(program, name);
+		return location;
 	}
 	
 	/**
@@ -202,16 +186,16 @@ public class Uniform {
 			if(type == FLOAT){
 				switch(size){
 					case 1:
-						glUniform1(location, dataCast);
+						glUniform1fv(location, dataCast);
 						break;
 					case 2:
-						glUniform2(location, dataCast);
+						glUniform2fv(location, dataCast);
 						break;
 					case 3:
-						glUniform3(location, dataCast);
+						glUniform3fv(location, dataCast);
 						break;
 					case 4:
-						glUniform4(location, dataCast);
+						glUniform4fv(location, dataCast);
 						break;
 				}
 			}else if(type >= MAT2){
@@ -221,42 +205,21 @@ public class Uniform {
 			}
 		}else if(data instanceof IntBuffer){
 			IntBuffer dataCast = (IntBuffer)data;
-			switch(type){
-				case INT:
-					switch(size){
-						case 1:
-							glUniform1(location, dataCast);
-							break;
-						case 2:
-							glUniform2(location, dataCast);
-							break;
-						case 3:
-							glUniform3(location, dataCast);
-							break;
-						case 4:
-							glUniform4(location, dataCast);
+			if(type == INT || type == BOOL){
+				switch(size){
+					case 1:
+						glUniform1iv(location, dataCast);
 						break;
-					}
-					break;
-				case BOOL:
-					switch(size){
-						case 1:
-							glUniform1(location, dataCast);
-							break;
-						case 2:
-							glUniform2(location, dataCast);
-							break;
-						case 3:
-							glUniform3(location, dataCast);
-							break;
-						case 4:
-							glUniform4(location, dataCast);
+					case 2:
+						glUniform2iv(location, dataCast);
 						break;
-					}
+					case 3:
+						glUniform3iv(location, dataCast);
+						break;
+					case 4:
+						glUniform4iv(location, dataCast);
 					break;
-				default:
-					System.err.println("Types do not match, IntBuffers can only be used with uniforms that are of type int, uint, bool, or sampler in GLSL");
-					break;
+				}
 			}
 		}else{
 			System.err.println("Failed to buffer data to uniform, buffer data is not of type FloatBuffer or IntBuffer");
@@ -264,63 +227,110 @@ public class Uniform {
 	}
 	
 	public void set(float... variables){
-		if (type == FLOAT || type >= MAT2) {
-			FloatBuffer data = BufferUtils.createFloatBuffer(size);
-			if (variables.length >= size) {
-				for (int insert = 0; insert < size; insert++) {
-					data.put(variables[insert]);
+		ByteBuffer data = BufferUtils.createByteBuffer(size*4);
+		//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
+		//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
+		if (variables.length >= size) {
+			for (int insert = 0; insert < size; insert++) {
+				//determine if the type of the uniform is mismatched and convert to the needed type
+				if (type == FLOAT || type >= MAT2){
+					data.putFloat(variables[insert]);
+				}else{
+					data.putInt((int)variables[insert]);
 				}
-				data.flip();
-			} else if (variables.length < size) {
-				for (int insert = 0; insert < variables.length; insert++) {
-					data.put(variables[insert]);
-				}
-				for (int remaining = size - variables.length; remaining < size; remaining++) {
-					data.put(0.0f);
-				}
-				data.flip();
 			}
-			this.set(data);
+			data.flip();//move the writer position back to the start of the buffer for reads
+		} else if (variables.length < size) {
+			//get the data that we can from the passed values
+			for (int insert = 0; insert < variables.length; insert++) {
+				//determine if the type of the uniform is mismatched and convert to the needed type
+				if (type == FLOAT || type >= MAT2){
+					data.putFloat(variables[insert]);
+				}else{
+					data.putInt((int)variables[insert]);
+				}
+			}
+			
+			//pad the remaining space needed for the buffer with 0's
+			for (int remaining = size - variables.length; remaining < size; remaining++) {
+				//determine if the type of the uniform is mismatched and put the appropriate padding
+				if (type == FLOAT || type >= MAT2){
+					data.putFloat(0.0f);
+				}else{
+					data.putInt(0);
+				}
+			}
+			data.flip();
+		}
+		//call the set function variant that handles what function to call to update the uniform
+		if (type == FLOAT || type >= MAT2){
+			this.set(data.asFloatBuffer());
 		}else{
-			System.err.println("Types do not match, floats can only be used with uniforms that are of type float in GLSL");
+			this.set(data.asIntBuffer());
 		}
 	}
 	
 	public void set(int... variables){
-		if (type == INT || type == BOOL) {
-			IntBuffer data = BufferUtils.createIntBuffer(size);
-			if (variables.length >= size) {
-				for (int insert = 0; insert < size; insert++) {
-					data.put(variables[insert]);
+		ByteBuffer data = BufferUtils.createByteBuffer(size*4);
+		//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
+		//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
+		if (variables.length >= size) {
+			for (int insert = 0; insert < size; insert++) {
+				//determine if the type of the uniform is mismatched and convert to the needed type
+				if (type == FLOAT || type >= MAT2){
+					data.putFloat((float)variables[insert]);
+				}else{
+					data.putInt(variables[insert]);
 				}
-				data.flip();
-			} else if (variables.length < size) {
-				for (int insert = 0; insert < variables.length; insert++) {
-					data.put(variables[insert]);
-				}
-				for (int remaining = size - variables.length; remaining < size; remaining++) {
-					data.put(0);
-				}
-				data.flip();
 			}
-			this.set(data);
+			data.flip();//move the writer position back to the start of the buffer for reads
+		} else if (variables.length < size) {
+			//get the data that we can from the passed values
+			for (int insert = 0; insert < variables.length; insert++) {
+				//determine if the type of the uniform is mismatched and convert to the needed type
+				if (type == FLOAT || type >= MAT2){
+					data.putFloat((float)variables[insert]);
+				}else{
+					data.putInt(variables[insert]);
+				}
+			}
+			
+			//pad the remaining space needed for the buffer with 0's
+			for (int remaining = size - variables.length; remaining < size; remaining++) {
+				//determine if the type of the uniform is mismatched and put the appropriate padding
+				if (type == FLOAT || type >= MAT2){
+					data.putFloat(0.0f);
+				}else{
+					data.putInt(0);
+				}
+			}
+			data.flip();
+		}
+		//call the set function variant that handles what function to call to update the uniform
+		if (type == FLOAT || type >= MAT2){
+			this.set(data.asFloatBuffer());
 		}else{
-			System.err.println("Types do not match, this uniform is not of type int, uint, bool, or sampler");
+			this.set(data.asIntBuffer());
 		}
 	}
 	
 	public void set(boolean... variables){
 		if (type == BOOL) {
 			IntBuffer data = BufferUtils.createIntBuffer(size);
+			//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
+			//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
 			if (variables.length >= size) {
 				for (int insert = 0; insert < size; insert++) {
-					data.put((variables[insert] ? 1 : 0));
+					data.put(variables[insert] ? 1 : 0);
 				}
 				data.flip();
 			} else if (variables.length < size) {
+				//get the data that we can from the passed values
 				for (int insert = 0; insert < variables.length; insert++) {
-					data.put((variables[insert] ? 1 : 0));
+					data.put(variables[insert] ? 1 : 0);
 				}
+				
+				//pad the remaining space needed for the buffer with 0's
 				for (int remaining = size - variables.length; remaining < size; remaining++) {
 					data.put(0);
 				}
@@ -336,28 +346,28 @@ public class Uniform {
 		if(type >= MAT2){
 			switch (type) {
 				case MAT2:
-					glUniformMatrix2(location, transpose, data);
+					glUniformMatrix2fv(location, transpose, data);
 					break;
 				case MAT2X3:
-					glUniformMatrix2x3(location, transpose, data);
+					glUniformMatrix2x3fv(location, transpose, data);
 					break;
 				case MAT2X4:
-					glUniformMatrix2x4(location, transpose, data);
+					glUniformMatrix2x4fv(location, transpose, data);
 					break;
 				case MAT3:
-					glUniformMatrix3(location, transpose, data);
+					glUniformMatrix3fv(location, transpose, data);
 					break;
 				case MAT3X2:
-					glUniformMatrix3x2(location, transpose, data);
+					glUniformMatrix3x2fv(location, transpose, data);
 					break;
 				case MAT3X4:
-					glUniformMatrix3x4(location, transpose, data);
+					glUniformMatrix3x4fv(location, transpose, data);
 					break;
 				case MAT4:
-					glUniformMatrix4(location, transpose, data);
+					glUniformMatrix4fv(location, transpose, data);
 					break;
 				case MAT4X2:
-					glUniformMatrix4x2(location, transpose, data);
+					glUniformMatrix4x2fv(location, transpose, data);
 					break;
 				case MAT4X3:
 					glUniformMatrix4x3(location, transpose, data);

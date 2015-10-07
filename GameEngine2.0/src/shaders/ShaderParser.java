@@ -1,71 +1,68 @@
-package gldata;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
+package shaders;
+import static org.lwjgl.opengl.GL20.glCompileShader;
+import static org.lwjgl.opengl.GL20.glCreateShader;
+import static org.lwjgl.opengl.GL20.glShaderSource;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.Buffer;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.io.File;
+import java.io.IOException;
 
-public class ShaderProgram {
-	private HashMap<String, Uniform> uniforms;
-	private int programId;
-	private String space1plus = "(\\s+|\\t+)+";
-	private String space0plus = "(\\s*|\\t*)*";
-	private String initializers = "(\\((\\d+|\\d+\\.\\d+f?|\\w|\\-|\\*|/|\\+|,|\\(|\\)|"+space0plus+")*\\)";
+public class ShaderParser {
+	private HashMap<String, ShaderStruct> structures;
+	private ArrayList<Uniform> uniforms;
+	private StringBuilder source;
 
-	public ShaderProgram(String[] shaderNames, int[] shaderTypes){
-		uniforms = new HashMap<String, Uniform>();
+	public static final String space1plus = "(\\s+|\\t+)+";
+	public static final String space0plus = "(\\s*|\\t*)*";
+	public static final String initializers = "(\\((\\d+|\\d+\\.\\d+f?|\\w|\\-|\\*|/|\\+|,|\\(|\\)|"+space0plus+")*\\)";
+	
+	ShaderParser(File fileName){
 		
-		if(shaderNames.length == shaderTypes.length){
-			int[] programObjects = new int[shaderNames.length];
-			programId = glCreateProgram();
-			
-			for (int shaders = 0; shaders < programObjects.length; shaders++) {
-				programObjects[shaders] = createShader(
-						shaderNames[shaders], shaderTypes[shaders]);
-				glAttachShader(programId, programObjects[shaders]);
+	}
+	
+	public StringBuilder getSource(){
+		return source;
+	}
+	
+	public ArrayList<Uniform> getUniforms(){
+		return uniforms;
+	}
+	
+	public static ArrayList<String> parseArray(String variable){
+		ArrayList<String> arrayIndices = new ArrayList<String>();
+		int indexOfBrace1 = variable.indexOf("[");
+		int indexOfBrace2 = variable.indexOf("]");
+		int arraySize = Integer.parseInt(variable.substring(indexOfBrace1+1, indexOfBrace2));
+		String varName = variable.substring(0, indexOfBrace1);
+		//create the different names for each element of the array
+		for(int array = 0; array < arraySize; array++){
+			arrayIndices.add(varName+"["+array+"]");
+		}
+		 return arrayIndices;
+	}
+	
+
+	
+	private void genUniforms(String type, String names){
+		String[] varNames = names.trim().replaceAll("="+space0plus+"("+type+initializers+")|true|false|\\d+|\\d+\\.\\d+f?)"+space0plus+",?", ",").split(space0plus+","+space0plus);
+		
+		for(int vars = 0; vars < varNames.length; vars++){
+			if(!varNames[vars].contains("[")){
+				uniforms.put(varNames[vars], new Uniform(varNames[vars], type));
 			}
-			glLinkProgram(programId);
-			
-			//check for faults in the shader program
-			if(glGetProgrami(programId, GL_LINK_STATUS) == GL_FALSE){
-				String infoLog = glGetProgramInfoLog(programId, GL_INFO_LOG_LENGTH);
+			else{
+				int indexOfBrace1 = varNames[vars].indexOf("[");
+				int indexOfBrace2 = varNames[vars].indexOf("]");
+				int arraySize = Integer.parseInt(varNames[vars].substring(indexOfBrace1+1, indexOfBrace2));
+				String uniformName = varNames[vars].substring(0, indexOfBrace1);
 				
-				for(int shader = 0; shader < programObjects.length;shader++){
-					glDetachShader(programId, programObjects[shader]);
-					glDeleteShader(programObjects[shader]);
-				}
-				glDeleteProgram(programId);
-				
-				System.err.println("Failed to link program");
-				System.err.println(infoLog);
-			}else{
-				for (int detach = 0; detach < programObjects.length; detach++) {
-					glDetachShader(programId, programObjects[detach]);
-					glDeleteShader(programObjects[detach]);
-				}
-				
-				for(String varName: uniforms.keySet()){
-					uniforms.get(varName).setLoc(glGetUniformLocation(programId, varName));
+				for(int array = 0; array < arraySize; array++){
+					uniforms.put(uniformName+"["+array+"]", new Uniform(uniformName+"["+array+"]", type));
 				}
 			}
 		}
-	}
-	
-	public int get(String retrieve){
-		return uniforms.containsKey(retrieve) ? uniforms.get(retrieve).getLoc():-1;
-	}
-	
-	public void bind(){
-		glUseProgram(programId);
-	}
-	
-	public void unbind(){
-		glUseProgram(0);
 	}
 	
 	/**
@@ -208,30 +205,6 @@ public class ShaderProgram {
 		return shaderID;
 	}
 	
-	public void delete(){
-		glDeleteProgram(programId);
-	}
-	
-	private void genUniforms(String type, String names){
-		String[] varNames = names.trim().replaceAll("="+space0plus+"("+type+initializers+")|true|false|\\d+|\\d+\\.\\d+f?)"+space0plus+",?", ",").split(space0plus+","+space0plus);
-		
-		for(int vars = 0; vars < varNames.length; vars++){
-			if(!varNames[vars].contains("[")){
-				uniforms.put(varNames[vars], new Uniform(varNames[vars], type));
-			}
-			else{
-				int indexOfBrace1 = varNames[vars].indexOf("[");
-				int indexOfBrace2 = varNames[vars].indexOf("]");
-				int arraySize = Integer.parseInt(varNames[vars].substring(indexOfBrace1+1, indexOfBrace2));
-				String uniformName = varNames[vars].substring(0, indexOfBrace1);
-				
-				for(int array = 0; array < arraySize; array++){
-					uniforms.put(uniformName+"["+array+"]", new Uniform(uniformName+"["+array+"]", type));
-				}
-			}
-		}
-	}
-	
 	/**
 	 * 
 	 * @param structName
@@ -274,25 +247,5 @@ public class ShaderProgram {
 				genStructUniform(curName, current.fieldTypes.get(structVar), structMap);
 			}
 		}
-	}
-	
-	public void setUniform(String uniformName, Buffer data){
-		uniforms.get(uniformName).set(data);
-	}
-	
-	public void setUniform(String uniformName, float... variables){
-		uniforms.get(uniformName).set(variables);
-	}
-	
-	public void setUniform(String uniformName, int... variables){
-		uniforms.get(uniformName).set(variables);
-	}
-	
-	public void setUniform(String uniformName, boolean... variables){
-		uniforms.get(uniformName).set(variables);
-	}
-	
-	public void setUniform(String uniformName, boolean transpose, FloatBuffer data){
-		uniforms.get(uniformName).setMat(transpose, data);
 	}
 }
