@@ -218,7 +218,7 @@ public class Uniform {
 						break;
 					case 4:
 						glUniform4iv(location, dataCast);
-					break;
+						break;
 				}
 			}
 		}else{
@@ -370,7 +370,7 @@ public class Uniform {
 					glUniformMatrix4x2fv(location, transpose, data);
 					break;
 				case MAT4X3:
-					glUniformMatrix4x3(location, transpose, data);
+					glUniformMatrix4x3fv(location, transpose, data);
 					break;
 			}
 		}else{
