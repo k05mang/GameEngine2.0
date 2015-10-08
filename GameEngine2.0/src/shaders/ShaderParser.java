@@ -2,10 +2,14 @@ package shaders;
 import static org.lwjgl.opengl.GL20.glCompileShader;
 import static org.lwjgl.opengl.GL20.glCreateShader;
 import static org.lwjgl.opengl.GL20.glShaderSource;
+import static shaders.ShaderParser.space0plus;
+import static shaders.ShaderParser.space1plus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.File;
 import java.io.IOException;
 
@@ -25,11 +29,8 @@ public class ShaderParser {
 			String line;
 			//set of regular expressions to use in determining information about the shader
 			String uniform = "uniform";//due to constant usage, make a universal object for it
-			String struct = "struct";
 			/*String glslTypes = "float|int|uint|bool|mat2|mat2x2|mat2x3|mat2x4|mat3|mat3x3|mat3x2|mat3x4|mat4|mat4x4|mat4x2|mat4x3|"+
 			"vec2|uvec2|ivec2|bvec2|vec3|uvec3|ivec3|bvec3|vec4|uvec4|ivec4|bvec4|\\w*sampler\\w*";*/
-			int numAnon = 0;
-			String anon = "anonStruct";
 			
 			while(shaderParser.hasNextLine()){
 				line = shaderParser.nextLine();
@@ -39,26 +40,16 @@ public class ShaderParser {
 				if(line.contains(uniform)){
 					//gather everything about the uniform until we are certain we have everything about this uniform
 					//search for the ending semicolon
-					StringBuilder uniformData = new StringBuilder(line);
+					StringBuilder uniformData = new StringBuilder();
 					while(shaderParser.hasNextLine() && !line.contains(";")){
 						uniformData.append(line);
 						source.append(line+"\n");
 						line = shaderParser.nextLine();
 					}
 					uniformData.append(line);//add the last bit of data that contained the semicolon
-					//split around the semicolon in the event that at the end of a uniform more data is there
-					//i.e. uniform vec3 something;uniform vec2 somethingelse;
-					String[] uniformCheck = uniformData.toString().split(space0plus+";"+space0plus);
-					//TODO here
+					
+					//check for anonymous struct definition in uniform declaration
 					if(line.contains(struct)){
-						StringBuilder structInfo = new StringBuilder(line);
-						//continue reading the shader storing additional information about the structure in the string builder
-						//while also updating the line variable and the source string builder
-						while(shaderParser.hasNextLine() && !line.contains("}")){
-							line = shaderParser.nextLine();
-							structInfo.append(line);
-							source.append(line+"\n");
-						}
 						//convert the string builder to a string for processing
 						String structBody = structInfo.toString();
 						int left = structBody.indexOf(struct);
@@ -152,15 +143,50 @@ public class ShaderParser {
 		return uniforms;
 	}
 	
-	public static ArrayList<String> parseArray(String variable){
-		ArrayList<String> arrayIndices = new ArrayList<String>();
-		int indexOfBrace1 = variable.indexOf("[");
-		int indexOfBrace2 = variable.indexOf("]");
-		int arraySize = Integer.parseInt(variable.substring(indexOfBrace1+1, indexOfBrace2));
-		String varName = variable.substring(0, indexOfBrace1);
-		//create the different names for each element of the array
-		for(int array = 0; array < arraySize; array++){
-			arrayIndices.add(varName+"["+array+"]");
+	public static ArrayList<String> parseArray(String type, String variable){
+		boolean isTypeArray = type.contains("[");
+		boolean isVariableArray = variable.contains("[");
+		ArrayList<String> arrayIndices = new ArrayList<String>();//array of index names
+		Pattern arrayIndex = Pattern.compile("\\["+space0plus+"\\d+"+space0plus+"\\]");
+		
+		//decide how to handle the passed data
+		if(isTypeArray && isVariableArray){//both are declared as array
+			
+		}else if(isTypeArray){//only type is declared as array
+			//determine if it is a double array or single
+			Matcher doubleArray = arrayIndex.matcher(type);
+			if(doubleArray.groupCount() > 1){
+				 int outerLoop = 0;
+				 int innerloop = 0;
+				 String firstIndex = doubleArray.group();
+				 String secondIndex = doubleArray.group();
+
+				 //trim the index braces and extract the count for the index
+				 outerLoop = Integer.parseInt(firstIndex.substring(1, firstIndex.length()-1).trim());
+				 
+				 //trim the index braces and extract the count for the index
+				 innerloop = Integer.parseInt(secondIndex.substring(1, secondIndex.length()-1).trim());
+				 
+				 //loop through the indices
+				 for(int outerIndex = 0; outerIndex < outerLoop; outerIndex++){
+					 for(int innerIndex = 0; innerIndex < innerloop; innerIndex++){
+						 arrayIndices.add(variable+"["+outerIndex+"]"+"["+innerIndex+"]");
+					 }
+				 }
+			}else{
+				int loop = 0;
+				String braces = doubleArray.group();
+				
+				//remove index braces and extract array size
+				loop = Integer.parseInt(braces.substring(1, braces.length()-1).trim());
+				
+				//loop through the indices
+				for(int index = 0; index < loop; index++){
+					 arrayIndices.add(variable+"["+index+"]");
+				}
+			}
+		}else{//only the variable is declared as an array
+			//determine if it is a double array or single
 		}
 		 return arrayIndices;
 	}

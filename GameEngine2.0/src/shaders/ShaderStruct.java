@@ -2,6 +2,9 @@ package shaders;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static shaders.ShaderParser.*;
 
 public class ShaderStruct{
@@ -12,30 +15,72 @@ public class ShaderStruct{
 		fields = new ArrayList<String>();
 		types = new ArrayList<String>();
 		String[] members = memberList.trim().split(space0plus+";");
+		String arrayPattern = "\\w+"+space0plus+"\\["+space0plus+"\\d+"+space0plus+"\\]";//pattern for matching an array declaration
+		
+		//pattern that matches for array types
+		Matcher arrayType = Pattern.compile("^("+arrayPattern+space0plus+"\\["+space0plus+"\\d+"+space0plus+"\\]|"+arrayPattern+")").matcher("");
 		
 		//iterate over the different groups of variables for the current structure
 		for(int curGroup = 0; curGroup < members.length; curGroup++){
-			//separate the type from the names
-			String[] type_names = members[curGroup].trim().replaceFirst(space1plus, "@").split("\\@");
-			//replaces the first space with an @ then splits it around that to decompose the member name from it's type
-			String type = type_names[0];//store type
-			String[] names = type_names[1].split(space0plus+","+space0plus);//separate the names that are listed with commas
-			//this is for in case the members were listed, i.e. int one, two, three, four;
+			//separate the variable names from the type
+			//reset matchers with new input
+			arrayType.reset(members[curGroup]);
 			
-			//iterate over the names of the structure variables (this loop will only be 1 for structure members with only one element)
-			for(int curName = 0; curName < names.length; curName++){
-				String curVar = names[curName].trim();
-				//determine if the name is an array type or not and store the names
-				if(!curVar.contains("[")){
-					fields.add(curVar);
-					types.add(type);
-				}
-				else{
-					ArrayList<String> arrayIndices = ShaderParser.parseArray(curVar);
-					for(String curIndex : arrayIndices){
-						types.add(type);
-						fields.add(curIndex);
+			String type = null;
+			String baseType = null;
+			String variables = null;
+			boolean isArrayType = false;
+			//check what type of variable it is
+			if(arrayType.find()){
+				type = arrayType.group();//this type is the array type, which includes the base type
+				baseType = members[curGroup].substring(0, members[curGroup].indexOf('['));//this is the basic type that the array is of
+				variables = members[curGroup].substring(arrayType.end());
+				isArrayType = true;
+			}else{//this means the variable type is a plain object type like vec3
+				//separate the type from the names
+				String[] type_names = members[curGroup].trim().replaceFirst(space1plus, "@").split("\\@");
+				type = type_names[0];
+				baseType = type;
+				//base type and type will be the same since this isn't an array type
+				variables = type_names[1];
+			}
+			
+			String[] variable_list = null;
+			//determine if there are multiple declarations for this variable
+			if(variables.contains(",")){
+				variable_list = variables.split(space0plus+","+space0plus);
+			}
+			
+			//check if there is more than one variable declaration
+			if(variable_list != null){
+				//iterate over the variables
+				for(int curName = 0; curName < variable_list.length; curName++){
+					String curVar = variable_list[curName].trim();
+					isArrayType = curVar.contains("[");//check if an array type was declared in the variable instead of the type
+					if(isArrayType){
+						//decompose the names with their respective indices
+						ArrayList<String> indices = ShaderParser.parseArray(type, curVar);
+						//iterate over them and add them to the fields using the base type
+						for(String indexName : indices){
+							fields.add(indexName);
+							types.add(baseType);
+						}
+					}else{//we are absolutely certain by this point it is a simple uniform
+						fields.add(curVar);
+						types.add(baseType);
 					}
+				}
+			}else{//this means there aren't multiple variable declarations
+				isArrayType = variables.contains("[");//check if an array type was declared in the variable instead of the type
+				if(isArrayType){
+					ArrayList<String> indices = ShaderParser.parseArray(type, variables.trim());
+					for(String indexName : indices){
+						fields.add(indexName);
+						types.add(baseType);
+					}
+				}else{//we are absolutely certain by this point it is a simple uniform
+					fields.add(variables.trim());
+					types.add(baseType);
 				}
 			}
 		}
