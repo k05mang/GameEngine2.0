@@ -39,11 +39,11 @@ public class Uniform {
 	public Uniform(String name, String type){
 		this.name = name;
 		if(type != null){
-			if(type.toLowerCase().contains("sampler")){
+			if(type.contains("sampler") || type.contains("image")){
 				this.type = INT;
 				size = 1;
 			}else{
-				switch(type.toLowerCase()){
+				switch(type){
 					case "float":
 						this.type = FLOAT;
 						size = 1;

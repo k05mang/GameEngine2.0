@@ -2,90 +2,40 @@ package shaders;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static shaders.ShaderParser.*;
 
 public class ShaderStruct{
 	public ArrayList<String> fields;//contains the names of the members of the struct
 	public ArrayList<String> types;//contains the types for each of the structs members
 	
+	/**
+	 * Constructs this shader struct with a string containing the member fields of the structure as they appear between {} in the shader file
+	 * 
+	 * @param memberList Fields of the struct as they are listed in the source file
+	 */
 	public ShaderStruct(String memberList){
 		fields = new ArrayList<String>();
 		types = new ArrayList<String>();
-		String[] members = memberList.trim().split(space0plus+";");
-		String arrayPattern = "\\w+"+space0plus+"\\["+space0plus+"\\d+"+space0plus+"\\]";//pattern for matching an array declaration
-		
-		//pattern that matches for array types
-		Matcher arrayType = Pattern.compile("^("+arrayPattern+space0plus+"\\["+space0plus+"\\d+"+space0plus+"\\]|"+arrayPattern+")").matcher("");
-		
+		String[] members = memberList.trim().split("\\s*;\\s*");
+		StringBuilder type = new StringBuilder();
 		//iterate over the different groups of variables for the current structure
 		for(int curGroup = 0; curGroup < members.length; curGroup++){
-			//separate the variable names from the type
-			//reset matchers with new input
-			arrayType.reset(members[curGroup]);
-			
-			String type = null;
-			String baseType = null;
-			String variables = null;
-			boolean isArrayType = false;
-			//check what type of variable it is
-			if(arrayType.find()){
-				type = arrayType.group();//this type is the array type, which includes the base type
-				baseType = members[curGroup].substring(0, members[curGroup].indexOf('['));//this is the basic type that the array is of
-				variables = members[curGroup].substring(arrayType.end());
-				isArrayType = true;
-			}else{//this means the variable type is a plain object type like vec3
-				//separate the type from the names
-				String[] type_names = members[curGroup].trim().replaceFirst(space1plus, "@").split("\\@");
-				type = type_names[0];
-				baseType = type;
-				//base type and type will be the same since this isn't an array type
-				variables = type_names[1];
-			}
-			
-			String[] variable_list = null;
-			//determine if there are multiple declarations for this variable
-			if(variables.contains(",")){
-				variable_list = variables.split(space0plus+","+space0plus);
-			}
-			
-			//check if there is more than one variable declaration
-			if(variable_list != null){
-				//iterate over the variables
-				for(int curName = 0; curName < variable_list.length; curName++){
-					String curVar = variable_list[curName].trim();
-					isArrayType = curVar.contains("[");//check if an array type was declared in the variable instead of the type
-					if(isArrayType){
-						//decompose the names with their respective indices
-						ArrayList<String> indices = ShaderParser.parseArray(type, curVar);
-						//iterate over them and add them to the fields using the base type
-						for(String indexName : indices){
-							fields.add(indexName);
-							types.add(baseType);
-						}
-					}else{//we are absolutely certain by this point it is a simple uniform
-						fields.add(curVar);
-						types.add(baseType);
-					}
-				}
-			}else{//this means there aren't multiple variable declarations
-				isArrayType = variables.contains("[");//check if an array type was declared in the variable instead of the type
-				if(isArrayType){
-					ArrayList<String> indices = ShaderParser.parseArray(type, variables.trim());
-					for(String indexName : indices){
-						fields.add(indexName);
-						types.add(baseType);
-					}
-				}else{//we are absolutely certain by this point it is a simple uniform
-					fields.add(variables.trim());
-					types.add(baseType);
-				}
+			int numVariables = ShaderParser.parseVariable(members[curGroup], type, fields);
+			//add the type to the types array so that it matches with the new fields added from the variable parsing
+			for(int addType = 0; addType < numVariables; addType++){
+				types.add(type.toString());
 			}
 		}
 	}
 	
+	/**
+	 * Generates uniform objects with the given uniformName as the prefix for each of this structs fields
+	 * 
+	 * @param uniformName Name of the instance variable in the shader, this acts as a prefix to the full name of the uniform
+	 * @param structMap Map of the different structures in the shader currently being parsed, this will be used to further extend
+	 * the names of fields that are of a structure type instead of a base type
+	 * 
+	 * @return List of uniform objects each representing the full name for the given uniform name
+	 */
 	public ArrayList<Uniform> genUniforms(String uniformName, HashMap<String, ShaderStruct> structMap){
 		ArrayList<Uniform> uniforms = new ArrayList<Uniform>();
 		for(int curField = 0; curField < fields.size(); curField++){
@@ -103,5 +53,14 @@ public class ShaderStruct{
 			}
 		}
 		return uniforms;
+	}
+	
+	/**
+	 * Prints the fields and types of this struct
+	 */
+	public void print(){
+		for(int curField = 0; curField < fields.size(); curField++){
+			System.out.println(types.get(curField)+" "+fields.get(curField));
+		}
 	}
 }
