@@ -13,8 +13,20 @@ public class ShaderParser {
 	private ArrayList<Uniform> uniforms;
 	private StringBuilder source;
 
-	public static final String initializers = "(\\((\\d+|\\d+\\.\\d+f?|\\w|\\-|\\*|/|\\+|,|\\(|\\)|\\s*)*\\)";//add more for array initializers
-	public static final String glslTypes = "bool|uint|int|float|double|(b|u|i|d)?vec\\d?|d?mat(\\d?|\\d?x\\d?)|(u|i)?(image|sampler)\\w+";
+	private static final String glslTypes = "bool|uint|int|float|double|(b|u|i|d)?vec\\d?|d?mat(\\d?|\\d?x\\d?)|(u|i)?(image|sampler)\\w+";
+	private static final String number = "((\\+|\\-)?"+//sign component
+										"(0(x|X)?)?"+//octal or hex value or neither
+										"(\\d|[A-Fa-f])+"+//numeric or hex value
+										"(\\.\\d+)?"+//decimal point
+										"(u|U|f|F|lf|LF|((e|E)(\\+|\\-)?\\d+))?)";//ending signifier for unsigned ints, floats, doubles or power variables such as 1e23
+	
+	private static final String parameters =  "(\\s*"+number+"|true|false|(\\w+(\\[\\s*\\d*\\s*\\])?(\\.\\w+)*)\\s*)";//handles parameters to the constructor
+	private static final String operator = "(\\s*\\+|\\-|\\*|/|%\\s*)";//potentially add more operators in the future
+	private static final String operations = "(\\s*(\\("+parameters+"("+operator+parameters+")+\\))|("+parameters+"("+operator+parameters+")+)\\s*)";//deals with operations between values
+	private static final String cast = "(\\s*\\("+glslTypes+"\\)\\s*)?";//handles casting types
+	private static final String start = "(\\s*(\\w+(\\[\\s*\\d*\\s*\\])?\\()|\\{\\s*)";//handles the beginning of the constructor invocation
+	private static final String end = "(\\)|\\})";//handles the closing braces of the constructor
+	private static final String initializer = start+"("+cast+parameters+"*\\s*,?)*"+end;
 	
 	ShaderParser(File fileName){
 		structures = new HashMap<String, ShaderStruct>();
@@ -281,17 +293,14 @@ public class ShaderParser {
 	 * @return The number of variable names extracted from the line of text
 	 */
 	public static int parseVariable(String target, StringBuilder type, ArrayList<String> names){
-		//TODO HANDLE WHEN THERE ARE INITIALIZERS FOR A VARIABLE additionally handle precision modifiers prefixing variables
+		//TODO HANDLE WHEN THERE ARE INITIALIZERS FOR A VARIABLE
 		int numVars = 0;
 		//check if we need to empty the type parameter
 		if(type.length() > 1){
 			type.delete(0, type.length());//delete its contents if it has things in it
 		}
 		
-		//remove precision qualifiers
-		Matcher findType = Pattern.compile(glslTypes).matcher(target);
-		findType.find();
-		String cleanTarget = target.substring(findType.start());
+		String cleanTarget = cleanVariable(target);
 		//pattern that matches for array types
 		Matcher arrayType = Pattern.compile("^\\w+(\\s*\\[\\s*\\d+\\s*\\])+").matcher(cleanTarget);
 		
@@ -355,6 +364,38 @@ public class ShaderParser {
 		return numVars;
 	}
 	
+	/**
+	 * Given a variable compatible with the glsl language, this function cleans all extra information about the variable that is unneeded.
+	 * Such information includes any prefix qualifiers for the variable such as memory, and precision qualifiers. and any initializers for
+	 * the variable.
+	 * 
+	 * @param variable Variable to clean
+	 * @return Variable cleaned of all extraneous information
+	 */
+	public static String cleanVariable(String variable){
+		String result = variable;
+		//remove precision qualifiers
+		Matcher findType = Pattern.compile("\\s*uniform\\s+").matcher(result);
+		findType.find();
+		result = result.substring(findType.end());
+		
+		//remove all arithmetic operators and anything involving them such as numbers, operators, and parenthesis
+		Matcher findOperations = Pattern.compile(operations).matcher(result);
+		while(findOperations.find()){
+			result = findOperations.replaceAll("0");//this will replace everything with a 0 this is for something like (23-42)*45/(78-21)->0*45/0->0
+			findOperations.reset(result);
+		}
+		//remove all initializers
+		Matcher findInit = Pattern.compile(initializer).matcher(result);
+		//this loop handles nesting issues by eliminating nested values first and reducing the complexity of the wrapper constructors
+		while(findInit.find()){
+			result = findInit.replaceAll("");
+			findInit.reset(result);
+		}
+		//remove the "=" signs as well as any potential basic types like numbers and booleans
+		Matcher equalsRemove = Pattern.compile("\\s*=\\s*"+parameters+"?").matcher(result);
+		return equalsRemove.replaceAll("");
+	}
 
 	
 //	private void genUniforms(String type, String names){
