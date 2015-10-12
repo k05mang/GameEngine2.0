@@ -3,13 +3,14 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.io.File;
 
 public class Shader {
 	private int shaderId, type;
 	private ShaderParser parser;
 	
-	Shader(String fileName, int shaderType){
+	public Shader(String fileName, int shaderType){
 		type = shaderType;
 		File shaderFile = new File(fileName);
 		parser = new ShaderParser(shaderFile);
@@ -40,6 +41,7 @@ public class Shader {
 	 */
 	public void delete(){
 		glDeleteShader(shaderId);
+		shaderId = 0;
 	}
 	
 	/**
@@ -77,5 +79,23 @@ public class Shader {
 	 */
 	public ArrayList<Uniform> getUniforms(){
 		return parser.getUniforms();
+	}
+	
+	/**
+	 * Gets the structs associated with this shader object
+	 * 
+	 * @return Hashmap containing a map of this shaders structs with their type names as keys
+	 */
+	protected HashMap<String, ShaderStruct> getStructs(){
+		return parser.getStructs();
+	}
+	
+	@Override
+	public boolean equals(Object shader){
+		if(shader instanceof Shader){
+			return shaderId == ((Shader)shader).shaderId && shaderId != 0;
+		}else{
+			return false;
+		}
 	}
 }

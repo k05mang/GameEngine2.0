@@ -11,22 +11,23 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 
 public class Uniform {
-	private String name;
+	private String name, typeName;
 	private int location, type, size;
-	private final int 
-		BLOCK = 0,
-		FLOAT = 1,
-		INT = 2,
-		BOOL = 3,
-		MAT2 = 4,
-		MAT2X3 = 5,
-		MAT2X4 = 6,
-		MAT3 = 7,
-		MAT3X2 = 8,
-		MAT3X4 = 9,
-		MAT4 = 10,
-		MAT4X2 = 11,
-		MAT4X3 = 12
+	public static final int 
+		UNKNOWN = 0,
+		BLOCK = 1,
+		FLOAT = 2,
+		INT = 3,
+		BOOL = 4,
+		MAT2 = 5,
+		MAT2X3 = 6,
+		MAT2X4 = 7,
+		MAT3 = 8,
+		MAT3X2 = 9,
+		MAT3X4 = 10,
+		MAT4 = 11,
+		MAT4X2 = 12,
+		MAT4X3 = 13
 		;
 	
 	/**
@@ -162,17 +163,69 @@ public class Uniform {
 						this.type = MAT4X3;
 						size = 12;
 						break;
+					default:
+						this.type = UNKNOWN;
+						size = 0;
+						break;
 				}
 			}
 		}else{
 			this.type = BLOCK;
 		}
 		location = -1;
+		this.typeName = type;
 	}
 	
+	/**
+	 * Copies the given uniform, the location variable is the only variable not copied and must be given a new value
+	 * with the getLocation function
+	 * 
+	 * @param copy Uniform variable to copy
+	 */
+	public Uniform(Uniform copy){
+		name = copy.name; 
+		typeName = copy.typeName;
+		location = 0; 
+		type = copy.type; 
+		size = copy.size;
+	}
+	
+	/**
+	 * Gets the uniform location from the GPU, this is used to index the variable for updating
+	 * 
+	 * @param program Program to search for the variable binding
+	 * @return The location of this uniform object binding in the given program object
+	 */
 	public int getLocation(int program){
 		location = glGetUniformLocation(program, name);
 		return location;
+	}
+	
+	/**
+	 * Gets the name of this uniform variable
+	 * 
+	 * @return String containing the name of this uniform variable
+	 */
+	public String getName(){
+		return name;
+	}
+	
+	/**
+	 * Gets the type that this uniform is associated with
+	 * 
+	 * @return The integral constant representing this uniform variables type
+	 */
+	public int getType(){
+		return type;
+	}
+	
+	/**
+	 * Gets the string representing the type of variable this uniform is associated
+	 * 
+	 * @return Null if this uniform represents a block interface, otherwise a string containing the type of this uniform 
+	 */
+	public String getTypeName(){
+		return typeName;
 	}
 	
 	/**

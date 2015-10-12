@@ -10,7 +10,7 @@ public class ShaderStruct{
 	/**
 	 * Constructs this shader struct with a string containing the member fields of the structure as they appear between {} in the shader file
 	 * 
-	 * @param memberList Fields of the struct as they are listed in the source file
+	 * @param memberList Fields of the struct as they are listed in the source file, without the enclosing braces {}
 	 */
 	public ShaderStruct(String memberList){
 		fields = new ArrayList<String>();

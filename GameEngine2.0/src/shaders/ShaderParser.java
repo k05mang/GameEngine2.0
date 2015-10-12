@@ -13,7 +13,7 @@ public class ShaderParser {
 	private ArrayList<Uniform> uniforms;
 	private StringBuilder source;
 
-	private static final String glslTypes = "bool|uint|int|float|double|(b|u|i|d)?vec\\d?|d?mat(\\d?|\\d?x\\d?)|(u|i)?(image|sampler)\\w+";
+	private static final String glslTypes = "bool|uint|int|float|double|((b|u|i|d)?vec\\d?)|(d?mat(\\d?|\\d?x\\d?))|((u|i)?(image|sampler)\\w+)";
 	private static final String number = "((\\+|\\-)?"+//sign component
 										"(0(x|X)?)?"+//octal or hex value or neither
 										"(\\d|[A-Fa-f])+"+//numeric or hex value
@@ -24,17 +24,33 @@ public class ShaderParser {
 	private static final String operator = "(\\s*\\+|\\-|\\*|/|%\\s*)";//potentially add more operators in the future
 	private static final String operations = "(\\s*(\\("+parameters+"("+operator+parameters+")+\\))|("+parameters+"("+operator+parameters+")+)\\s*)";//deals with operations between values
 	private static final String cast = "(\\s*\\("+glslTypes+"\\)\\s*)?";//handles casting types
-	private static final String start = "(\\s*(\\w+(\\[\\s*\\d*\\s*\\])?\\()|\\{\\s*)";//handles the beginning of the constructor invocation
+	private static final String start = "(\\s*(\\w+(\\[\\s*\\d*\\s*\\])*\\()|\\{\\s*)";//handles the beginning of the constructor invocation
 	private static final String end = "(\\)|\\})";//handles the closing braces of the constructor
-	private static final String initializer = start+"("+cast+parameters+"*\\s*,?)*"+end;
+	private static final String initializer = start+"("+cast+parameters+"*\\s*,?\\s*)*"+end;
 	
-	ShaderParser(File fileName){
+	private static final String structDec = "\\s*struct\\s+\\w+\\s*";
+	private static final String structDefinition = structDec+"\\{"
+													+"(\\s*\\w+\\s+(\\s*\\w+\\s*,?\\s*)+;)+"+//handling elements between the definition braces
+													"\\}\\s*(\\s*\\w+\\s*,?\\s*)*;";
+	
+	private static final String layoutQaulifiers = "(\\s*\\(((\\w+(\\s*=\\s*\\w+)?)\\s*,?\\s*)+\\)\\s*)";
+	
+	public static final String uniformDefinition = layoutQaulifiers+"?\\s*uniform\\s+\\w+(\\[\\s*\\d*\\s*\\])*\\s+(\\w+\\s*,?\\s*)+;";
+	
+	/**
+	 * Constructs this object using the given file as the source file to parse. The source file is parsed and information is extracted
+	 * from the file and stored in this object instance
+	 * 
+	 * @param file File to be parsed
+	 */
+	public ShaderParser(File file){
 		structures = new HashMap<String, ShaderStruct>();
+		source = new StringBuilder();
+		uniforms = new ArrayList<Uniform>();
 		try{
-			Scanner shaderParser = new Scanner(fileName);
+			Scanner shaderParser = new Scanner(file);
 			String line;
 			//set of regular expressions to use in determining information about the shader
-			String uniform = "uniform";//due to constant usage, make a universal object for it
 			/*String glslTypes = "float|int|uint|bool|mat2|mat2x2|mat2x3|mat2x4|mat3|mat3x3|mat3x2|mat3x4|mat4|mat4x4|mat4x2|mat4x3|"+
 			"vec2|uvec2|ivec2|bvec2|vec3|uvec3|ivec3|bvec3|vec4|uvec4|ivec4|bvec4|\\w*sampler\\w*";*/
 			
@@ -42,78 +58,40 @@ public class ShaderParser {
 				line = shaderParser.nextLine();
 				//add source code line to stringBuilder
 				source.append(line+"\n");
-				//process potential uniforms
-				if(line.contains(uniform)){
+				//process potential uniforms or structs
+				if(line.contains("uniform") || line.contains("struct")){
 					//gather everything about the uniform until we are certain we have everything about this uniform
 					//search for the ending semicolon
-					StringBuilder uniformData = new StringBuilder();
-					while(shaderParser.hasNextLine() && !line.contains(";")){
-						uniformData.append(line);
-						source.append(line+"\n");
-						line = shaderParser.nextLine();
-					}
-					uniformData.append(line);//add the last bit of data that contained the semicolon
-					
-					Matcher findType = Pattern.compile(glslTypes).matcher(uniformData);
-					findType.find();
-					uniformData.delete(0, findType.start());//removes all the specifier at the beginning of the string
-					
-					//check if we ended up picking up multiple lines of variable declarations
-					//i.e. uniform vec3 pos;uniform vec2 uv;\n
-					if(uniformData.indexOf("uniform") != -1){//this means a case as described above occurred
-						
-					}else if(uniformData.indexOf("struct") != -1){//this would mean a struct was started and potentially finished in the same line as the uniform
-						//this case handles when a struct is defined and possibly compelted on the same line
-						//i.e. uniform vec3 pos;struct light{\n
-						
-						
-					}else{//this means only one uniform declaration was found and nothing else was found on that line that requires additional extraction
-						//check if there was something else appended to the end of the declaration while parsing
-						//i.e. uniform vec3 pos;vec2 uv;
-						if(uniformData.indexOf(";") == uniformData.length()-1){//this means it was just that single uniform declaration
-							uniformData.deleteCharAt(uniformData.length()-1);//remove the semicolon at the end of the string
-							ArrayList<String> variableNames = new ArrayList<String>();
-							StringBuilder varType = new StringBuilder();
-							parseVariable(uniformData.toString(), varType, variableNames);//parse data from variable declaration
-							
-							//add new data to uniform array list
-							String type = varType.toString();//since the uniform constructor takes a string for it's type create a copy of the type for reuse in the loop
-							for(String varName : variableNames){
-								uniforms.add(new Uniform(varName, type));
+					StringBuilder uniformStructData = new StringBuilder();
+					Matcher isStruct = Pattern.compile(structDefinition).matcher(uniformStructData);
+					do{
+						//determine if we are working with a uniform or struct
+						if(uniformStructData.indexOf("uniform") > -1){
+							while(shaderParser.hasNextLine() && uniformStructData.charAt(uniformStructData.length()-1) != ';'){
+								uniformStructData.append(line);
+								isStruct.reset(uniformStructData);
+								source.append(line+"\n");
+								line = shaderParser.nextLine();
 							}
 						}else{
-							String uniformDec = uniformData.substring(uniformData.indexOf(";"));//trim down to the important uniform information
-							ArrayList<String> variableNames = new ArrayList<String>();
-							StringBuilder varType = new StringBuilder();
-							parseVariable(uniformDec, varType, variableNames);//parse data from variable declaration
-							
-							//add new data to uniform array list
-							String type = varType.toString();//since the uniform constructor takes a string for it's type create a copy of the type for reuse in the loop
-							for(String varName : variableNames){
-								uniforms.add(new Uniform(varName, type));
+							//while we haven't reached the end of the file and the end of a declaration, this way we can be certain that all lines of important data will be in uniformStructData 
+							while(shaderParser.hasNextLine() && !isStruct.find()){
+								uniformStructData.append(line);
+								isStruct.reset(uniformStructData);
+								source.append(line+"\n");
+								line = shaderParser.nextLine();
 							}
 						}
-					}
-				}
-				
-				//check if there was a struct declaration
-				//this is not an else if since the condition above will change the line variable in the event that a struct declaration was found while parsing a uniform line
-				if(line.contains("struct")){
-					StringBuilder structInfo = new StringBuilder(line);
-					//continue reading the shader storing additional information about the structure in the string builder
-					//while also updating the line variable and the source string builder
-					while(shaderParser.hasNextLine() && !line.contains("}")){
-						line = shaderParser.nextLine();
-						structInfo.append(line);
-						source.append(line+"\n");
-					}
-					//convert the string builder to a string for processing
-					String structBody = structInfo.toString();
-					int left = structBody.indexOf("struct");
-					int right = structBody.indexOf('}');
-					//get the substring starting after the keyword struct and before the } brace
-					//then split on {  dividing the data into the name and the member list of the struct
-					String[] structData = structBody.substring(left+6, right).split("\\s*\\{\\s*");
+						
+						//clean up the input of initializers
+						uniformStructData.replace(0, uniformStructData.length(), removeInitializer(uniformStructData.toString()));
+						
+						//first process the structs for use in generating the uniforms
+						processStruct(uniformStructData);
+						//process the structs
+						processUniforms(uniformStructData);
+					}while(uniformStructData.length() > 0);
+					
 				}
 			}
 			shaderParser.close();
@@ -138,6 +116,86 @@ public class ShaderParser {
 	 */
 	public ArrayList<Uniform> getUniforms(){
 		return uniforms;
+	}
+	
+	/**
+	 * Gets the struct map for this shader parser, this map contains the parsed structs from this shader file
+	 * 
+	 * @return HashMap containing the ShaderStruct extracted from this shader file
+	 */
+	protected HashMap<String, ShaderStruct> getStructs(){
+		return structures;
+	}
+	
+	/**
+	 * Processes the given information as uniform variables and adds them to the uniform list, additionally modifies uniformData by 
+	 * removing all instances of uniform declarations
+	 * 
+	 * @param uniformData StringBuilder containing uniform data extracted from the shader source file
+	 */
+	private void processUniforms(StringBuilder uniformData){
+		//check if we ended up picking up multiple lines of variable declarations
+		//i.e. uniform vec3 pos;uniform vec2 uv;\n
+		Matcher findQualifiers = Pattern.compile(layoutQaulifiers+"?\\s*uniform\\s+").matcher(uniformData);//for removing "uniform" and layout qualifiers
+		//replace the qualifiers and make that the new parsing target
+		Matcher findUniform = Pattern.compile(uniformDefinition).matcher(findQualifiers.replaceAll(""));
+		while(findUniform.find()){
+			String uniformsVars = findUniform.group().trim();
+			uniformsVars = uniformsVars.substring(0,  uniformsVars.length()-1);//remove the semicolon at the end of the string
+			ArrayList<String> variableNames = new ArrayList<String>();
+			StringBuilder varType = new StringBuilder();
+			parseVariable(uniformsVars, varType, variableNames);//parse data from variable declaration
+			
+			//add new data to uniform array list
+			String type = varType.toString();//since the uniform constructor takes a string for it's type create a copy of the type for reuse in the loop
+			ShaderStruct typeStruct = null;
+			typeStruct = structures.get(type);
+			//generate the variables and add them to the list of found uniforms
+			for(String varName : variableNames){
+				//check if the type is a struct type
+				if(typeStruct != null){
+					//have the struct generate the uniforms for this variable name
+					for(Uniform uni : typeStruct.genUniforms(varName, structures)){
+						uniforms.add(uni);
+					}
+				}else{
+					uniforms.add(new Uniform(varName, type));
+				}
+			}
+			uniformData.delete(findUniform.start(), findUniform.end());
+			findUniform.reset(uniformData);
+		}
+	}
+
+	/**
+	 * Processes the given information as struct declarations and constructs and adds ShaderStructs to the struct mapping, additionally all
+	 * struct declarations are deleted from the structData variable. This means structData will have values modified.
+	 * 
+	 * @param structData StringBuilder containing information about one or more struct declarations parsed from the shader source file
+	 */
+	private void processStruct(StringBuilder structData){
+		Matcher findStruct = Pattern.compile(structDefinition).matcher(structData);
+		Matcher findName = Pattern.compile(structDec).matcher("");
+		Matcher findMembers = Pattern.compile("\\{"
+											+"(\\s*\\w+\\s+(\\s*\\w+\\s*,?\\s*)+;)+"+//handling elements between the definition braces
+											"\\}").matcher("");
+		while(findStruct.find()){
+			String struct = findStruct.group().trim();
+			//find the struct type name
+			findName.reset(struct);
+			findName.find();
+			StringBuilder name = new StringBuilder(findName.group());
+			name.delete(0, 6);//remove the "struct" part to isolate the struct type name, struct is 6 characters long
+			//find the members list
+			findMembers.reset(struct);
+			findMembers.find();
+			String memberList = findMembers.group();
+			memberList = memberList.substring(1, memberList.length()-1);//trim off the brackets {}
+			structures.put(name.toString().trim(), new ShaderStruct(memberList.trim()));
+			
+			structData.delete(findStruct.start(), findStruct.end());
+			findStruct.reset(structData);
+		}
 	}
 	
 	/**
@@ -293,16 +351,14 @@ public class ShaderParser {
 	 * @return The number of variable names extracted from the line of text
 	 */
 	public static int parseVariable(String target, StringBuilder type, ArrayList<String> names){
-		//TODO HANDLE WHEN THERE ARE INITIALIZERS FOR A VARIABLE
 		int numVars = 0;
 		//check if we need to empty the type parameter
 		if(type.length() > 1){
 			type.delete(0, type.length());//delete its contents if it has things in it
 		}
 		
-		String cleanTarget = cleanVariable(target);
 		//pattern that matches for array types
-		Matcher arrayType = Pattern.compile("^\\w+(\\s*\\[\\s*\\d+\\s*\\])+").matcher(cleanTarget);
+		Matcher arrayType = Pattern.compile("^\\w+(\\s*\\[\\s*\\d+\\s*\\])+").matcher(target);
 		
 		//separate the variable names from the type
 		String baseType = null;
@@ -311,12 +367,12 @@ public class ShaderParser {
 		//check what type of variable it is
 		if(arrayType.find()){
 			baseType = arrayType.group().trim();//this type is the array type, which includes the base type
-			type.append(cleanTarget.substring(0, cleanTarget.indexOf('[')));//this is the basic type that the array is of
-			variables = cleanTarget.substring(arrayType.end());
+			type.append(target.substring(0, target.indexOf('[')));//this is the basic type that the array is of
+			variables = target.substring(arrayType.end());
 			isArrayType = true;
 		}else{//this means the variable type is a plain object type like vec3
 			//separate the type from the names
-			String[] type_names = cleanTarget.trim().replaceFirst("\\s+", "@").split("\\@");
+			String[] type_names = target.trim().replaceFirst("\\s+", "@").split("\\@");
 			type.append(type_names[0].trim());
 			baseType = type_names[0].trim();
 			//base type and type will be the same since this isn't an array type
@@ -365,19 +421,13 @@ public class ShaderParser {
 	}
 	
 	/**
-	 * Given a variable compatible with the glsl language, this function cleans all extra information about the variable that is unneeded.
-	 * Such information includes any prefix qualifiers for the variable such as memory, and precision qualifiers. and any initializers for
-	 * the variable.
+	 * Removes all initializers from the variables given
 	 * 
 	 * @param variable Variable to clean
-	 * @return Variable cleaned of all extraneous information
+	 * @return Variable cleaned of all initializers
 	 */
-	public static String cleanVariable(String variable){
+	public static String removeInitializer(String variable){
 		String result = variable;
-		//remove precision qualifiers
-		Matcher findType = Pattern.compile("\\s*uniform\\s+").matcher(result);
-		findType.find();
-		result = result.substring(findType.end());
 		
 		//remove all arithmetic operators and anything involving them such as numbers, operators, and parenthesis
 		Matcher findOperations = Pattern.compile(operations).matcher(result);
@@ -396,100 +446,4 @@ public class ShaderParser {
 		Matcher equalsRemove = Pattern.compile("\\s*=\\s*"+parameters+"?").matcher(result);
 		return equalsRemove.replaceAll("");
 	}
-
-	
-//	private void genUniforms(String type, String names){
-//		String[] varNames = names.trim().replaceAll("="+\\s*+"("+type+initializers+")|true|false|\\d+|\\d+\\.\\d+f?)"+\\s*+",?", ",").split(\\s*+","+\\s*);
-//		
-//		for(int vars = 0; vars < varNames.length; vars++){
-//			if(!varNames[vars].contains("[")){
-//				uniforms.put(varNames[vars], new Uniform(varNames[vars], type));
-//			}
-//			else{
-//				int indexOfBrace1 = varNames[vars].indexOf("[");
-//				int indexOfBrace2 = varNames[vars].indexOf("]");
-//				int arraySize = Integer.parseInt(varNames[vars].substring(indexOfBrace1+1, indexOfBrace2));
-//				String uniformName = varNames[vars].substring(0, indexOfBrace1);
-//				
-//				for(int array = 0; array < arraySize; array++){
-//					uniforms.put(uniformName+"["+array+"]", new Uniform(uniformName+"["+array+"]", type));
-//				}
-//			}
-//		}
-//	}
-//	
-//	/**
-//	 * Generates a shader object, reads the source code for a shader, and compiles the shader to be used
-//	 * in the rendering pipeline
-//	 * 
-//	 * @param fileName String specifying the file path to the file containing the shader code
-//	 * 
-//	 * @param shaderType The type of shader to be generated, this must be one of the types specified
-//	 * in the openGL specification, that is GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
-//	 * 
-//	 * @param gl OpenGL graphics context with which to work with shaders
-//	 * 
-//	 * @return Returns an int representing the handle for the generated shader object
-//	 */
-//	protected int createShader(String fileName, int shaderType){
-//		int shaderID = 0;
-//		StringBuilder source = new StringBuilder();
-//		
-//		/*scan the file taking each line and adding it to the source array list and the lengths of each line to the 
-//		Integer array list*/
-//		
-//		//System.out.println(source.toString());
-//		//create a shader object and store it in a handler for the application to use
-//		shaderID = glCreateShader(shaderType);
-//		//send the source code read from the file to the shader object
-//		glShaderSource(shaderID, source.toString());
-//		//compile the source code stored on the specified shader object
-//		glCompileShader(shaderID);
-//		
-//		return shaderID;
-//	}
-//	
-//	/**
-//	 * 
-//	 * @param structName
-//	 * @param uniformNames Names of the instances of the uniform structure to be formed
-//	 * @param structMap
-//	 */
-//	private void genUniformStructs(String structName, String uniformNames, HashMap<String, ShaderStruct> structMap){
-//		//split up the instance names
-//		String[] instanceNames = uniformNames.replaceAll("="+\\s*+"("+structName+initializers+")|true|false|\\d+|\\d+\\.\\d+f?)"+\\s*+",?", ",").split(\\s*+","+\\s*);
-//		//iterate over every instance name
-//		for(int curInstance = 0; curInstance < instanceNames.length; curInstance++){
-//			//get the name of the instance
-//			String curVar = instanceNames[curInstance];
-//			//check if it is an array type
-//			if(!curVar.contains("[")){
-//				genStructUniform(curVar, structName, structMap);
-//			}
-//			else{
-//				int indexOfBrace1 = curVar.indexOf("[");
-//				int indexOfBrace2 = curVar.indexOf("]");
-//				int arraySize = Integer.parseInt(curVar.substring(indexOfBrace1+1, indexOfBrace2));
-//				String varName = curVar.substring(0, indexOfBrace1);
-//				//create the different names for each element of the array
-//				for(int array = 0; array < arraySize; array++){
-//					genStructUniform(varName+"["+array+"]", structName, structMap);
-//				}
-//			}
-//		}
-//	}
-//	
-//	private void genStructUniform(String name, String curType, HashMap<String, ShaderStruct> structMap){
-//		String glslTypes = "float|int|uint|bool|mat2|mat2x2|mat2x3|mat2x4|mat3|mat3x3|mat3x2|mat3x4|mat4|mat4x4|mat4x2|mat4x3|"+
-//				"vec2|uvec2|ivec2|bvec2|vec3|uvec3|ivec3|bvec3|vec4|uvec4|ivec4|bvec4";
-//		if(curType.matches(glslTypes)){
-//			uniforms.put(name, new Uniform(name, curType));
-//		}else{
-//			ShaderStruct current = structMap.get(curType);
-//			for(int structVar = 0; structVar < current.fields.size(); structVar++){
-//				String curName = name+"."+current.fields.get(structVar);
-//				genStructUniform(curName, current.fieldTypes.get(structVar), structMap);
-//			}
-//		}
-//	}
 }
