@@ -14,28 +14,31 @@ public class ShaderParser {
 	private StringBuilder source;
 
 	private static final String glslTypes = "bool|uint|int|float|double|((b|u|i|d)?vec\\d?)|(d?mat(\\d?|\\d?x\\d?))|((u|i)?(image|sampler)\\w+)";
-	private static final String number = "((\\+|\\-)?"+//sign component
-										"(0(x|X)?)?"+//octal or hex value or neither
-										"(\\d|[A-Fa-f])+"+//numeric or hex value
-										"(\\.\\d+)?"+//decimal point
-										"(u|U|f|F|lf|LF|((e|E)(\\+|\\-)?\\d+))?)";//ending signifier for unsigned ints, floats, doubles or power variables such as 1e23
+	private static final String number = "((\\+|\\-)?+"+//sign component
+										"(0(x|X)?+)?+"+//octal or hex value or neither
+										"(((\\d|[A-Fa-f])++(\\.\\d++)?+)|"+//numeric or hex value
+										"(\\.\\d++))++"+//decimal point
+										"(u|U|f|F|lf|LF|((e|E)(\\+|\\-)?+\\d++))?+)";//ending signifier for unsigned ints, floats, doubles or power variables such as 1e23
 	
-	private static final String parameters =  "(\\s*"+number+"|true|false|(\\w+(\\[\\s*\\d*\\s*\\])?(\\.\\w+)*)\\s*)";//handles parameters to the constructor
-	private static final String operator = "(\\s*\\+|\\-|\\*|/|%\\s*)";//potentially add more operators in the future
-	private static final String operations = "(\\s*(\\("+parameters+"("+operator+parameters+")+\\))|("+parameters+"("+operator+parameters+")+)\\s*)";//deals with operations between values
-	private static final String cast = "(\\s*\\("+glslTypes+"\\)\\s*)?";//handles casting types
-	private static final String start = "(\\s*(\\w+(\\[\\s*\\d*\\s*\\])*\\()|\\{\\s*)";//handles the beginning of the constructor invocation
+	private static final String arrayBraces = "(\\[\\s*+\\d*+\\s*+\\])*+";
+	private static final String parameters =  "(\\s*+"+number+"|true|false|(\\w++"+arrayBraces+"(\\.\\w++)*+)\\s*+)";//handles parameters to the constructor
+	private static final String operator = "(\\s*+\\+|\\-|\\*|/|%\\s*+)";//potentially add more operators in the future
+	private static final String operations = "(\\s*+(\\("+parameters+"("+operator+parameters+")+\\))|("+parameters+"("+operator+parameters+")++)\\s*+)";//deals with operations between values
+	private static final String cast = "(\\s*+\\("+glslTypes+"\\)\\s*+)?+";//handles casting types
+	private static final String start = "(\\s*+(\\w++"+arrayBraces+"\\()|\\{\\s*+)";//handles the beginning of the constructor invocation
 	private static final String end = "(\\)|\\})";//handles the closing braces of the constructor
-	private static final String initializer = start+"("+cast+parameters+"*\\s*,?\\s*)*"+end;
+	private static final String initializer = start+"("+cast+parameters+"*+\\s*+,?+\\s*+)*+"+end;
 	
-	private static final String structDec = "\\s*struct\\s+\\w+\\s*";
-	private static final String structDefinition = structDec+"\\{"
-													+"(\\s*\\w+\\s+(\\s*\\w+\\s*,?\\s*)+;)+"+//handling elements between the definition braces
-													"\\}\\s*(\\s*\\w+\\s*,?\\s*)*;";
+	private static final String structDec = "\\s*+struct\\s++\\w++\\s*+";
+	public static final String structDefinition = structDec+"\\{"
+													+"(\\s*+\\w++"+arrayBraces+"\\s++(\\s*+\\w++"+arrayBraces+"\\s*+,?+\\s*+)++;)++"+//handling elements between the definition braces
+													"\\}\\s*+(\\s*+\\w++"+arrayBraces+"\\s*+,?+\\s*+)*+;";
 	
-	private static final String layoutQaulifiers = "(\\s*\\(((\\w+(\\s*=\\s*\\w+)?)\\s*,?\\s*)+\\)\\s*)";
+	private static final String layoutQaulifiers = "(\\s*+\\(((\\w++(\\s*+=\\s*+\\w++)?+)\\s*+,?+\\s*+)++\\)\\s*+)";
 	
-	public static final String uniformDefinition = layoutQaulifiers+"?\\s*uniform\\s+\\w+(\\[\\s*\\d*\\s*\\])*\\s+(\\w+\\s*,?\\s*)+;";
+	private static final String uniformDefinition = layoutQaulifiers+"?+\\s*+uniform\\s++\\w++"+arrayBraces+"\\s++(\\w++"+arrayBraces+"\\s*+,?+\\s*+)++;";
+	
+	private static final long TIME_OUT_THRESHOLD = 5000;//a 1/20th of a minute in milliseconds
 	
 	/**
 	 * Constructs this object using the given file as the source file to parse. The source file is parsed and information is extracted
@@ -50,11 +53,9 @@ public class ShaderParser {
 		try{
 			Scanner shaderParser = new Scanner(file);
 			String line;
-			//set of regular expressions to use in determining information about the shader
-			/*String glslTypes = "float|int|uint|bool|mat2|mat2x2|mat2x3|mat2x4|mat3|mat3x3|mat3x2|mat3x4|mat4|mat4x4|mat4x2|mat4x3|"+
-			"vec2|uvec2|ivec2|bvec2|vec3|uvec3|ivec3|bvec3|vec4|uvec4|ivec4|bvec4|\\w*sampler\\w*";*/
-			
-			while(shaderParser.hasNextLine()){
+			long timeStart = System.currentTimeMillis();//mark the start time for this parsing
+			boolean stopParse = false;
+			while(shaderParser.hasNextLine() && !stopParse){
 				line = shaderParser.nextLine();
 				//add source code line to stringBuilder
 				source.append(line+"\n");
@@ -62,35 +63,45 @@ public class ShaderParser {
 				if(line.contains("uniform") || line.contains("struct")){
 					//gather everything about the uniform until we are certain we have everything about this uniform
 					//search for the ending semicolon
-					StringBuilder uniformStructData = new StringBuilder();
+					StringBuilder uniformStructData = new StringBuilder(line);
 					Matcher isStruct = Pattern.compile(structDefinition).matcher(uniformStructData);
 					do{
 						//determine if we are working with a uniform or struct
 						if(uniformStructData.indexOf("uniform") > -1){
-							while(shaderParser.hasNextLine() && uniformStructData.charAt(uniformStructData.length()-1) != ';'){
-								uniformStructData.append(line);
-								isStruct.reset(uniformStructData);
-								source.append(line+"\n");
+							while(shaderParser.hasNextLine() && uniformStructData.indexOf(";") == -1){
 								line = shaderParser.nextLine();
+								source.append(line+"\n");
+								uniformStructData.append(line.trim());
 							}
 						}else{
 							//while we haven't reached the end of the file and the end of a declaration, this way we can be certain that all lines of important data will be in uniformStructData 
 							while(shaderParser.hasNextLine() && !isStruct.find()){
-								uniformStructData.append(line);
-								isStruct.reset(uniformStructData);
-								source.append(line+"\n");
 								line = shaderParser.nextLine();
+								source.append(line+"\n");
+								uniformStructData.append(line.trim());
+								isStruct.reset(uniformStructData);
 							}
 						}
 						
 						//clean up the input of initializers
-						uniformStructData.replace(0, uniformStructData.length(), removeInitializer(uniformStructData.toString()));
+						String cleanInput = removeInitializer(uniformStructData.toString());
+						uniformStructData.replace(0, uniformStructData.length(), cleanInput);
 						
 						//first process the structs for use in generating the uniforms
 						processStruct(uniformStructData);
 						//process the structs
 						processUniforms(uniformStructData);
-					}while(uniformStructData.length() > 0);
+						isStruct.reset(uniformStructData);
+						//by this point all properly formatted values should have been cleared out and only non struct or uniforms should be left or empty
+						//this check prevents an infinite loop in the event of improperly formatted shader code
+						//basically if data buffer has a "uniform" in it
+						if(System.currentTimeMillis() - timeStart > TIME_OUT_THRESHOLD){
+							System.err.println("Shader parser for file: \""+file.getName()+"\" failed");
+							System.err.println("Parsing error while reading file has occurred, last processed data was: \""+uniformStructData+"\"");
+							System.err.println("This line may contain incorrectly formatted data incomopatible with glsl, struct or uniform likely malformed");
+							System.exit(0);
+						}
+					}while(uniformStructData.indexOf("uniform") > -1 || uniformStructData.indexOf("struct") > -1);//while there is still a uniform or struct to process in the stringbuilder
 					
 				}
 			}
@@ -134,14 +145,15 @@ public class ShaderParser {
 	 * @param uniformData StringBuilder containing uniform data extracted from the shader source file
 	 */
 	private void processUniforms(StringBuilder uniformData){
-		//check if we ended up picking up multiple lines of variable declarations
-		//i.e. uniform vec3 pos;uniform vec2 uv;\n
-		Matcher findQualifiers = Pattern.compile(layoutQaulifiers+"?\\s*uniform\\s+").matcher(uniformData);//for removing "uniform" and layout qualifiers
-		//replace the qualifiers and make that the new parsing target
-		Matcher findUniform = Pattern.compile(uniformDefinition).matcher(findQualifiers.replaceAll(""));
+		Matcher findUniform = Pattern.compile(uniformDefinition).matcher(uniformData);
 		while(findUniform.find()){
+			
 			String uniformsVars = findUniform.group().trim();
-			uniformsVars = uniformsVars.substring(0,  uniformsVars.length()-1);//remove the semicolon at the end of the string
+			//replace the qualifiers and make that the new parsing target
+			Matcher findQualifiers = Pattern.compile(layoutQaulifiers+"?\\s*+uniform\\s++").matcher(uniformsVars);//for removing "uniform" and layout qualifiers
+			findQualifiers.find();
+			
+			uniformsVars = uniformsVars.substring(findQualifiers.end(),  uniformsVars.length()-1);//remove the semicolon at the end of the string
 			ArrayList<String> variableNames = new ArrayList<String>();
 			StringBuilder varType = new StringBuilder();
 			parseVariable(uniformsVars, varType, variableNames);//parse data from variable declaration
@@ -177,7 +189,7 @@ public class ShaderParser {
 		Matcher findStruct = Pattern.compile(structDefinition).matcher(structData);
 		Matcher findName = Pattern.compile(structDec).matcher("");
 		Matcher findMembers = Pattern.compile("\\{"
-											+"(\\s*\\w+\\s+(\\s*\\w+\\s*,?\\s*)+;)+"+//handling elements between the definition braces
+											+"(\\s*+\\w++"+arrayBraces+"\\s++(\\s*+\\w++"+arrayBraces+"\\s*+,?+\\s*+)++;)++"+//handling elements between the definition braces
 											"\\}").matcher("");
 		while(findStruct.find()){
 			String struct = findStruct.group().trim();
@@ -213,7 +225,7 @@ public class ShaderParser {
 		boolean isTypeArray = type.contains("[");
 		boolean isVariableArray = variable.contains("[");
 		ArrayList<String> arrayIndices = new ArrayList<String>();//array of index names
-		Pattern arrayIndex = Pattern.compile("\\[\\s*\\d+\\s*\\]");
+		Pattern arrayIndex = Pattern.compile("\\[\\s*+\\d++\\s*+\\]");
 		
 		//decide how to handle the passed data
 		if(isTypeArray && isVariableArray){//both are declared as array
@@ -358,7 +370,7 @@ public class ShaderParser {
 		}
 		
 		//pattern that matches for array types
-		Matcher arrayType = Pattern.compile("^\\w+(\\s*\\[\\s*\\d+\\s*\\])+").matcher(target);
+		Matcher arrayType = Pattern.compile("^\\w++(\\s*+\\[\\s*+\\d++\\s*+\\])++").matcher(target);
 		
 		//separate the variable names from the type
 		String baseType = null;
@@ -372,7 +384,7 @@ public class ShaderParser {
 			isArrayType = true;
 		}else{//this means the variable type is a plain object type like vec3
 			//separate the type from the names
-			String[] type_names = target.trim().replaceFirst("\\s+", "@").split("\\@");
+			String[] type_names = target.trim().replaceFirst("\\s++", "@").split("\\@");
 			type.append(type_names[0].trim());
 			baseType = type_names[0].trim();
 			//base type and type will be the same since this isn't an array type
@@ -382,7 +394,7 @@ public class ShaderParser {
 		String[] variable_list = null;
 		//determine if there are multiple declarations for this variable
 		if(variables.contains(",")){
-			variable_list = variables.split("\\s*,\\s*");
+			variable_list = variables.split("\\s*+,\\s*+");
 		}
 		
 		//check if there is more than one variable declaration
@@ -440,10 +452,11 @@ public class ShaderParser {
 		//this loop handles nesting issues by eliminating nested values first and reducing the complexity of the wrapper constructors
 		while(findInit.find()){
 			result = findInit.replaceAll("");
+//			System.out.println(result);
 			findInit.reset(result);
 		}
 		//remove the "=" signs as well as any potential basic types like numbers and booleans
-		Matcher equalsRemove = Pattern.compile("\\s*=\\s*"+parameters+"?").matcher(result);
+		Matcher equalsRemove = Pattern.compile("\\s*+=\\s*+"+parameters+"?+").matcher(result);
 		return equalsRemove.replaceAll("");
 	}
 }

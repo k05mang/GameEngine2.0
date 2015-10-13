@@ -191,13 +191,22 @@ public class Uniform {
 	}
 	
 	/**
-	 * Gets the uniform location from the GPU, this is used to index the variable for updating
+	 * Gets the uniform binding index from the GPU, this is used to index the variable for updating
 	 * 
 	 * @param program Program to search for the variable binding
 	 * @return The location of this uniform object binding in the given program object
 	 */
-	public int getLocation(int program){
+	public int getBinding(int program){
 		location = glGetUniformLocation(program, name);
+		return location;
+	}
+	
+	/**
+	 * Gets the program binding index for this uniform after the getBinding function has been called
+	 * 
+	 * @return The location of this shader uniform 
+	 */
+	public int getLocation(){
 		return location;
 	}
 	

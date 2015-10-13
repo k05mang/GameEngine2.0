@@ -15,7 +15,7 @@ public class ShaderStruct{
 	public ShaderStruct(String memberList){
 		fields = new ArrayList<String>();
 		types = new ArrayList<String>();
-		String[] members = memberList.trim().split("\\s*;\\s*");
+		String[] members = memberList.trim().split("\\s*+;\\s*+");
 		StringBuilder type = new StringBuilder();
 		//iterate over the different groups of variables for the current structure
 		for(int curGroup = 0; curGroup < members.length; curGroup++){
@@ -58,9 +58,9 @@ public class ShaderStruct{
 	/**
 	 * Prints the fields and types of this struct
 	 */
-	public void print(){
-		for(int curField = 0; curField < fields.size(); curField++){
-			System.out.println(types.get(curField)+" "+fields.get(curField));
-		}
-	}
+//	public void print(){
+//		for(int curField = 0; curField < fields.size(); curField++){
+//			System.out.println(types.get(curField)+" "+fields.get(curField));
+//		}
+//	}
 }

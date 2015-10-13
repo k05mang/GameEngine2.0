@@ -94,14 +94,14 @@ public class ShaderProgram {
 						ShaderStruct structure = structs.get(uniform.getTypeName());
 						//generate new uniforms from the struct and add them
 						for(Uniform structUni : structure.genUniforms(uniform.getName(), structs)){
-							structUni.getLocation(programId);
+							structUni.getBinding(programId);
 							uniforms.put(structUni.getName(), structUni);
 						}
 					}else{
 						//copy the uniform
 						Uniform copy = new Uniform(uniform);
 						//get its location in the newly linked shader program
-						copy.getLocation(programId);
+						copy.getBinding(programId);
 						//add it to the programs uniform variable mapping
 						uniforms.put(copy.getName(), copy);
 					}
