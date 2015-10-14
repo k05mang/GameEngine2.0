@@ -5,6 +5,11 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
+/**
+ * 
+ * @author Kevin Mango
+ *
+ */
 public interface Vector {
 	public static final float ROUND_VALUE = 1e-10f;
 	/**

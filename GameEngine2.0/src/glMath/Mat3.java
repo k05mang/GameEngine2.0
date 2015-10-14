@@ -5,16 +5,29 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
+/**
+ * 
+ * @author Kevin Mango
+ *
+ */
 public class Mat3 implements Matrix {
 	private Vec3[] matrix;
 	public static final int SIZE_IN_BYTES = 36;
 	public static final int SIZE_IN_FLOATS = 9;
-
+	
+	/**
+	 * Defaeult constructs this matrix to be the indentity matrix
+	 */
 	public Mat3(){
 		matrix = new Vec3[3];
 		this.loadIdentity();
 	}
 	
+	/**
+	 * Constructs this matrix using the given value as the value of the diagonal of this matrix
+	 * 
+	 * @param diag Value to make as the diagonal of this matrix
+	 */
 	public Mat3(float diag){
 		matrix = new Vec3[3];
 		matrix[0] = new Vec3(diag,0,0);
@@ -22,6 +35,13 @@ public class Mat3 implements Matrix {
 		matrix[2] = new Vec3(0,0,diag);
 	}
 	
+	/**
+	 * Constructs this matrix by using the three given vectors as the columns of this matrix
+	 * 
+	 * @param col1 Vector used for the first column of this matrix
+	 * @param col2 Vector used for the second column of this matrix
+	 * @param col3 Vector used for the third column of this matrix
+	 */
 	public Mat3(Vec3 col1, Vec3 col2, Vec3 col3){
 		matrix = new Vec3[3];
 		matrix[0] = new Vec3(col1);
@@ -29,6 +49,11 @@ public class Mat3 implements Matrix {
 		matrix[2] = new Vec3(col3);
 	}
 	
+	/**
+	 * Constructs a copy of the given matrix
+	 * 
+	 * @param copy Matrix to copy
+	 */
 	public Mat3(Mat3 copy){
 		matrix = new Vec3[3];
 		Vec3[] copyFrom = copy.getMatrix();
@@ -37,6 +62,11 @@ public class Mat3 implements Matrix {
 		matrix[2] = new Vec3(copyFrom[2]);
 	}
 	
+	/**
+	 * Gets the upper 2x2 matrix of this matrix
+	 * 
+	 * @return Matrix representing the upper left 2x2 portion of this matrix
+	 */
 	public Mat2 getUpperMatrix(){
 		return new Mat2((Vec2)matrix[0].swizzle("xy"), (Vec2)matrix[1].swizzle("xy"));
 	}

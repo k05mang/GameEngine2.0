@@ -5,16 +5,29 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
+/**
+ * 
+ * @author Kevin Mango
+ *
+ */
 public class Mat4 implements Matrix {
 	private Vec4[] matrix;
 	public static final int SIZE_IN_BYTES = 64;
 	public static final int SIZE_IN_FLOATS = 16;
 	
+	/**
+	 * Default constructs this matrix as the identity matrix
+	 */
 	public Mat4(){
 		matrix = new Vec4[4];
 		this.loadIdentity();
 	}
 	
+	/**
+	 * Constructs this matrix using the given value as the diagonal of the matrix
+	 * 
+	 * @param diag Value to set the diagonal components of this matrix to
+	 */
 	public Mat4(float diag){
 		matrix = new Vec4[4];
 		matrix[0] = new Vec4(diag,0,0,0);
@@ -23,6 +36,14 @@ public class Mat4 implements Matrix {
 		matrix[3] = new Vec4(0,0,0,diag);
 	}
 	
+	/**
+	 * Constructs this matrix using the given vectors as the columns of this matrix
+	 * 
+	 * @param col1 Vector used for the first column of this matrix
+	 * @param col2 Vector used for the second column of this matrix
+	 * @param col3 Vector used for the third column of this matrix
+	 * @param col4 Vector used for the fourth column of this matrix
+	 */
 	public Mat4(Vec4 col1, Vec4 col2, Vec4 col3, Vec4 col4){
 		matrix = new Vec4[4];
 		matrix[0] = new Vec4(col1);
@@ -31,6 +52,14 @@ public class Mat4 implements Matrix {
 		matrix[3] = new Vec4(col4);
 	}
 	
+	/**
+	 * Constructs this matrix using the given 3x3 matrix as the upper left component of this matrix and the 
+	 * given vector as the first three components of the right most column starting from the top. All other 
+	 * parts are set to 0.
+	 * 
+	 * @param upper 3x3 matrix to set as the upper left portion of this matrix
+	 * @param rightCol Vector to set as the right most columns first three components from the top
+	 */
 	public Mat4(Mat3 upper, Vec3 rightCol){
 		matrix = new Vec4[4];
 		Vec3[] upCopy = upper.getMatrix();
@@ -40,6 +69,11 @@ public class Mat4 implements Matrix {
 		matrix[3] = new Vec4(rightCol , 1);
 	}
 	
+	/**
+	 * Constructs this matrix using the given matrix as a copy
+	 * 
+	 * @param copy Matrix to copy from
+	 */
 	public Mat4(Mat4 copy){
 		matrix = new Vec4[4];
 		Vec4[] copyFrom = copy.getMatrix();
@@ -49,6 +83,11 @@ public class Mat4 implements Matrix {
 		matrix[3] = new Vec4(copyFrom[3]);
 	}
 	
+	/**
+	 * Gets the upper 3x3 portion of this matrix and returns it as a matrix
+	 * 
+	 * @return Matrix containing the upper left 3x3 portion of this matrix
+	 */
 	public Mat3 getNormalMatrix(){
 		return new Mat3( 
 				(Vec3)matrix[0].swizzle("xyz"),
@@ -59,7 +98,8 @@ public class Mat4 implements Matrix {
 
 	@Override
 	public Mat4 invert() {
-		float det = this.determinant();
+		float det = this.determinant();//get the determinant
+		//check if this matrix is invertible
 		if( det != 0){
 			Vec4 col1 = new Vec4(
 					 matrix[1].y*(matrix[2].z*matrix[3].w-matrix[3].z*matrix[2].w)

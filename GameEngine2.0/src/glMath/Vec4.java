@@ -8,6 +8,11 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
+/**
+ * 
+ * @author Kevin Mango
+ *
+ */
 public class Vec4 implements Vector {
 
 	public float x, y, z, w;

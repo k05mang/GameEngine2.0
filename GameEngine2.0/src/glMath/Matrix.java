@@ -2,6 +2,11 @@ package glMath;
 
 import java.nio.FloatBuffer;
 
+/**
+ * 
+ * @author Kevin Mango
+ *
+ */
 public interface Matrix {
 	
 	/**

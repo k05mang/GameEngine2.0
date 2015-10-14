@@ -5,9 +5,17 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
+/**
+ * 
+ * @author Kevin Mango
+ * 
+ *
+ */
 public class Mat2 implements Matrix {
 	
-	private Vec2[] matrix;
+	private Vec2[] matrix;//array containing the vectors that represent the columns of this matrix
+	
+	//constant fields that represent the size of this matrix in bytes and floats
 	public static final int SIZE_IN_BYTES = 16;
 	public static final int SIZE_IN_FLOATS = 4;
 
@@ -30,12 +38,23 @@ public class Mat2 implements Matrix {
 		matrix[1] = new Vec2(0,diag);
 	}
 	
+	/**
+	 * Constructs a 2x2 matrix using two vectors as the columns for this matrix
+	 * 
+	 * @param col1 Vector representing the first column
+	 * @param col2 Vector representing the second column
+	 */
 	public Mat2(Vec2 col1, Vec2 col2){
 		matrix = new Vec2[2];
 		matrix[0] = new Vec2(col1);
 		matrix[1] = new Vec2(col2);
 	}
 	
+	/**
+	 * Copy constructor that copies the fields of the given matrix
+	 * 
+	 * @param copy Matrix to copy
+	 */
 	public Mat2(Mat2 copy){
 		matrix = new Vec2[2];
 		Vec2[] copyFrom = copy.getMatrix();
