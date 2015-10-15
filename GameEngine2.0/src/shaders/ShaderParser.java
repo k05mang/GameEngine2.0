@@ -71,9 +71,7 @@ public class ShaderParser {
 		try{
 			Scanner shaderParser = new Scanner(file);
 			String line;
-			long timeStart = System.currentTimeMillis();//mark the start time for this parsing
-			boolean stopParse = false;
-			while(shaderParser.hasNextLine() && !stopParse){
+			while(shaderParser.hasNextLine()){
 				line = shaderParser.nextLine();
 				//add source code line to stringBuilder
 				source.append(line+"\n");
@@ -84,6 +82,7 @@ public class ShaderParser {
 					StringBuilder uniformStructData = new StringBuilder(line);
 					Matcher isStruct = Pattern.compile(structDefinition).matcher(uniformStructData);
 					Matcher isUniInterface = Pattern.compile(uniformBlock).matcher("");
+					long timeStart = System.currentTimeMillis();//mark the start time for this parsing
 					do{
 						boolean isUniformBlock = false;
 						//determine if we are working with a uniform or struct
@@ -131,6 +130,7 @@ public class ShaderParser {
 							System.err.println("Shader parser for file: \""+file.getName()+"\" failed");
 							System.err.println("Parsing error while reading file has occurred, last processed data was: \""+uniformStructData+"\"");
 							System.err.println("This line may contain incorrectly formatted data incomopatible with glsl, struct or uniform likely malformed");
+							shaderParser.close();
 							System.exit(0);
 						}
 					}while(uniformStructData.indexOf("uniform") > -1 || uniformStructData.indexOf("struct") > -1);//while there is still a uniform or struct to process in the stringbuilder

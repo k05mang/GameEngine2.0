@@ -2,13 +2,12 @@ package shaders;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
+
+import gldata.BufferObject;
 
 public class ShaderProgram {
 	private HashMap<String, Uniform> uniforms;//mapping of uniform names to their uniform handlers
@@ -134,8 +133,7 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, Buffer data){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			found.set(data);
-			return true;
+			return found.set(data);
 		}else{
 			return false;
 		}
@@ -158,8 +156,7 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, float... variables){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			found.set(variables);
-			return true;
+			return found.set(variables);
 		}else{
 			return false;
 		}
@@ -182,8 +179,7 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, int... variables){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			found.set(variables);
-			return true;
+			return found.set(variables);
 		}else{
 			return false;
 		}
@@ -206,8 +202,7 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, boolean... variables){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			found.set(variables);
-			return true;
+			return found.set(variables);
 		}else{
 			return false;
 		}
@@ -224,8 +219,40 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, boolean transpose, FloatBuffer data){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			found.setMat(transpose, data);
-			return true;
+			return found.setMat(transpose, data);
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * 
+	 * @param uniformName Name of uniform to bind this buffer to
+	 * @param buffer Buffer to bind to the uniform
+	 * @return True if successfully bound, false otherwise
+	 */
+	public boolean bindBuffer(String uniformName, BufferObject buffer){
+		Uniform found = uniforms.get(uniformName);
+		if(found != null){
+			return found.bindBuffer(buffer);
+		}else{
+			return false;
+		}
+	}
+	
+	public boolean bindBuffer(String uniformName, BufferObject buffer, int startOffset){
+		Uniform found = uniforms.get(uniformName);
+		if(found != null){
+			return found.bindBuffer(buffer, startOffset);
+		}else{
+			return false;
+		}
+	}
+	
+	public boolean bindBuffer(String uniformName, BufferObject buffer, int startOffset, int readSize){
+		Uniform found = uniforms.get(uniformName);
+		if(found != null){
+			return found.bindBuffer(buffer, startOffset, readSize);
 		}else{
 			return false;
 		}

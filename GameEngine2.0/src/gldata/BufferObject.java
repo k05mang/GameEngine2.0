@@ -71,6 +71,14 @@ public class BufferObject {
 	}
 	
 	/**
+	 * Gets the GPU id handle for this buffer object
+	 * 
+	 * @return The buffer id handle returned by the GPu for this buffer
+	 */
+	public int getId(){
+		return bufferId;
+	}
+	/**
 	 * Sends the accumulated data buffer to the GPU, and initializes the buffer with the given type and usage. This function
 	 * also clears out the accumulated buffer after it has been sent to the GPU to alleviate memory consumption in the application.
 	 * 
@@ -90,8 +98,6 @@ public class BufferObject {
 			size = data.size();//store this buffers size
 			data.clear();//clear out the data store since it has been buffered to the GPU and will no longer be used
 			finished = true;
-		}else{
-			
 		}
 	}
 
@@ -101,11 +107,13 @@ public class BufferObject {
 	 * @param value Float value to add
 	 */
 	public void add(float value){
-		int floatAsInt = Float.floatToIntBits(value);
-		data.add((byte)(floatAsInt & 0xff));
-		data.add((byte)((floatAsInt >> 8) & 0xff));
-		data.add((byte)((floatAsInt >> 16) & 0xff));
-		data.add((byte)((floatAsInt >> 24) & 0xff));
+		if (!finished) {
+			int floatAsInt = Float.floatToIntBits(value);
+			data.add((byte) (floatAsInt & 0xff));
+			data.add((byte) ((floatAsInt >> 8) & 0xff));
+			data.add((byte) ((floatAsInt >> 16) & 0xff));
+			data.add((byte) ((floatAsInt >> 24) & 0xff));
+		}
 	}
 	
 	/**
@@ -114,15 +122,17 @@ public class BufferObject {
 	 * @param value Double value to add
 	 */
 	public void add(double value){
-		long doubleAsLong = Double.doubleToLongBits(value);
-		data.add((byte)(doubleAsLong & 0xff));
-		data.add((byte)((doubleAsLong >> 8) & 0xff));
-		data.add((byte)((doubleAsLong >> 16) & 0xff));
-		data.add((byte)((doubleAsLong >> 24) & 0xff));
-		data.add((byte)((doubleAsLong >> 32) & 0xff));
-		data.add((byte)((doubleAsLong >> 40) & 0xff));
-		data.add((byte)((doubleAsLong >> 48) & 0xff));
-		data.add((byte)((doubleAsLong >> 56) & 0xff));
+		if (!finished) {
+			long doubleAsLong = Double.doubleToLongBits(value);
+			data.add((byte) (doubleAsLong & 0xff));
+			data.add((byte) ((doubleAsLong >> 8) & 0xff));
+			data.add((byte) ((doubleAsLong >> 16) & 0xff));
+			data.add((byte) ((doubleAsLong >> 24) & 0xff));
+			data.add((byte) ((doubleAsLong >> 32) & 0xff));
+			data.add((byte) ((doubleAsLong >> 40) & 0xff));
+			data.add((byte) ((doubleAsLong >> 48) & 0xff));
+			data.add((byte) ((doubleAsLong >> 56) & 0xff));
+		}
 	}
 	
 	/**
@@ -131,7 +141,9 @@ public class BufferObject {
 	 * @param value Byte value to add
 	 */
 	public void add(byte value){
-		data.add(value);
+		if (!finished) {
+			data.add(value);
+		}
 	}
 
 	/**
@@ -140,8 +152,10 @@ public class BufferObject {
 	 * @param value Short value to add
 	 */
 	public void add(short value){
-		data.add((byte)(value & 0xff));
-		data.add((byte)((value >> 8) & 0xff));
+		if (!finished) {
+			data.add((byte) (value & 0xff));
+			data.add((byte) ((value >> 8) & 0xff));
+		}
 	}
 
 	/**
@@ -150,10 +164,12 @@ public class BufferObject {
 	 * @param value Integer value to add
 	 */
 	public void add(int value){
-		data.add((byte)(value & 0xff));
-		data.add((byte)((value >> 8) & 0xff));
-		data.add((byte)((value >> 16) & 0xff));
-		data.add((byte)((value >> 24) & 0xff));
+		if (!finished) {
+			data.add((byte) (value & 0xff));
+			data.add((byte) ((value >> 8) & 0xff));
+			data.add((byte) ((value >> 16) & 0xff));
+			data.add((byte) ((value >> 24) & 0xff));
+		}
 	}
 
 	/**
@@ -162,8 +178,10 @@ public class BufferObject {
 	 * @param value Vec2 value to add
 	 */
 	public void add(Vec2 value){
-		this.add(value.x);
-		this.add(value.y);
+		if (!finished) {
+			this.add(value.x);
+			this.add(value.y);
+		}
 	}
 
 	/**
@@ -172,9 +190,11 @@ public class BufferObject {
 	 * @param value Vec3 value to add
 	 */
 	public void add(Vec3 value){
-		this.add(value.x);
-		this.add(value.y);
-		this.add(value.z);
+		if (!finished) {
+			this.add(value.x);
+			this.add(value.y);
+			this.add(value.z);
+		}
 	}
 
 	/**
@@ -183,10 +203,12 @@ public class BufferObject {
 	 * @param value Vec4 value to add
 	 */
 	public void add(Vec4 value){
-		this.add(value.x);
-		this.add(value.y);
-		this.add(value.z);
-		this.add(value.w);
+		if (!finished) {
+			this.add(value.x);
+			this.add(value.y);
+			this.add(value.z);
+			this.add(value.w);
+		}
 	}
 
 	/**
@@ -195,9 +217,11 @@ public class BufferObject {
 	 * @param value Mat2 value to add
 	 */
 	public void add(Mat2 value){
-		Vec2[] vectors = value.getMatrix();
-		this.add(vectors[0]);
-		this.add(vectors[1]);
+		if (!finished) {
+			Vec2[] vectors = value.getMatrix();
+			this.add(vectors[0]);
+			this.add(vectors[1]);
+		}
 	}
 
 	/**
@@ -206,10 +230,12 @@ public class BufferObject {
 	 * @param value Mat3 value to add
 	 */
 	public void add(Mat3 value){
-		Vec3[] vectors = value.getMatrix();
-		this.add(vectors[0]);
-		this.add(vectors[1]);
-		this.add(vectors[2]);
+		if (!finished) {
+			Vec3[] vectors = value.getMatrix();
+			this.add(vectors[0]);
+			this.add(vectors[1]);
+			this.add(vectors[2]);
+		}
 	}
 
 	/**
@@ -218,11 +244,13 @@ public class BufferObject {
 	 * @param value Mat4 value to add
 	 */
 	public void add(Mat4 value){
-		Vec4[] vectors = value.getMatrix();
-		this.add(vectors[0]);
-		this.add(vectors[1]);
-		this.add(vectors[2]);
-		this.add(vectors[3]);
+		if (!finished) {
+			Vec4[] vectors = value.getMatrix();
+			this.add(vectors[0]);
+			this.add(vectors[1]);
+			this.add(vectors[2]);
+			this.add(vectors[3]);
+		}
 	}
 
 	/**
@@ -235,29 +263,22 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, float value) throws IndexOutOfBoundsException{
-		//check if this buffer has been flushed
-		if(!finished){
-			//check if the offset and the range of the input will result in an index out of bounds
-			//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
-			if(offset+3 > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				int floatAsInt = Float.floatToIntBits(value);
-				data.set(offset, (byte)(floatAsInt & 0xff));
-				data.set(offset+1, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+2, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+3, (byte)((floatAsInt >> 24) & 0xff));
-			}
+		
+		//check if the offset and the range of the input will result in an index out of bounds
+		//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
+		if(offset+3 > data.size() || offset < 0){
+			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
+		}else if(!finished){//check if this buffer has been flushed
+			int floatAsInt = Float.floatToIntBits(value);
+			data.set(offset, (byte)(floatAsInt & 0xff));
+			data.set(offset+1, (byte)((floatAsInt >> 8) & 0xff));
+			data.set(offset+2, (byte)((floatAsInt >> 16) & 0xff));
+			data.set(offset+3, (byte)((floatAsInt >> 24) & 0xff));
 		}else{
-			//check if the offset and the range of the input will result in an index out of bounds
-			if(offset+3 > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				ByteBuffer dataBuffer = BufferUtils.createByteBuffer(4);
-				dataBuffer.putFloat(value);
-				dataBuffer.flip();
-				glNamedBufferSubData(bufferId, offset, dataBuffer);
-			}
+			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(4);
+			dataBuffer.putFloat(value);
+			dataBuffer.flip();
+			glNamedBufferSubData(bufferId, offset, dataBuffer);
 		}
 	}
 	
@@ -271,33 +292,26 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, double value) throws IndexOutOfBoundsException{
-		//check if this buffer has been flushed
-		if(!finished){
-			//check if the offset and the range of the input will result in an index out of bounds
-			//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
-			if(offset+7 > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				long doubleAsLong = Double.doubleToLongBits(value);
-				data.set(offset, (byte)(doubleAsLong & 0xff));
-				data.set(offset+1, (byte)((doubleAsLong >> 8) & 0xff));
-				data.set(offset+2, (byte)((doubleAsLong >> 16) & 0xff));
-				data.set(offset+3, (byte)((doubleAsLong >> 24) & 0xff));
-				data.set(offset+4, (byte)((doubleAsLong >> 32) & 0xff));
-				data.set(offset+5, (byte)((doubleAsLong >> 40) & 0xff));
-				data.set(offset+6, (byte)((doubleAsLong >> 48) & 0xff));
-				data.set(offset+7, (byte)((doubleAsLong >> 56) & 0xff));
-			}
+		
+		//check if the offset and the range of the input will result in an index out of bounds
+		//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
+		if(offset+7 > data.size() || offset < 0){
+			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
+		}else if(!finished){//check if this buffer has been flushed
+			long doubleAsLong = Double.doubleToLongBits(value);
+			data.set(offset, (byte)(doubleAsLong & 0xff));
+			data.set(offset+1, (byte)((doubleAsLong >> 8) & 0xff));
+			data.set(offset+2, (byte)((doubleAsLong >> 16) & 0xff));
+			data.set(offset+3, (byte)((doubleAsLong >> 24) & 0xff));
+			data.set(offset+4, (byte)((doubleAsLong >> 32) & 0xff));
+			data.set(offset+5, (byte)((doubleAsLong >> 40) & 0xff));
+			data.set(offset+6, (byte)((doubleAsLong >> 48) & 0xff));
+			data.set(offset+7, (byte)((doubleAsLong >> 56) & 0xff));
 		}else{
-			//check if the offset and the range of the input will result in an index out of bounds
-			if(offset+7 > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				ByteBuffer dataBuffer = BufferUtils.createByteBuffer(8);
-				dataBuffer.putDouble(value);
-				dataBuffer.flip();
-				glNamedBufferSubData(bufferId, offset, dataBuffer);
-			}
+			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(8);
+			dataBuffer.putDouble(value);
+			dataBuffer.flip();
+			glNamedBufferSubData(bufferId, offset, dataBuffer);
 		}
 	}
 	
@@ -311,25 +325,18 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, byte value) throws IndexOutOfBoundsException{
-		//check if this buffer has been flushed
-		if(!finished){
-			//check if the offset and the range of the input will result in an index out of bounds
-			//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
-			if(offset > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				data.set(offset, value);
-			}
+		
+		//check if the offset and the range of the input will result in an index out of bounds
+		//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
+		if(offset > data.size() || offset < 0){//check if this buffer has been flushed
+			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
+		}else if(!finished){
+			data.set(offset, value);
 		}else{
-			//check if the offset and the range of the input will result in an index out of bounds
-			if(offset > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				ByteBuffer dataBuffer = BufferUtils.createByteBuffer(1);
-				dataBuffer.put(value);
-				dataBuffer.flip();
-				glNamedBufferSubData(bufferId, offset, dataBuffer);
-			}
+			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(1);
+			dataBuffer.put(value);
+			dataBuffer.flip();
+			glNamedBufferSubData(bufferId, offset, dataBuffer);
 		}
 	}
 
@@ -343,26 +350,19 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, short value) throws IndexOutOfBoundsException{
-		//check if this buffer has been flushed
-		if(!finished){
-			//check if the offset and the range of the input will result in an index out of bounds
-			//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
-			if(offset+1 > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				data.set(offset, (byte)(value & 0xff));
-				data.set(offset+1, (byte)((value >> 8) & 0xff));
-			}
+		
+		//check if the offset and the range of the input will result in an index out of bounds
+		//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
+		if(offset+1 > data.size() || offset < 0){
+			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
+		}else if(!finished){//check if this buffer has been flushed
+			data.set(offset, (byte)(value & 0xff));
+			data.set(offset+1, (byte)((value >> 8) & 0xff));
 		}else{
-			//check if the offset and the range of the input will result in an index out of bounds
-			if(offset+1 > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				ByteBuffer dataBuffer = BufferUtils.createByteBuffer(2);
-				dataBuffer.putShort(value);
-				dataBuffer.flip();
-				glNamedBufferSubData(bufferId, offset, dataBuffer);
-			}
+			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(2);
+			dataBuffer.putShort(value);
+			dataBuffer.flip();
+			glNamedBufferSubData(bufferId, offset, dataBuffer);
 		}
 	}
 
@@ -376,28 +376,21 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, int value) throws IndexOutOfBoundsException{
-		//check if this buffer has been flushed
-		if(!finished){
-			//check if the offset and the range of the input will result in an index out of bounds
-			//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
-			if(offset+3 > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				data.set(offset, (byte)(value & 0xff));
-				data.set(offset+1, (byte)((value >> 8) & 0xff));
-				data.set(offset+2, (byte)((value >> 16) & 0xff));
-				data.set(offset+3, (byte)((value >> 24) & 0xff));
-			}
+		
+		//check if the offset and the range of the input will result in an index out of bounds
+		//check by offsetting offset with a value of 1 less than the size of the variable to be added, this is because we are checking indexes
+		if(offset+3 > data.size() || offset < 0){
+			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
+		}else if(!finished){//check if this buffer has been flushed
+			data.set(offset, (byte)(value & 0xff));
+			data.set(offset+1, (byte)((value >> 8) & 0xff));
+			data.set(offset+2, (byte)((value >> 16) & 0xff));
+			data.set(offset+3, (byte)((value >> 24) & 0xff));
 		}else{
-			//check if the offset and the range of the input will result in an index out of bounds
-			if(offset+3 > data.size() || offset < 0){
-				throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
-			}else{
-				ByteBuffer dataBuffer = BufferUtils.createByteBuffer(4);
-				dataBuffer.putInt(value);
-				dataBuffer.flip();
-				glNamedBufferSubData(bufferId, offset, dataBuffer);
-			}
+			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(4);
+			dataBuffer.putInt(value);
+			dataBuffer.flip();
+			glNamedBufferSubData(bufferId, offset, dataBuffer);
 		}
 	}
 

@@ -2,6 +2,8 @@ package shaders;
 
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL21.*;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL31.*;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -9,6 +11,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
+
+import gldata.BufferObject;
 
 public class Uniform {
 	private String name, typeName;
@@ -197,7 +201,12 @@ public class Uniform {
 	 * @return The location of this uniform object binding in the given program object
 	 */
 	public int getBinding(int program){
-		location = glGetUniformLocation(program, name);
+		if(type == BLOCK){
+			location = glGetUniformBlockIndex(program, name);
+			size = glGetActiveUniformBlocki(program, location, GL_UNIFORM_BLOCK_DATA_SIZE);
+		}else{
+			location = glGetUniformLocation(program, name);
+		}
 		return location;
 	}
 	
@@ -238,12 +247,15 @@ public class Uniform {
 	}
 	
 	/**
-	 * Sets the value of this uniform object on the GPU
+	 * Sets the value of this uniform object on the GPU with the given data buffer
 	 * 
 	 * @param data Buffer of data to use in changing the value of this uniform
+	 * @return True if the variable could be set false otherwise
 	 */
-	public void set(Buffer data){
+	public boolean set(Buffer data){
+		//check what type of buffer was passed to this method to be able to properly cast the buffer to the right type
 		if(data instanceof FloatBuffer){
+			//cast the buffer
 			FloatBuffer dataCast = (FloatBuffer)data;
 			if(type == FLOAT){
 				switch(size){
@@ -260,10 +272,12 @@ public class Uniform {
 						glUniform4fv(location, dataCast);
 						break;
 				}
+				return true;
 			}else if(type >= MAT2){
-				this.setMat(false, dataCast);
+				return this.setMat(false, dataCast);
 			}else{
 				System.err.println("Types do not match, FloatBuffers can only be used with uniforms that are of type float or mat in GLSL");
+				return false;
 			}
 		}else if(data instanceof IntBuffer){
 			IntBuffer dataCast = (IntBuffer)data;
@@ -282,13 +296,23 @@ public class Uniform {
 						glUniform4iv(location, dataCast);
 						break;
 				}
+				return true;
+			}else{
+				return false;
 			}
 		}else{
 			System.err.println("Failed to buffer data to uniform, buffer data is not of type FloatBuffer or IntBuffer");
+			return false;
 		}
 	}
 	
-	public void set(float... variables){
+	/**
+	 * Sets the value of this uniform object on the GPU with the given data
+	 * 
+	 * @param variables Data to pass to the GPU
+	 * @return True if the variable could be set false otherwise
+	 */
+	public boolean set(float... variables){
 		ByteBuffer data = BufferUtils.createByteBuffer(size*4);
 		//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
 		//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
@@ -326,13 +350,19 @@ public class Uniform {
 		}
 		//call the set function variant that handles what function to call to update the uniform
 		if (type == FLOAT || type >= MAT2){
-			this.set(data.asFloatBuffer());
+			return this.set(data.asFloatBuffer());
 		}else{
-			this.set(data.asIntBuffer());
+			return this.set(data.asIntBuffer());
 		}
 	}
-	
-	public void set(int... variables){
+
+	/**
+	 * Sets the value of this uniform object on the GPU with the given data
+	 * 
+	 * @param variables Data to pass to the GPU
+	 * @return True if the variable could be set false otherwise
+	 */
+	public boolean set(int... variables){
 		ByteBuffer data = BufferUtils.createByteBuffer(size*4);
 		//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
 		//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
@@ -370,13 +400,19 @@ public class Uniform {
 		}
 		//call the set function variant that handles what function to call to update the uniform
 		if (type == FLOAT || type >= MAT2){
-			this.set(data.asFloatBuffer());
+			return this.set(data.asFloatBuffer());
 		}else{
-			this.set(data.asIntBuffer());
+			return this.set(data.asIntBuffer());
 		}
 	}
-	
-	public void set(boolean... variables){
+
+	/**
+	 * Sets the value of this uniform object on the GPU with the given data
+	 * 
+	 * @param variables Data to pass to the GPU
+	 * @return True if the variable could be set false otherwise
+	 */
+	public boolean set(boolean... variables){
 		if (type == BOOL) {
 			IntBuffer data = BufferUtils.createIntBuffer(size);
 			//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
@@ -398,13 +434,21 @@ public class Uniform {
 				}
 				data.flip();
 			}
-			this.set(data);
+			return this.set(data);
 		}else{
 			System.err.println("Types do not match, this uniform is not of type bool");
+			return false;
 		}
 	}
 	
-	public void setMat(boolean transpose, FloatBuffer data){
+	/**
+	 * Sets the value of this matrix uniform object on the GPU with the given data
+	 * 
+	 * @param transpose Boolean deciding whether the matrix data should be trasnposed as it is being buffered to the uniform
+	 * @param data Data buffer to set the uniform variable to
+	 * @return True if the variable could be set false otherwise
+	 */
+	public boolean setMat(boolean transpose, FloatBuffer data){
 		if(type >= MAT2){
 			switch (type) {
 				case MAT2:
@@ -435,8 +479,60 @@ public class Uniform {
 					glUniformMatrix4x3fv(location, transpose, data);
 					break;
 			}
+			return true;
 		}else{
 			System.err.println("Types do not match, this uniform is not a matrix type");
+			return false;
+		}
+	}
+	
+	/**
+	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values
+	 * 
+	 * @param buffer Buffer to bind to this uniform interface block
+	 * @return True if the variable could be set false otherwise
+	 */
+	public boolean bindBuffer(BufferObject buffer){
+		if(type == BLOCK){
+			glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.getId());
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values, 
+	 * the buffer is read starting from the given index up through the uniform blocks total size
+	 *  
+	 * @param buffer Buffer to bind to the uniform interface block
+	 * @param offset Offset into the buffer to start reading data from
+	 * @return True if the variable could be set false otherwise
+	 */
+	public boolean bindBuffer(BufferObject buffer, int offset){
+		if(type == BLOCK){
+			glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.getId(), offset, size);
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values, 
+	 * the buffer is read starting from the given index up through the dataSize given to this function
+	 * 
+	 * @param buffer Buffer to bind to the uniform interface block
+	 * @param offset Offset into the buffer to start reading data from
+	 * @param dataSize Size of the buffer to read for this uniform object
+	 * @return True if the variable could be set false otherwise
+	 */
+	public boolean bindBuffer(BufferObject buffer, int offset, int dataSize){
+		if(type == BLOCK){
+			glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.getId(), offset, dataSize);
+			return true;
+		}else{
+			return false;
 		}
 	}
 }
