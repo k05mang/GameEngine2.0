@@ -232,7 +232,7 @@ public class Mat2 implements Matrix {
 	public boolean equals(Object compare){
 		if(compare instanceof Mat2){
 			Vec2[] mat = ((Mat2)compare).getMatrix();
-			return matrix[0] == mat[0] && matrix[1] == mat[1];
+			return matrix[0].equals(mat[0]) && matrix[1].equals(mat[1]);
 		}else{
 			return false;
 		}

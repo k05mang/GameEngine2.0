@@ -33,7 +33,7 @@ import renderers.Renderable;
 
 public class Torus extends Renderable {
 	
-	private ArrayList<Triangle> faces;
+	private ArrayList<Face> faces;
 	private ArrayList<Vertex> vertices;
 	private int rings, ringSegs, numIndices;
 	private float tubeRadius, radius;
@@ -46,10 +46,10 @@ public class Torus extends Renderable {
 		this.tubeRadius = tubeRadius;
 		this.rings = rings < 3 ? 3 : rings;
 		this.ringSegs = ringSegs < 3 ? 3 : ringSegs;
-		faces = new ArrayList<Triangle>(2*this.rings*this.ringSegs);
+		faces = new ArrayList<Face>(2*this.rings*this.ringSegs);
 		vertices = new ArrayList<Vertex>(this.rings*this.ringSegs);
-		HashMap<Triangle.Edge, Triangle.HalfEdge> edgeMap = new HashMap<Triangle.Edge, Triangle.HalfEdge>();
-		numIndices = 2*(bufferAdj ? Triangle.INDEX_ADJ : Triangle.INDEX_NOADJ)*this.rings*this.ringSegs;
+		HashMap<Face.Edge, Face.HalfEdge> edgeMap = new HashMap<Face.Edge, Face.HalfEdge>();
+		numIndices = 2*(bufferAdj ? Face.INDEX_ADJ : Face.INDEX_NOADJ)*this.rings*this.ringSegs;
 		
 		IntBuffer indices = BufferUtils.createIntBuffer(numIndices);
 		ByteBuffer vertData = BufferUtils.createByteBuffer(this.rings*this.ringSegs*Vertex.SIZE_IN_BYTES);
@@ -70,13 +70,13 @@ public class Torus extends Renderable {
 				vert.store(vertData);
 				vertices.add(vert);
 				
-				Triangle face1 = new Triangle(
+				Face face1 = new Face(
 						Integer.valueOf(ring+this.rings*curRing),
 						Integer.valueOf((ring+1)%this.ringSegs+this.rings*( (curRing+1)%this.rings )),
 						Integer.valueOf(ring+this.rings*( (curRing+1)%this.rings ))
 						);
 				
-				Triangle face2 = new Triangle(
+				Face face2 = new Face(
 						Integer.valueOf(ring+this.rings*curRing),
 						Integer.valueOf((ring+1)%this.ringSegs+this.rings*curRing),
 						Integer.valueOf((ring+1)%this.ringSegs+this.rings*( (curRing+1)%this.rings ))
@@ -89,7 +89,7 @@ public class Torus extends Renderable {
 			}
 		}
 		
-		for(Triangle face : faces){
+		for(Face face : faces){
 			face.initAdjacent();
 			
 			if(bufferAdj){
@@ -135,7 +135,7 @@ public class Torus extends Renderable {
 		return numIndices;
 	}
 	
-	public ArrayList<Triangle> getFaces() {
+	public ArrayList<Face> getFaces() {
 		return faces;
 	}
 

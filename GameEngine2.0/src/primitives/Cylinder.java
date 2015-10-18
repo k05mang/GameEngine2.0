@@ -30,22 +30,22 @@ import glMath.*;
 public class Cylinder extends Renderable{
 	private float height, radius;
 	private int segments;
-	private ArrayList<Triangle> faces;
+	private ArrayList<Face> faces;
 	private ArrayList<Vertex> vertices;
 	private int numIndices;
 	
 	public Cylinder(float radius, float height, int segments, int vAttrib, boolean bufferAdj){
 		super(vAttrib, vAttrib+1, bufferAdj);
 		
-		faces = new ArrayList<Triangle>();
+		faces = new ArrayList<Face>();
 		vertices = new ArrayList<Vertex>();
 		this.segments = (segments < 3 ? 3 : segments);
 		this.height = height == 0 ? .0001f : height;
 		this.radius = radius <= 0 ? .01f : radius;
 		numIndices = (this.segments*2+(this.segments-2)*2)
-				*(bufferAdj ? Triangle.INDEX_ADJ : Triangle.INDEX_NOADJ);
+				*(bufferAdj ? Face.INDEX_ADJ : Face.INDEX_NOADJ);
 		
-		HashMap<Triangle.Edge, Triangle.HalfEdge> edgesMap = new HashMap<Triangle.Edge, Triangle.HalfEdge>();
+		HashMap<Face.Edge, Face.HalfEdge> edgesMap = new HashMap<Face.Edge, Face.HalfEdge>();
 		
 		ByteBuffer vertData = BufferUtils.createByteBuffer(2*this.segments*Vertex.SIZE_IN_BYTES);
 		IntBuffer indicesBuffer = BufferUtils.createIntBuffer(numIndices);
@@ -69,7 +69,7 @@ public class Cylinder extends Renderable{
 			
 			//only compute a new top and bottom face when we are on an odd segment edge
 			if(segment != 0 && segment != this.segments-1){
-				Triangle top = new Triangle(
+				Face top = new Face(
 						Integer.valueOf(0),					
 						Integer.valueOf( (segment+1) << 1),
 						Integer.valueOf( segment << 1)
@@ -77,7 +77,7 @@ public class Cylinder extends Renderable{
 				super.setUpTriangle(top, edgesMap);
 				faces.add(top);
 				
-				Triangle bottom = new Triangle(
+				Face bottom = new Face(
 						Integer.valueOf(1),						
 						Integer.valueOf( (segment << 1)+1), 	
 						Integer.valueOf( ((segment+1) << 1)+1)  
@@ -86,7 +86,7 @@ public class Cylinder extends Renderable{
 				faces.add(bottom);
 			}
 			
-			Triangle sideLeft = new Triangle(
+			Face sideLeft = new Face(
 					Integer.valueOf( segment << 1 ),    
 					Integer.valueOf( (nextSegment << 1)+1),
 					Integer.valueOf( (segment << 1)+1)
@@ -94,7 +94,7 @@ public class Cylinder extends Renderable{
 			super.setUpTriangle(sideLeft, edgesMap);
 			faces.add(sideLeft);
 			
-			Triangle sideRight = new Triangle(
+			Face sideRight = new Face(
 					Integer.valueOf( segment << 1 ),
 					Integer.valueOf( nextSegment << 1 ),
 					Integer.valueOf( (nextSegment << 1)+1 )
@@ -105,7 +105,7 @@ public class Cylinder extends Renderable{
 
 		vertData.flip();
 		
-		for(Triangle face : faces){
+		for(Face face : faces){
 			face.initAdjacent();
 			
 			if(bufferAdj){
@@ -162,7 +162,7 @@ public class Cylinder extends Renderable{
 		return segments;
 	}
 
-	public ArrayList<Triangle> getFaces() {
+	public ArrayList<Face> getFaces() {
 		return faces;
 	}
 

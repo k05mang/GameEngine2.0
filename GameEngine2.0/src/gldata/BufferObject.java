@@ -71,6 +71,25 @@ public class BufferObject {
 	}
 	
 	/**
+	 * Unlocks this buffer object to allow for new data to be added to the underlying OpenGL buffer.
+	 * When the finalize function is called the old data will be deleted from the GPU and the new
+	 * data will replace it.
+	 */
+	public void reset(){
+		finished = false;
+		size = 0;
+	}
+	
+	/**
+	 * Gets the type this buffer object is associated with
+	 * 
+	 * @return GLenum representing the type this buffer is used with
+	 */
+	public int getType(){
+		return type;
+	}
+	
+	/**
 	 * Gets the GPU id handle for this buffer object
 	 * 
 	 * @return The buffer id handle returned by the GPu for this buffer
@@ -87,7 +106,7 @@ public class BufferObject {
 	public void flush(int usage){
 		//TODO potentially make this function backwards compatible, for now though it will only be opengl 4.5 compliant
 		//check if there is any data to buffer
-		if(!data.isEmpty()){
+		if(!data.isEmpty() && !finished){
 			//craete the buffer and buffer the data into it to send to the GPU
 			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(data.size());
 			for(Byte dataByte : data){

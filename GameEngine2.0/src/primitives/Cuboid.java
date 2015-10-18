@@ -34,7 +34,7 @@ import renderers.Renderable;
 
 public class Cuboid extends Renderable {
 	private ArrayList<Vertex> vertices;
-	private ArrayList<Triangle> faces;
+	private ArrayList<Face> faces;
 	private int numIndices;
 	private Vec3 dimensions, halfDimensions;
 	
@@ -44,12 +44,12 @@ public class Cuboid extends Renderable {
 		halfDimensions = new Vec3(width/2.0f,height/2.0f,length/2.0f);
 		dimensions = new Vec3(width, height, length);
 		
-		HashMap<Triangle.Edge, Triangle.HalfEdge> edgesMap = new HashMap<Triangle.Edge, Triangle.HalfEdge>();
-		faces = new ArrayList<Triangle>(12);
+		HashMap<Face.Edge, Face.HalfEdge> edgesMap = new HashMap<Face.Edge, Face.HalfEdge>();
+		faces = new ArrayList<Face>(12);
 		vertices = new ArrayList<Vertex>(24);
-		numIndices = 12 * (isAdjBuffered ? Triangle.INDEX_ADJ : Triangle.INDEX_NOADJ);
+		numIndices = 12 * (isAdjBuffered ? Face.INDEX_ADJ : Face.INDEX_NOADJ);
 		
-		IntBuffer indices = BufferUtils.createIntBuffer((adjBuffered ? Triangle.INDEX_ADJ : Triangle.INDEX_NOADJ) * 12);
+		IntBuffer indices = BufferUtils.createIntBuffer((adjBuffered ? Face.INDEX_ADJ : Face.INDEX_NOADJ) * 12);
 		ByteBuffer verts = BufferUtils.createByteBuffer(24 * Vertex.SIZE_IN_BYTES);
 		
 		//-----zpos------
@@ -115,10 +115,10 @@ public class Cuboid extends Renderable {
 			vertices.get(2 + 4 * face).store(verts);
 			vertices.get(3 + 4 * face).store(verts);
 
-			Triangle face1 = new Triangle(Integer.valueOf(0 + 4 * face),
+			Face face1 = new Face(Integer.valueOf(0 + 4 * face),
 					Integer.valueOf(1 + 4 * face),
 					Integer.valueOf(3 + 4 * face));
-			Triangle face2 = new Triangle(Integer.valueOf(0 + 4 * face),
+			Face face2 = new Face(Integer.valueOf(0 + 4 * face),
 					Integer.valueOf(3 + 4 * face),
 					Integer.valueOf(2 + 4 * face));
 			super.setUpTriangle(face1, edgesMap);
@@ -127,7 +127,7 @@ public class Cuboid extends Renderable {
 			faces.add(face2);
 		}
 		
-		for(Triangle face : faces){
+		for(Face face : faces){
 			//face.initAdjacent();
 			
 			if(adjBuffered){
@@ -183,7 +183,7 @@ public class Cuboid extends Renderable {
 		return numIndices;
 	}
 
-	public ArrayList<Triangle> getFaces() {
+	public ArrayList<Face> getFaces() {
 		return faces;
 	}
 

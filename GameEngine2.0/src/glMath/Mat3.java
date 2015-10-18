@@ -270,7 +270,7 @@ public class Mat3 implements Matrix {
 	public boolean equals(Object compare){
 		if(compare instanceof Mat3){
 			Vec3[] mat = ((Mat3)compare).getMatrix();
-			return matrix[0] == mat[0] && matrix[1] == mat[1] && matrix[2] == mat[2];
+			return matrix[0].equals(mat[0]) && matrix[1].equals(mat[1]) && matrix[2].equals(mat[2]);
 		}else{
 			return false;
 		}

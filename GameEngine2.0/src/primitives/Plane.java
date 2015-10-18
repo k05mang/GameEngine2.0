@@ -33,7 +33,7 @@ import renderers.Renderable;
 
 public class Plane extends Renderable{
 	private ArrayList<Vertex> vertices;
-	private Triangle face1, face2;
+	private Face face1, face2;
 	private int numIndices;
 	private static final Vec3 center = new Vec3(0,0,0);
 	float width, length;
@@ -43,11 +43,11 @@ public class Plane extends Renderable{
 		this.width = sideLength1;
 		this.length = sideLength2;
 		vertices = new ArrayList<Vertex>(6);
-		numIndices = (isAdjBuffered ? Triangle.INDEX_ADJ : Triangle.INDEX_NOADJ) << 1;
+		numIndices = (isAdjBuffered ? Face.INDEX_ADJ : Face.INDEX_NOADJ) << 1;
 		
 		ByteBuffer verts = BufferUtils.createByteBuffer(6*Vertex.SIZE_IN_BYTES);
-		IntBuffer indices = BufferUtils.createIntBuffer((adjBuffered ? Triangle.INDEX_ADJ : Triangle.INDEX_NOADJ)*6);
-		HashMap<Triangle.Edge, Triangle.HalfEdge> edgesMap = new HashMap<Triangle.Edge, Triangle.HalfEdge>();
+		IntBuffer indices = BufferUtils.createIntBuffer((adjBuffered ? Face.INDEX_ADJ : Face.INDEX_NOADJ)*6);
+		HashMap<Face.Edge, Face.HalfEdge> edgesMap = new HashMap<Face.Edge, Face.HalfEdge>();
 		
 		Vertex topLeft = new Vertex(-sideLength1,0,-sideLength2, 0,1,0, 0,1);
 		Vertex bottomLeft = new Vertex(-sideLength1,0,sideLength2, 0,1,0, 0,0);
@@ -64,12 +64,12 @@ public class Plane extends Renderable{
 		vertices.add(topRight);
 		vertices.add(bottomRight);
 		
-		face1 = new Triangle(
+		face1 = new Face(
 				Integer.valueOf(0),
 				Integer.valueOf(1),
 				Integer.valueOf(2)
 				);
-		face2 = new Triangle(
+		face2 = new Face(
 				Integer.valueOf(2),
 				Integer.valueOf(1),
 				Integer.valueOf(3)
@@ -135,8 +135,8 @@ public class Plane extends Renderable{
 		return vertices;
 	}
 	
-	public ArrayList<Triangle> getFaces(){
-		ArrayList<Triangle> temp = new ArrayList<Triangle>(2);
+	public ArrayList<Face> getFaces(){
+		ArrayList<Face> temp = new ArrayList<Face>(2);
 		temp.add(face1);
 		temp.add(face2);
 		return temp;

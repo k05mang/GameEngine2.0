@@ -36,7 +36,7 @@ import renderers.Renderable;
 
 public class Cone extends Renderable {
 
-	private ArrayList<Triangle> faces;
+	private ArrayList<Face> faces;
 	private ArrayList<Vertex> vertices;
 	private int subdiv, numIndices;
 	private float length, radius;
@@ -48,11 +48,11 @@ public class Cone extends Renderable {
 		this.radius = radius <= 0 ? .01f : radius;
 		this.length = length == 0 ? .0001f : length;
 		
-		faces = new ArrayList<Triangle>();
+		faces = new ArrayList<Face>();
 		vertices = new ArrayList<Vertex>();
-		numIndices = (subdiv+(subdiv-2))*(bufferAdj ? Triangle.INDEX_ADJ : Triangle.INDEX_NOADJ);
+		numIndices = (subdiv+(subdiv-2))*(bufferAdj ? Face.INDEX_ADJ : Face.INDEX_NOADJ);
 		
-		HashMap<Triangle.Edge, Triangle.HalfEdge> edgesMap = new HashMap<Triangle.Edge, Triangle.HalfEdge>();
+		HashMap<Face.Edge, Face.HalfEdge> edgesMap = new HashMap<Face.Edge, Face.HalfEdge>();
 		
 		ByteBuffer vertData = BufferUtils.createByteBuffer((subdiv+1)*Vertex.SIZE_IN_BYTES);
 		IntBuffer indicesBuffer = BufferUtils.createIntBuffer(numIndices);
@@ -70,7 +70,7 @@ public class Cone extends Renderable {
 			vertices.add(vert1);
 			vert1.store(vertData);
 			
-			Triangle side = new Triangle(
+			Face side = new Face(
 					Integer.valueOf(0),	
 					Integer.valueOf( (segment+1)%(subdiv+1) == 0 ? 1 : (segment+1)%(subdiv+1)),
 					Integer.valueOf(segment)
@@ -79,7 +79,7 @@ public class Cone extends Renderable {
 			faces.add(side);
 			
 			if(segment < subdiv-1){
-			Triangle bottom = new Triangle(
+			Face bottom = new Face(
 					Integer.valueOf(1),						//the first bottom vertex
 					Integer.valueOf( segment+1), 	//the vertex that is segment+1 of the bottom ring
 					Integer.valueOf( segment+2)  //the vertex that is segment+2 of the bottom ring
@@ -90,7 +90,7 @@ public class Cone extends Renderable {
 		}
 
 		vertData.flip();
-		for(Triangle face : faces){
+		for(Face face : faces){
 			face.initAdjacent();
 			
 			if(bufferAdj){
@@ -146,7 +146,7 @@ public class Cone extends Renderable {
 		return numIndices;
 	}
 	
-	public ArrayList<Triangle> getFaces() {
+	public ArrayList<Face> getFaces() {
 		return faces;
 	}
 

@@ -1,6 +1,7 @@
 package gldata;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.*;
@@ -14,15 +15,25 @@ import glMath.Mat4;
 
 public class VertexArray {
 
-	private int vaoId;
-	private BufferObject vertexBuffer, indices;
+	private int vaoId, stride;
+	private HashMap<String, BufferObject> vbos, ibos;
+	private StringBuilder vbo, ibo;
 	private ArrayList<VertexAttrib> attributes;
 	private boolean finished;
 	
 	public VertexArray(){
 		vaoId = glGenVertexArrays();
-		vertexBuffer = new BufferObject(GL_ARRAY_BUFFER);
-		indices = new BufferObject(GL_ELEMENT_ARRAY_BUFFER);
+		
+		vbos = new HashMap<String, BufferObject>();
+		//put this vertex array's default vertex buffer as "default"
+		vbos.put("default",  new BufferObject(GL_ARRAY_BUFFER));
+		
+		ibos = new HashMap<String, BufferObject>();
+		//put this vertex array's default index buffer as "default"
+		ibos.put("default",  new BufferObject(GL_ELEMENT_ARRAY_BUFFER));
+		//set the current id for what buffer to use
+		vbo = new StringBuilder("default");
+		ibo = new StringBuilder("default");
 		attributes = new ArrayList<VertexAttrib>();
 		finished = false;
 	}
@@ -31,31 +42,82 @@ public class VertexArray {
 	 * Finalizes this vertex array by uploading buffers to the GPU and setting attribute data
 	 * 
 	 * @param bufferUsage GLenum determining how the vertex buffer is to be used
-	 * @param indicesUsage GLenum determining how the index buffer is to be used
+	 * @param ibosUsage GLenum determining how the index buffer is to be used
 	 */
-	public void finalize(int bufferUsage, int indicesUsage){
+	public void finalize(int bufferUsage, int ibosUsage){
 		if(!finished){
-			vertexBuffer.flush(bufferUsage);
-			indices.flush(indicesUsage);
-			int stride = 0;
+			if(vbo.equals("default")){
+				vbos.get("default").flush(bufferUsage);
+			}
+			
+			if(ibo.equals("default")){
+				ibos.get("default").flush(bufferUsage);
+			}
+			stride = 0;
 			for(VertexAttrib attribData : attributes){
 				glVertexArrayAttribBinding(vaoId, attribData.index, 0);
 				glVertexArrayAttribFormat(vaoId, attribData.index, attribData.attribute.size, attribData.attribute.type, attribData.normalize, stride);
 				stride += attribData.attribute.bytes;
 			}
-			glVertexArrayVertexBuffer(vaoId, 0, vertexBuffer.getId(), 0, stride);
-			glVertexArrayElementBuffer(vaoId, indices.getId());
+			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo).getId(), 0, stride);
+			glVertexArrayElementBuffer(vaoId, ibos.get(ibo).getId());
 			finished = true;
 		}
 	}
 	
 	/**
-	 * Deletes this vertex array and its associated buffers
+	 * Deletes this vertex array and its associated buffers, other buffers passed to this vertex array are not deleted
 	 */
 	public void delete(){
 		glDeleteVertexArrays(vaoId);
-		vertexBuffer.delete();
-		indices.delete();
+		vbos.get("default").delete();
+		ibos.get("default").delete();
+	}
+	
+	public boolean addVertexBuffer(String name, BufferObject buffer){
+		//check to make sure the buffer being added doesn't have the name of default which is reserved
+		//additionally check that the buffer type is a valid type 
+		if(!name.equals("default") && buffer.getType() == GL_ARRAY_BUFFER){
+			vbos.put(name, buffer);
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	public boolean setVertexBuffer(String name){
+		//check to make sure the buffer being set exists
+		if(vbos.get(name) != null){
+			vbo.replace(0, vbo.length(), name);
+			vbo.trimToSize();
+			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo).getId(), 0, stride);
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	public boolean addIndexBuffer(String name, BufferObject buffer){
+		//check to make sure the buffer being added doesn't have the name of default which is reserved
+		//additionally check that the buffer type is a valid type 
+		if(!name.equals("default") && buffer.getType() == GL_ELEMENT_ARRAY_BUFFER){
+			ibos.put(name, buffer);
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	public boolean setIndexBuffer(String name){
+		//check to make sure the buffer being set exists
+		if(ibos.get(name) != null){
+			ibo.replace(0, ibo.length(), name);
+			ibo.trimToSize();
+			glVertexArrayElementBuffer(vaoId, ibos.get(ibo).getId());
+			return true;
+		}else{
+			return false;
+		}
 	}
 	
 	/**
@@ -248,7 +310,7 @@ public class VertexArray {
 	 */
 	public void add(float value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -259,7 +321,7 @@ public class VertexArray {
 	 */
 	public void add(double value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -270,7 +332,7 @@ public class VertexArray {
 	 */
 	public void add(byte value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -281,7 +343,7 @@ public class VertexArray {
 	 */
 	public void add(short value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -292,7 +354,7 @@ public class VertexArray {
 	 */
 	public void add(int value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -303,7 +365,7 @@ public class VertexArray {
 	 */
 	public void add(Vec2 value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -314,7 +376,7 @@ public class VertexArray {
 	 */
 	public void add(Vec3 value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -325,7 +387,7 @@ public class VertexArray {
 	 */
 	public void add(Vec4 value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -336,7 +398,7 @@ public class VertexArray {
 	 */
 	public void add(Mat2 value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -347,7 +409,7 @@ public class VertexArray {
 	 */
 	public void add(Mat3 value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
 		}
 	}
 
@@ -358,7 +420,29 @@ public class VertexArray {
 	 */
 	public void add(Mat4 value){
 		if(!finished){
-			vertexBuffer.add(value);
+			vbos.get(vbo).add(value);
+		}
+	}
+
+	/**
+	 * Adds the given value to this vertex array's index buffer for use in indexed rendering functions
+	 * 
+	 * @param value Index to add to the buffer
+	 */
+	public void addIndex(byte value){
+		if(!finished){
+			ibos.get(ibo).add(value);
+		}
+	}
+
+	/**
+	 * Adds the given value to this vertex array's index buffer for use in indexed rendering functions
+	 * 
+	 * @param value Index to add to the buffer
+	 */
+	public void addIndex(short value){
+		if(!finished){
+			ibos.get(ibo).add(value);
 		}
 	}
 
@@ -369,7 +453,7 @@ public class VertexArray {
 	 */
 	public void addIndex(int value){
 		if(!finished){
-			indices.add(value);
+			ibos.get(ibo).add(value);
 		}
 	}
 	

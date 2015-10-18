@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.util.Arrays;
 
 import org.lwjgl.BufferUtils;
 
@@ -399,10 +400,7 @@ public class Vec2 implements Vector {
 	
 	@Override
 	public int hashCode(){
-		int result = 0;
-		result = 23*result+Float.floatToIntBits(this.x);
-		result = 23*result+Float.floatToIntBits(this.y);
-		return result;
+		return Arrays.hashCode(new Float[]{x, y});
 	}
 	
 	@Override

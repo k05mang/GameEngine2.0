@@ -2,7 +2,7 @@ package collision;
 
 import java.util.ArrayList;
 
-import primitives.Triangle;
+import primitives.Face;
 import primitives.Vertex;
 import glMath.Mat4;
 import glMath.MatrixUtil;
@@ -11,7 +11,7 @@ import glMath.Vec3;
 
 public class ConvexHull implements CollisionMesh {
 	private ArrayList<Vec3> verts;
-	private Triangle adjInfo;
+	private Face adjInfo;
 	private Mat4 modelMat, origModel;
 	private Quaternion orientation, origOrient;
 	
@@ -23,7 +23,7 @@ public class ConvexHull implements CollisionMesh {
 		verts = new ArrayList<Vec3>();
 	}
 	
-	public ConvexHull(ArrayList<Vertex> vertices, Triangle adjInfo){
+	public ConvexHull(ArrayList<Vertex> vertices, Face adjInfo){
 		modelMat = new Mat4(1);
 		orientation = new Quaternion();
 		origModel = new Mat4(1);
@@ -47,7 +47,7 @@ public class ConvexHull implements CollisionMesh {
 		origOrient = new Quaternion(copy.orientation);
 	}
 	
-	public void setVerts(ArrayList<Vec3> newVerts, Triangle adjInfo){
+	public void setVerts(ArrayList<Vec3> newVerts, Face adjInfo){
 		this.verts = newVerts;
 		this.adjInfo = adjInfo;
 	}
@@ -112,7 +112,7 @@ public class ConvexHull implements CollisionMesh {
 		return verts;
 	}
 	
-	public Triangle getAdjInfo(){
+	public Face getAdjInfo(){
 		return adjInfo;
 	}
 
@@ -138,7 +138,7 @@ public class ConvexHull implements CollisionMesh {
 		//precompute the transformation matrix
 		Mat4 transformMat = (Mat4)MatrixUtil.multiply(modelMat, orientation.asMatrix());
 		
-		Triangle.HalfEdge original = new Triangle.HalfEdge(adjInfo.halfEdges.get(0));
+		Face.HalfEdge original = new Face.HalfEdge(adjInfo.halfEdges.get(0));
 		
 		//actual vertex being processed, post transformation
 		Vec3 curVert = (Vec3)transformMat.multVec(verts.get(original.sourceVert)).swizzle("xyz");
@@ -149,12 +149,12 @@ public class ConvexHull implements CollisionMesh {
 		//half edge pointing to the originating edge for the current iteration
 		//this value is used to end the iteration over a vertices neighbors
 		
-		Triangle.HalfEdge farthestEdge = new Triangle.HalfEdge(original);
+		Face.HalfEdge farthestEdge = new Face.HalfEdge(original);
 		
 		while(true){
 			
-			Triangle.HalfEdge current = original.opposite.next;
-			Triangle.HalfEdge adjVertEdge = current.next;
+			Face.HalfEdge current = original.opposite.next;
+			Face.HalfEdge adjVertEdge = current.next;
 			//loop through the adjacent vertices checking whether they are closer in the
 			//given direction vector than the current vertex terminating if we reach the edge
 			//we started with

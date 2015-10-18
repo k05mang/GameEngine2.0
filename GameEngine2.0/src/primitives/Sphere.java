@@ -24,7 +24,7 @@ import static org.lwjgl.opengl.GL32.GL_TRIANGLES_ADJACENCY;
 
 public class Sphere extends Renderable{
 	private ArrayList<Vertex> vertices;
-	private ArrayList<Triangle> faces;
+	private ArrayList<Face> faces;
 	private int slices, stacks, numIndices;
 	private float radius;
 
@@ -32,7 +32,7 @@ public class Sphere extends Renderable{
 		super(vAttrib, vAttrib+1, bufferAdj);
 		
 		vertices = new ArrayList<Vertex>();
-		faces = new ArrayList<Triangle>();
+		faces = new ArrayList<Face>();
 		this.slices = slices < 3 ? 3 : slices;
 		this.stacks = stacks < 1 ? 1 : stacks;
 		this.radius = radius <= 0 ? .01f : radius;
@@ -42,10 +42,10 @@ public class Sphere extends Renderable{
 		when there is 1 stack there are only the caps, 2 stacks means 1 row of slices number of quads which are each
 		2 triangles, so (stacks-1)*(2*slices) number of internal faces for the sphere
 		*/
-		numIndices = ((2*this.slices)*(this.stacks-1)+2*this.slices)*(bufferAdj ? Triangle.INDEX_ADJ : Triangle.INDEX_NOADJ);
+		numIndices = ((2*this.slices)*(this.stacks-1)+2*this.slices)*(bufferAdj ? Face.INDEX_ADJ : Face.INDEX_NOADJ);
 		
 		//hash map for the edges to the half edges look up
-		HashMap<Triangle.Edge, Triangle.HalfEdge> edgesMap = new HashMap<Triangle.Edge, Triangle.HalfEdge>();
+		HashMap<Face.Edge, Face.HalfEdge> edgesMap = new HashMap<Face.Edge, Face.HalfEdge>();
 		int numVerts = this.slices*this.stacks+2;
 		ByteBuffer vertData = BufferUtils.createByteBuffer(numVerts*Vertex.SIZE_IN_BYTES);
 		IntBuffer indicesBuffer = BufferUtils.createIntBuffer(numIndices);
@@ -69,7 +69,7 @@ public class Sphere extends Renderable{
 				//if we are on the first stack we are generating triangles for the cap
 				if (stack == 1) {
 					//create the face
-					Triangle face = new Triangle(
+					Face face = new Face(
 							Integer.valueOf( 0),
 							Integer.valueOf( slice+1),
 							Integer.valueOf( cycle+1 ));
@@ -80,7 +80,7 @@ public class Sphere extends Renderable{
 				//if we are on the last stack we are generating triangles for the bottom cap
 				if(stack == this.stacks){
 					//numVerts-this.slices-1 indicates the index of the starting vertex for the bottom stack
-					Triangle face = new Triangle(
+					Face face = new Face(
 							Integer.valueOf( numVerts-1),
 							Integer.valueOf( numVerts-1-this.slices+cycle),
 							Integer.valueOf( numVerts-1-this.slices+slice ));
@@ -93,14 +93,14 @@ public class Sphere extends Renderable{
 					int prevStack = (stack-2)*this.slices;
 					int curStack = (stack-1)*this.slices;
 					
-					Triangle face1 = new Triangle(
+					Face face1 = new Face(
 							Integer.valueOf( prevStack+slice+1 ),	//top left vertex in the left triangle of the square
 							Integer.valueOf( curStack+slice+1), 	//bottom left vertex in the left triangle of the square
 							Integer.valueOf( curStack+cycle+1)  	//bottom right vertex in the left triangle of the square
 							);
 					super.setUpTriangle(face1, edgesMap);
 					
-					Triangle face2 = new Triangle(
+					Face face2 = new Face(
 							Integer.valueOf( prevStack+slice+1 ),		 //top left vertex in the right triangle of the square
 							Integer.valueOf( curStack+cycle+1)	,	 	 //bottom right vertex in the right triangle of the square
 							Integer.valueOf( prevStack+cycle+1 )		 //top right vertex in the right triangle of the square
@@ -117,7 +117,7 @@ public class Sphere extends Renderable{
 		
 		vertData.flip();
 		
-		for(Triangle face : faces){
+		for(Face face : faces){
 			face.initAdjacent();
 			
 			if(bufferAdj){
@@ -194,7 +194,7 @@ public class Sphere extends Renderable{
 	}
 
 	@Override
-	public ArrayList<Triangle> getFaces() {
+	public ArrayList<Face> getFaces() {
 		return faces;
 	}
 
