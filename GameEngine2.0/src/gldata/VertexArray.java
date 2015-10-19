@@ -6,31 +6,79 @@ import java.util.HashMap;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL45.*;
+
 import glMath.Vec2;
 import glMath.Vec3;
 import glMath.Vec4;
 import glMath.Mat2;
 import glMath.Mat3;
 import glMath.Mat4;
+import renderers.RenderMode;
 
 public class VertexArray {
 
 	private int vaoId, stride;
-	private HashMap<String, BufferObject> vbos, ibos;
+	private HashMap<String, BufferObject> vbos;
+	private HashMap<String, IndexBuffer> ibos;
 	private StringBuilder vbo, ibo;
 	private ArrayList<VertexAttrib> attributes;
 	private boolean finished;
 	
+	/**
+	 * Constructs this vertex array object with a default vertex buffer and default index buffer under the name
+	 * of "default".
+	 * <p>
+	 * The default index buffer for this vertex array will have a RenderMode of type TRIANGLES and an IndexType of INT.
+	 */
 	public VertexArray(){
+		this(RenderMode.TRIANGLES, IndexBuffer.IndexType.INT);
+	}
+	
+	/**
+	 * Constructs this vertex array object with a default vertex buffer and default index buffer under the name
+	 * of "default".
+	 * <p>
+	 * The default index buffer for this vertex array will have a RenderMode specified by the given RenderMode
+	 * and an IndexType of INT.
+	 * 
+	 * @param defaultMode Default rendering mode for the index buffer
+	 */
+	public VertexArray(RenderMode defaultMode){
+		this(defaultMode, IndexBuffer.IndexType.INT);
+	}
+	
+	/**
+	 * Constructs this vertex array object with a default vertex buffer and default index buffer under the name
+	 * of "default".
+	 * <p>
+	 * The default index buffer for this vertex array will have an index type specified by the given IndexType
+	 * and will have a RenderMode of TIRANGLES.
+	 * 
+	 * @param defaultType The IndexType to set this vertex array's default index buffer to
+	 */
+	public VertexArray(IndexBuffer.IndexType defaultType){
+		this(RenderMode.TRIANGLES, defaultType);
+	}
+	
+	/**
+	 * Constructs this vertex array object with a default vertex buffer and default index buffer under the name
+	 * of "default".
+	 * <p>
+	 * The index buffer will have a 
+	 * 
+	 * @param defaultMode Default RenderMode for this VertexArray's IndexBuffer
+	 * @param defaultType Default IndexType for this VertexArray's IndexBuffer 
+	 */
+	public VertexArray(RenderMode defaultMode, IndexBuffer.IndexType defaultType){
 		vaoId = glGenVertexArrays();
 		
 		vbos = new HashMap<String, BufferObject>();
 		//put this vertex array's default vertex buffer as "default"
 		vbos.put("default",  new BufferObject(GL_ARRAY_BUFFER));
 		
-		ibos = new HashMap<String, BufferObject>();
+		ibos = new HashMap<String, IndexBuffer>();
 		//put this vertex array's default index buffer as "default"
-		ibos.put("default",  new BufferObject(GL_ELEMENT_ARRAY_BUFFER));
+		ibos.put("default",  new IndexBuffer(defaultMode, defaultType));
 		//set the current id for what buffer to use
 		vbo = new StringBuilder("default");
 		ibo = new StringBuilder("default");
@@ -39,20 +87,16 @@ public class VertexArray {
 	}
 	
 	/**
-	 * Finalizes this vertex array by uploading buffers to the GPU and setting attribute data
+	 * Finalizes this vertex array by uploading its default buffers to the GPU and setting attribute data
 	 * 
 	 * @param bufferUsage GLenum determining how the vertex buffer is to be used
 	 * @param ibosUsage GLenum determining how the index buffer is to be used
 	 */
 	public void finalize(int bufferUsage, int ibosUsage){
 		if(!finished){
-			if(vbo.equals("default")){
-				vbos.get("default").flush(bufferUsage);
-			}
+			vbos.get("default").flush(bufferUsage);
 			
-			if(ibo.equals("default")){
-				ibos.get("default").flush(bufferUsage);
-			}
+			ibos.get("default").flush(bufferUsage);
 			stride = 0;
 			for(VertexAttrib attribData : attributes){
 				glVertexArrayAttribBinding(vaoId, attribData.index, 0);
@@ -97,10 +141,10 @@ public class VertexArray {
 		}
 	}
 	
-	public boolean addIndexBuffer(String name, BufferObject buffer){
+	public boolean addIndexBuffer(String name, IndexBuffer buffer){
 		//check to make sure the buffer being added doesn't have the name of default which is reserved
 		//additionally check that the buffer type is a valid type 
-		if(!name.equals("default") && buffer.getType() == GL_ELEMENT_ARRAY_BUFFER){
+		if(!name.equals("default")){
 			ibos.put(name, buffer);
 			return true;
 		}else{

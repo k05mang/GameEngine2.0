@@ -1,5 +1,6 @@
 package primitives;
 
+import gldata.IndexBuffer;
 import gldata.VertexArray;
 import gldata.BufferObject;
 
@@ -58,14 +59,25 @@ public class Face {
 	}
 	
 	/**
+	 * Stores this face's vertex indices, representing the primitive of the face, in the given index buffer
+	 * 
+	 * @param vao IndexBuffer to place the indices into
+	 */
+	public void insertPrim(IndexBuffer vao){
+		vao.add(he1.sourceVert);
+		vao.add(he2.sourceVert);
+		vao.add(he3.sourceVert);
+	}
+	
+	/**
 	 * Stores this face's vertex indices, representing the primitive of the face, in the given vertex array's element array
 	 * 
 	 * @param vao VertexArray to place the indices into
 	 */
 	public void insertPrim(VertexArray vao){
-		vao.add(he1.sourceVert);
-		vao.add(he2.sourceVert);
-		vao.add(he3.sourceVert);
+		vao.addIndex(he1.sourceVert);
+		vao.addIndex(he2.sourceVert);
+		vao.addIndex(he3.sourceVert);
 	}
 	
 	/**
@@ -88,19 +100,37 @@ public class Face {
 	
 	/**
 	 * Stores this face's vertex indices, representing the primitive and adjacent information compatible with
+	 * GL_TRIANGLES_ADJACENCY, in the given index buffer
+	 * 
+	 * @param buffer IndexBuffer to place the indices into
+	 */
+	public void insertPrimAdj(IndexBuffer buffer){
+		buffer.add(he1.sourceVert);
+		buffer.add(he1.opposite != null ? he1.opposite.prev.sourceVert : -1);
+		
+		buffer.add(he2.sourceVert);
+		buffer.add(he2.opposite != null ? he2.opposite.prev.sourceVert : -1);
+		
+		buffer.add(he3.sourceVert);
+		buffer.add(he3.opposite != null ? he3.opposite.prev.sourceVert : -1);
+	}
+
+	
+	/**
+	 * Stores this face's vertex indices, representing the primitive and adjacent information compatible with
 	 * GL_TRIANGLES_ADJACENCY, in the given vertex array's element array
 	 * 
 	 * @param vao VertexArray to place the indices into
 	 */
 	public void insertPrimAdj(VertexArray vao){
-		vao.add(he1.sourceVert);
-		vao.add(he1.opposite != null ? he1.opposite.prev.sourceVert : -1);
+		vao.addIndex(he1.sourceVert);
+		vao.addIndex(he1.opposite != null ? he1.opposite.prev.sourceVert : -1);
 		
-		vao.add(he2.sourceVert);
-		vao.add(he2.opposite != null ? he2.opposite.prev.sourceVert : -1);
+		vao.addIndex(he2.sourceVert);
+		vao.addIndex(he2.opposite != null ? he2.opposite.prev.sourceVert : -1);
 		
-		vao.add(he3.sourceVert);
-		vao.add(he3.opposite != null ? he3.opposite.prev.sourceVert : -1);
+		vao.addIndex(he3.sourceVert);
+		vao.addIndex(he3.opposite != null ? he3.opposite.prev.sourceVert : -1);
 	}
 	
 	@Override

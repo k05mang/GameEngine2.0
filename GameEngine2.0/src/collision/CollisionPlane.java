@@ -59,7 +59,7 @@ public class CollisionPlane implements CollisionMesh{
 	}
 	
 	public void scale(Vec3 scalars){
-		modelMat.leftMult(MatrixUtil.makeScale(scalars));
+		modelMat.leftMult(MatrixUtil.getScaleMat(scalars));
 	}
 	
 	public void rotate(float x, float y, float z, float theta){

@@ -39,7 +39,7 @@ public class ShaderParser {
 	
 	//qualifiers used in uniform declarations first is a more general type with the second being more for uniforms
 	private static final String layoutQaulifiers = "(\\s*+\\(((\\w++(\\s*+=\\s*+\\w++)?+)\\s*+,?+\\s*+)++\\)\\s*+)";
-	private static final String uniformQualifiers = "(((("+layoutQaulifiers+")|uniform)\\s++)++)";
+	private static final String uniformQualifiers = "(((("+layoutQaulifiers+"\\s*+)|(uniform\\s++)))++)";
 	
 	//generic member list for both structs and for uniform interfaces
 	private static final String member_list = "\\{"

@@ -2,11 +2,10 @@ package primitives;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import renderers.RenderMode;
+import gldata.IndexBuffer;
 import gldata.VertexArray;
 import gldata.BufferObject;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL32.*;
 
 public class Mesh {
 	private ArrayList<Vertex> vertices;
@@ -98,9 +97,9 @@ public class Mesh {
 	}
 
 	/**
-	 * Adds this meshes indices to the given buffer object with the specified GLenum format.
+	 * Adds this meshes indices to the given index buffer with the specified RenderMode.
 	 * <p>
-	 * The following are the currently supported types for indexing
+	 * The following are the currently supported types for index insertion:
 	 * <ul>
 	 * <li>GL_POINTS</li>
 	 * <li>GL_LINES</li>
@@ -108,36 +107,55 @@ public class Mesh {
 	 * <li>GL_TRIANGLES_ADJACENCY</li>
 	 * </ul>
 	 * 
-	 * @param buffer BufferObject to add indices to
-	 * @param type GLenum specifying the format with which to insert the indices
+	 * @param buffer IndexBuffer to add indices to
+	 * @param type RenderMode specifying the format with which to insert the indices
 	 */
-	public void insertIndices(BufferObject buffer, int type){
+	public void insertIndices(IndexBuffer buffer, RenderMode type){
 		switch(type){
-			case GL_POINTS:
+			case POINTS:
 				for(int index = 0; index < vertices.size(); index++){
 					buffer.add(index);
 				}
 				break;
-			case GL_LINES:
+			case LINES:
 				insertLines(buffer);
 				break;
-			case GL_TRIANGLES:
+			case LINES_ADJ:
+				break;
+			case LINE_LOOP:
+				break;
+			case LINE_STRIP:
+				break;
+			case LINE_STRIP_ADJ:
+				break;
+				
+			case TRIANGLES:
 				for(Face curFace : faces){
 					curFace.insertPrim(buffer);
 				}
 				break;
-			case GL_TRIANGLES_ADJACENCY:
+			case TRIANGLES_ADJ:
 				for(Face curFace : faces){
 					curFace.insertPrimAdj(buffer);
 				}
+				break;
+			case TRIANGLE_FAN:
+				break;
+			case TRIANGLE_STRIP:
+				break;
+			case TRIANGLE_STRIP_ADJ:
+				break;
+				
+			
+			case PATCHES:
 				break;
 		}
 	}
 	
 	/**
-	 * Adds this meshes indices to the given vertex array with the specified GLenum format.
+	 * Adds this meshes indices to the given vertex array with the specified RenderMode.
 	 * <p>
-	 * The following are the currently supported types for indexing
+	 * The following are the currently supported types for index insertion:
 	 * <ul>
 	 * <li>GL_POINTS</li>
 	 * <li>GL_LINES</li>
@@ -146,27 +164,46 @@ public class Mesh {
 	 * </ul>
 	 * 
 	 * @param vao VertexArray to add indices to
-	 * @param type GLenum specifying the format with which to insert the indices
+	 * @param type RenderMode specifying the format with which to insert the indices
 	 */
-	public void insertIndices(VertexArray vao, int type){
+	public void insertIndices(VertexArray vao, RenderMode type){
 		switch(type){
-			case GL_POINTS:
+			case POINTS:
 				for(int index = 0; index < vertices.size(); index++){
-					vao.add(index);
+					vao.addIndex(index);
 				}
 				break;
-			case GL_LINES:
+			case LINES:
 				insertLines(vao);
 				break;
-			case GL_TRIANGLES:
+			case LINES_ADJ:
+				break;
+			case LINE_LOOP:
+				break;
+			case LINE_STRIP:
+				break;
+			case LINE_STRIP_ADJ:
+				break;
+				
+			case TRIANGLES:
 				for(Face curFace : faces){
 					curFace.insertPrim(vao);
 				}
 				break;
-			case GL_TRIANGLES_ADJACENCY:
+			case TRIANGLES_ADJ:
 				for(Face curFace : faces){
 					curFace.insertPrimAdj(vao);
 				}
+				break;
+			case TRIANGLE_FAN:
+				break;
+			case TRIANGLE_STRIP:
+				break;
+			case TRIANGLE_STRIP_ADJ:
+				break;
+				
+			
+			case PATCHES:
 				break;
 		}
 	}
@@ -176,7 +213,7 @@ public class Mesh {
 	 * 
 	 * @param buffer BufferObject to insert indices into
 	 */
-	private void insertLines(BufferObject buffer){
+	private void insertLines(IndexBuffer buffer){
 		HashMap<Edge, Boolean> visited = new HashMap<Edge, Boolean>();
 		for(Face curFace : faces){
 			//create edge that is ordered opposite since the edge in the map will have an opposite ordering when it was added
@@ -218,24 +255,24 @@ public class Mesh {
 			Edge edge1 = new Edge(curFace.e1.end, curFace.e1.start);
 			//check if the line being processed from this face was already added as part of another face iteration
 			if(visited.get(edge1) == null){//if we didn't find it, it means it wasn't added yet
-				vao.add(curFace.e1.start);
-				vao.add(curFace.e1.end);
+				vao.addIndex(curFace.e1.start);
+				vao.addIndex(curFace.e1.end);
 				visited.put(curFace.e1, true);
 			}
 
 			Edge edge2 = new Edge(curFace.e2.end, curFace.e2.start);
 			//check if the line being processed from this face was already added as part of another face iteration
 			if(visited.get(edge2) == null){//if we didn't find it, it means it wasn't added yet
-				vao.add(curFace.e2.start);
-				vao.add(curFace.e2.end);
+				vao.addIndex(curFace.e2.start);
+				vao.addIndex(curFace.e2.end);
 				visited.put(curFace.e2, true);
 			}
 			
 			Edge edge3 = new Edge(curFace.e3.end, curFace.e3.start);
 			//check if the line being processed from this face was already added as part of another face iteration
 			if(visited.get(edge3) == null){//if we didn't find it, it means it wasn't added yet
-				vao.add(curFace.e3.start);
-				vao.add(curFace.e3.end);
+				vao.addIndex(curFace.e3.start);
+				vao.addIndex(curFace.e3.end);
 				visited.put(curFace.e3, true);
 			}
 		}

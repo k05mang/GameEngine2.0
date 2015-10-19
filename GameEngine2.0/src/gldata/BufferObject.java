@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import org.lwjgl.BufferUtils;
 
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL45.*;
 
 import glMath.Vec2;

@@ -68,8 +68,8 @@ public class ContactPair {
 					//the vector representing the impulse applied in the direction of the contact normal
 					Vec3 impulseVec = new Vec3(curContact.normal).scale(impulse);
 					
-					contactA.velocity.add(new Vec3(curContact.normal).makeScale(contactA.massInv * impulse));
-					contactB.velocity.add(new Vec3(curContact.normal).makeScale(contactB.massInv * -impulse));
+					contactA.velocity.add(new Vec3(curContact.normal).getScaleMat(contactA.massInv * impulse));
+					contactB.velocity.add(new Vec3(curContact.normal).getScaleMat(contactB.massInv * -impulse));
 					
 					//the torque being applied to the bodies by the impulse
 					Vec3 angularImpulseA = contactA.invInertiaTensor.multVec(impulseVec.cross(pointA));
@@ -89,15 +89,15 @@ public class ContactPair {
 						float coeffFric = (contactA.sFriction+contactB.sFriction)/2.0f;
 						
 						if(fImpulse < impulse*coeffFric){
-							contactA.velocity.add(new Vec3(frictionVec).makeScale(contactA.massInv*fImpulse));
-							contactB.velocity.add(new Vec3(frictionVec).makeScale(contactB.massInv*-fImpulse));
+							contactA.velocity.add(new Vec3(frictionVec).getScaleMat(contactA.massInv*fImpulse));
+							contactB.velocity.add(new Vec3(frictionVec).getScaleMat(contactB.massInv*-fImpulse));
 							
 //							contactA.angVel.add(contactA.inertiaTensor.multVec(new Vec3(frictionVec).scale(fImpulse)));
 //							contactB.angVel.add(contactB.inertiaTensor.multVec(new Vec3(frictionVec).scale(-fImpulse)));
 						}else{
 							coeffFric = (contactA.dFriction+contactB.dFriction)/2.0f;
-							contactA.velocity.add(new Vec3(frictionVec).makeScale(contactA.massInv*impulse*coeffFric));
-							contactB.velocity.add(new Vec3(frictionVec).makeScale(contactB.massInv*-impulse*coeffFric));
+							contactA.velocity.add(new Vec3(frictionVec).getScaleMat(contactA.massInv*impulse*coeffFric));
+							contactB.velocity.add(new Vec3(frictionVec).getScaleMat(contactB.massInv*-impulse*coeffFric));
 							
 //							contactA.angVel.add(contactA.inertiaTensor.multVec(new Vec3(frictionVec).scale(impulse*coeffFric)));
 //							contactB.angVel.add(contactB.inertiaTensor.multVec(new Vec3(frictionVec).scale(-impulse*coeffFric)));
@@ -106,7 +106,7 @@ public class ContactPair {
 					
 					float correction = (curContact.depth > 0 ? curContact.depth : 0)/sumInv;
 //					float correction = (curContact.depth > 0 ? curContact.depth : 0)/totalInertia;
-					Vec3 restCorrection = new Vec3(curContact.normal).makeScale(contactA.massInv*correction);
+					Vec3 restCorrection = new Vec3(curContact.normal).getScaleMat(contactA.massInv*correction);
 					contactA.mesh.makeTranslate(restCorrection);
 //					contactA.collider.translate(restCorrection);
 					contactA.position.add(restCorrection);
@@ -115,7 +115,7 @@ public class ContactPair {
 //							contactA.invInertiaTensor.multVec(new Vec3(curContact.normal).scale(correction))));
 					
 					//resolve for object B
-					Vec3 bRestCorr = new Vec3(curContact.normal).makeScale(contactB.massInv*-correction);
+					Vec3 bRestCorr = new Vec3(curContact.normal).getScaleMat(contactB.massInv*-correction);
 					contactB.mesh.makeTranslate(bRestCorr);
 //					contactB.collider.translate(bRestCorr);
 					contactB.position.add(bRestCorr);
