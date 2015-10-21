@@ -7,14 +7,15 @@ import java.util.HashMap;
 import java.io.File;
 
 public class Shader {
-	private int shaderId, type;
+	private int shaderId;
+	private ShaderType type;
 	private ShaderParser parser;
 	
-	public Shader(String fileName, int shaderType){
+	public Shader(String fileName, ShaderType shaderType){
 		type = shaderType;
 		File shaderFile = new File(fileName);
 		parser = new ShaderParser(shaderFile);
-		shaderId = glCreateShader(type);
+		shaderId = glCreateShader(type.type);
 		glShaderSource(shaderId, parser.getSource());
 	}
 	

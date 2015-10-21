@@ -19,8 +19,11 @@ public class VertexArray {
 
 	private int vaoId, stride;
 	private HashMap<String, BufferObject> vbos;
-	private HashMap<String, IndexBuffer> ibos;
-	private StringBuilder vbo, ibo;
+	private HashMap<RenderMode, IndexBuffer> ibos;
+	private BufferObject defaultVbo;
+	private IndexBuffer defaultIbo;
+	private StringBuilder vbo;
+	private RenderMode ibo;
 	private ArrayList<VertexAttrib> attributes;
 	private boolean finished;
 	
@@ -73,15 +76,17 @@ public class VertexArray {
 		vaoId = glGenVertexArrays();
 		
 		vbos = new HashMap<String, BufferObject>();
+		defaultVbo = new BufferObject(BufferType.ARRAY);
 		//put this vertex array's default vertex buffer as "default"
-		vbos.put("default",  new BufferObject(GL_ARRAY_BUFFER));
+		vbos.put("default", defaultVbo);
 		
-		ibos = new HashMap<String, IndexBuffer>();
+		ibos = new HashMap<RenderMode, IndexBuffer>();
+		defaultIbo = new IndexBuffer(defaultMode, defaultType);
 		//put this vertex array's default index buffer as "default"
-		ibos.put("default",  new IndexBuffer(defaultMode, defaultType));
+		ibos.put(defaultMode, defaultIbo);
 		//set the current id for what buffer to use
 		vbo = new StringBuilder("default");
-		ibo = new StringBuilder("default");
+		ibo = defaultMode;
 		attributes = new ArrayList<VertexAttrib>();
 		finished = false;
 	}
@@ -92,11 +97,10 @@ public class VertexArray {
 	 * @param bufferUsage GLenum determining how the vertex buffer is to be used
 	 * @param ibosUsage GLenum determining how the index buffer is to be used
 	 */
-	public void finalize(int bufferUsage, int ibosUsage){
+	public void finalize(BufferUsage bufferUsage, BufferUsage ibosUsage){
 		if(!finished){
-			vbos.get("default").flush(bufferUsage);
-			
-			ibos.get("default").flush(bufferUsage);
+			defaultVbo.flush(bufferUsage);
+			defaultIbo.flush(bufferUsage);
 			stride = 0;
 			for(VertexAttrib attribData : attributes){
 				glVertexArrayAttribBinding(vaoId, attribData.index, 0);
@@ -114,14 +118,47 @@ public class VertexArray {
 	 */
 	public void delete(){
 		glDeleteVertexArrays(vaoId);
-		vbos.get("default").delete();
-		ibos.get("default").delete();
+		defaultVbo.delete();
+		defaultIbo.delete();
 	}
 	
+	/**
+	 * Gets the RenderMode that the vertex array currently is setup for
+	 * 
+	 * @return RenderMode this vertex array is currently setup for 
+	 */
+	public RenderMode getRenderMode(){
+		return ibo;
+	}
+	
+	/**
+	 * Gets the indexing type for the index buffer currently being used by the vertex array
+	 * 
+	 * @return IndexType of the currently bound index buffer
+	 */
+	public IndexBuffer.IndexType getIndexType(){
+		return ibos.get(ibo).getType();
+	}
+	
+	/**
+	 * Gets the number of indices for the currently bound index buffer
+	 * 
+	 * @return Number of indices in the currently bound index buffer
+	 */
+	public int getNumIndices(){
+		return ibos.get(ibo).numElements();
+	}
+	
+	/**
+	 * Adds a vertex buffer to the specified name for this vertex array, only if the BufferObject is of type 
+	 * @param name
+	 * @param buffer
+	 * @return
+	 */
 	public boolean addVertexBuffer(String name, BufferObject buffer){
 		//check to make sure the buffer being added doesn't have the name of default which is reserved
 		//additionally check that the buffer type is a valid type 
-		if(!name.equals("default") && buffer.getType() == GL_ARRAY_BUFFER){
+		if(buffer.getType() == BufferType.ARRAY){
 			vbos.put(name, buffer);
 			return true;
 		}else{
@@ -141,22 +178,14 @@ public class VertexArray {
 		}
 	}
 	
-	public boolean addIndexBuffer(String name, IndexBuffer buffer){
-		//check to make sure the buffer being added doesn't have the name of default which is reserved
-		//additionally check that the buffer type is a valid type 
-		if(!name.equals("default")){
-			ibos.put(name, buffer);
-			return true;
-		}else{
-			return false;
-		}
+	public void addIndexBuffer(IndexBuffer buffer){
+		ibos.put(buffer.getRenderMode(), buffer);
 	}
 	
-	public boolean setIndexBuffer(String name){
+	public boolean setIndexBuffer(RenderMode mode){
 		//check to make sure the buffer being set exists
-		if(ibos.get(name) != null){
-			ibo.replace(0, ibo.length(), name);
-			ibo.trimToSize();
+		if(ibos.get(mode) != null){
+			ibo = mode;
 			glVertexArrayElementBuffer(vaoId, ibos.get(ibo).getId());
 			return true;
 		}else{

@@ -17,7 +17,8 @@ import glMath.Mat3;
 import glMath.Mat4;
 
 public class BufferObject {
-	private int bufferId, size, type;
+	private int bufferId, size;
+	private BufferType bufferType;
 	private boolean finished;
 	private ArrayList<Byte> data;
 	
@@ -26,9 +27,9 @@ public class BufferObject {
 	 * 
 	 * @param bufferType The type of buffer this BufferObject will represent
 	 */
-	public BufferObject(int bufferType){
+	public BufferObject(BufferType type){
 		bufferId = glGenBuffers();
-		type = bufferType;
+		bufferType = type;
 		data = new ArrayList<Byte>();
 		size = 0;
 		finished = false;
@@ -38,14 +39,14 @@ public class BufferObject {
 	 * Binds this buffer object to the buffer type target this object was initialized with
 	 */
 	public void bind(){
-		glBindBuffer(type, bufferId);
+		glBindBuffer(bufferType.type, bufferId);
 	}
 	
 	/**
 	 * Unbinds this buffer object from the context
 	 */
 	public void unbind(){
-		glBindBuffer(type, 0);
+		glBindBuffer(bufferType.type, 0);
 	}
 	
 	/**
@@ -82,10 +83,10 @@ public class BufferObject {
 	/**
 	 * Gets the type this buffer object is associated with
 	 * 
-	 * @return GLenum representing the type this buffer is used with
+	 * @return BufferType that represents the internal GPU type of this buffer
 	 */
-	public int getType(){
-		return type;
+	public BufferType getType(){
+		return bufferType;
 	}
 	
 	/**
@@ -102,7 +103,7 @@ public class BufferObject {
 	 * 
 	 * @param usage GLenum defining how the buffers contents will be used on the GPU
 	 */
-	public void flush(int usage){
+	public void flush(BufferUsage usage){
 		//TODO potentially make this function backwards compatible, for now though it will only be opengl 4.5 compliant
 		//check if there is any data to buffer
 		if(!data.isEmpty() && !finished){
@@ -112,7 +113,7 @@ public class BufferObject {
 				dataBuffer.put(dataByte);
 			}
 			dataBuffer.flip();//move the read pointer back to the beginning
-			glNamedBufferData(bufferId, dataBuffer, usage);
+			glNamedBufferData(bufferId, dataBuffer, usage.type);
 			size = data.size();//store this buffers size
 			data.clear();//clear out the data store since it has been buffered to the GPU and will no longer be used
 			finished = true;

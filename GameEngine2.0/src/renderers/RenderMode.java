@@ -23,4 +23,35 @@ public enum RenderMode {
 	private RenderMode(int type){
 		mode = type;
 	}
+	
+	@Override
+	public String toString(){
+		switch(this){
+			case POINTS:
+				return "POINTS";
+			case LINES:
+				return "LINES";
+			case LINES_ADJ:
+				return "LINES_ADJ";
+			case LINE_LOOP:
+				return "LINE_LOOP";
+			case LINE_STRIP:
+				return "LINE_STRIP";
+			case LINE_STRIP_ADJ:
+				return "LINE_STRIP_ADJ";
+			case PATCHES:
+				return "PATCHES";
+			case TRIANGLES:
+				return "TRIANGLES";
+			case TRIANGLES_ADJ:
+				return "TRIANGLES_ADJ";
+			case TRIANGLE_FAN:
+				return "TRIANGLE_FAN";
+			case TRIANGLE_STRIP:
+				return "TRIANGLE_STRIP";
+			case TRIANGLE_STRIP_ADJ:
+				return "TRIANGLE_STRIP_ADJ";
+		}
+		return "";
+	}
 }

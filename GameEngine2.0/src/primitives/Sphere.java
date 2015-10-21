@@ -1,235 +1,148 @@
 package primitives;
-import glMath.*;
-
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
 
-import org.lwjgl.BufferUtils;
+import java.util.ArrayList;
 
-import collision.BoundingSphere;
-import collision.ConvexHull;
+import gldata.AttribType;
+import gldata.BufferUsage;
+import gldata.IndexBuffer;
+import gldata.VertexArray;
+import renderers.RenderMode;
 import renderers.Renderable;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL32.GL_TRIANGLES_ADJACENCY;
 
 public class Sphere extends Renderable{
-	private ArrayList<Vertex> vertices;
-	private ArrayList<Face> faces;
-	private int slices, stacks, numIndices;
 	private float radius;
+	private int slices, stacks;
 
-	public Sphere(float radius, int slices, int stacks, int vAttrib, boolean bufferAdj){
-		super(vAttrib, vAttrib+1, bufferAdj);
+	public Sphere(float radius, int slices, int stacks, RenderMode main, RenderMode... modes){
+		super();
 		
-		vertices = new ArrayList<Vertex>();
-		faces = new ArrayList<Face>();
 		this.slices = slices < 3 ? 3 : slices;
 		this.stacks = stacks < 1 ? 1 : stacks;
 		this.radius = radius <= 0 ? .01f : radius;
-		/*
-		compute the number of indices needed for a sphere
-		number of triangles for the "caps" of the sphere are equal to the number of slices, 2 caps = 2*slices
-		when there is 1 stack there are only the caps, 2 stacks means 1 row of slices number of quads which are each
-		2 triangles, so (stacks-1)*(2*slices) number of internal faces for the sphere
-		*/
-		numIndices = ((2*this.slices)*(this.stacks-1)+2*this.slices)*(bufferAdj ? Face.INDEX_ADJ : Face.INDEX_NOADJ);
 		
-		//hash map for the edges to the half edges look up
-		HashMap<Face.Edge, Face.HalfEdge> edgesMap = new HashMap<Face.Edge, Face.HalfEdge>();
-		int numVerts = this.slices*this.stacks+2;
-		ByteBuffer vertData = BufferUtils.createByteBuffer(numVerts*Vertex.SIZE_IN_BYTES);
-		IntBuffer indicesBuffer = BufferUtils.createIntBuffer(numIndices);
+		int lastIndex = this.stacks*this.slices+1;//value of the last index
 		
-		//generate the vertices
-		Vertex first = new Vertex(0,0,this.radius, 0,0,1, 0,0);
-		vertices.add(first);
-		first.store(vertData);
-		for(int stack = 1; stack < this.stacks+1; stack++){
-			for(int slice = 0; slice < this.slices; slice++){
-				double phi = PI*(stack/(double)(this.stacks+1));
-				double theta = 2*PI*(slice/(double)this.slices);
+		IndexBuffer.IndexType dataType = null;
+		//determine what data type the index buffer should be
+		if(lastIndex < Byte.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.BYTE;
+		}else if(lastIndex < Short.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.SHORT;
+		}if(lastIndex < Integer.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.INT;
+		}else{
+			//TODO handle when the number of vertices and indices would exceed the max value
+		}
+		//instantiate the vertex array
+		vao = new VertexArray(main, dataType);
+		
+		int upperStack = this.stacks+1;
+		//add the top vertex
+		//TODO calculate UV
+		Vertex top = new Vertex(0,this.radius,0, 0,this.radius,0, 0,0);
+		mesh.add(top);
+		top.addTo(vao);//add vertex to the vertex array
+		for(int curStack = 1; curStack < upperStack; curStack++){
+			for(int curSlice = 0; curSlice < this.slices; curSlice++){
+				//pre-calculate the angles for the trig functions
+				double phi = PI*(curStack/(double)upperStack);
+				double theta = 2*PI*(curSlice/(double)this.slices);
 				
 				float x = (float)( this.radius*cos(theta)*sin(phi) );
-				float y = (float)( this.radius*sin(theta)*sin(phi) );
-				float z = (float)( this.radius*cos(phi) );
+				float y = (float)( this.radius*cos(phi) );//since y is the up axis have it use the conventional z calculation
+				float z = (float)( this.radius*sin(theta)*sin(phi) );
+				//TODO calculate UV
 				Vertex vert = new Vertex(x,y,z, x,y,z, 0,0);
-				vertices.add(vert);
-				vert.store(vertData);
-				int cycle = (slice+1)%this.slices;
-				//if we are on the first stack we are generating triangles for the cap
-				if (stack == 1) {
-					//create the face
-					Face face = new Face(
-							Integer.valueOf( 0),
-							Integer.valueOf( slice+1),
-							Integer.valueOf( cycle+1 ));
-					
-					super.setUpTriangle(face, edgesMap);
-					faces.add(face);
-				}
-				//if we are on the last stack we are generating triangles for the bottom cap
-				if(stack == this.stacks){
-					//numVerts-this.slices-1 indicates the index of the starting vertex for the bottom stack
-					Face face = new Face(
-							Integer.valueOf( numVerts-1),
-							Integer.valueOf( numVerts-1-this.slices+cycle),
-							Integer.valueOf( numVerts-1-this.slices+slice ));
-					
-					super.setUpTriangle(face, edgesMap);
-					faces.add(face);
-				}
-				//if we are in the mid section of the sphere then there are 2 triangles to generate per slice
-				if(stack != 1){
-					int prevStack = (stack-2)*this.slices;
-					int curStack = (stack-1)*this.slices;
-					
-					Face face1 = new Face(
-							Integer.valueOf( prevStack+slice+1 ),	//top left vertex in the left triangle of the square
-							Integer.valueOf( curStack+slice+1), 	//bottom left vertex in the left triangle of the square
-							Integer.valueOf( curStack+cycle+1)  	//bottom right vertex in the left triangle of the square
-							);
-					super.setUpTriangle(face1, edgesMap);
-					
-					Face face2 = new Face(
-							Integer.valueOf( prevStack+slice+1 ),		 //top left vertex in the right triangle of the square
-							Integer.valueOf( curStack+cycle+1)	,	 	 //bottom right vertex in the right triangle of the square
-							Integer.valueOf( prevStack+cycle+1 )		 //top right vertex in the right triangle of the square
-							);
-					super.setUpTriangle(face2, edgesMap);
-					faces.add(face1);
-					faces.add(face2);
+				mesh.add(vert);
+				vert.addTo(vao);//add vertex to vertex array
+				
+				int cycleControl = (curSlice+1)%this.slices;//controls the offset from the start of a stack, when the first slice is reached
+				//this will loop back to 0 to specify using the start index
+				
+				//calculate indices
+				//check if we are generating for either caps of the sphere or if we are generating middle values
+				if(curStack == 1){
+					mesh.add(new Face(
+							0,
+							curSlice+1,
+							cycleControl+1
+							));
+				}else if(curStack == upperStack){
+					//index choice will maintain winding
+					int lastRingStart = lastIndex-this.slices;
+					mesh.add(new Face(
+							lastIndex,
+							lastRingStart+cycleControl,//next index
+							lastRingStart+curSlice//current index
+							));
+				}else{
+					//two triangles need to be made per face
+					int curIndexStart = (curStack-1)*this.slices+1;
+					int prevIndexStart = (curStack-2)*this.slices+1;
+					//the left triangle of the quad
+					mesh.add(new Face(
+							prevIndexStart+curSlice,//previous index at the same slice
+							curIndexStart+curSlice,//current index
+							prevIndexStart+cycleControl//next index of the previous stack 
+							));
+					//and the right triangle of the quad
+					mesh.add(new Face(
+							prevIndexStart+cycleControl,//next index of the previous stack 
+							curIndexStart+curSlice,//current index
+							curIndexStart+cycleControl//next index of current stack
+							));
 				}
 			}
 		}
-		Vertex last = new Vertex(0,0,-this.radius, 0,0,-1, 0,0);
-		vertices.add(last);
-		last.store(vertData);
+		//add the end vertex
+		//TODO calculate UV
+		Vertex bottom = new Vertex(0,-this.radius,0, 0,-this.radius,0, 0,0);
+		mesh.add(bottom);
+		bottom.addTo(vao);//add vertex to vertex array
 		
-		vertData.flip();
+		mesh.insertIndices(vao, main);//insert indices for the main rendering mode
 		
-		for(Face face : faces){
-			face.initAdjacent();
-			
-			if(bufferAdj){
-				face.storeAllIndices(indicesBuffer);
-			}else{
-				face.storePrimitiveIndices(indicesBuffer);
+		//check if there are additional modes that need to be accounted for
+		if(modes.length > 0){
+			for(RenderMode curMode : modes){
+				//check if the primary RenderMode passed to main was already processed, this way it isn't redundantly processed
+				if(curMode != main){
+					IndexBuffer modeBuffer = new IndexBuffer(curMode, dataType);
+					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+					modeBuffer.flush(BufferUsage.STATIC_DRAW);
+					vao.addIndexBuffer(modeBuffer);
+				}
 			}
-			
 		}
-		indicesBuffer.flip();
-		
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, vertData, GL_STATIC_DRAW);
-		glVertexAttribPointer(vAttrib, 3, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 0);
-		glVertexAttribPointer(nAttrib, 3, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 12);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer , GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		this.collider = new BoundingSphere(radius);
+		//specify the attributes for the vertex array
+		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
+		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
+		//finalize the buffers in the vao
+		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+		//enable the attributes for the vertex array
+		vao.enableAttribute(0);
+		vao.enableAttribute(1);
+		vao.enableAttribute(2);
 	}
 	
-	public Sphere(float radius, int divisions, int vAttrib, boolean bufferAdj){
-		this(radius, divisions, divisions, vAttrib, bufferAdj);
+	public Sphere(float radius, int divisions, RenderMode main, RenderMode... modes){
+		this(radius, divisions, divisions, main, modes);
 	}
 	
 	public Sphere(Sphere copy){
-		super(copy);
-		this.faces = copy.faces;
-		this.vertices = copy.vertices;
-		numIndices = copy.numIndices;
-		radius = copy.radius;
-		this.stacks = copy.stacks;
-		this.slices = copy.slices;
-	}
-	
-	@Override
-	public Sphere copy(){
-		return new Sphere(this);
-	}
-	
-	//change functionality
-	public void setRadius(float radius){
-		this.radius = radius <= 0 ? .01f : radius;
-//		base.setValueAt(0, 0, this.radius);
-//		base.setValueAt(1, 1, this.radius);
-//		base.setValueAt(2, 2, this.radius);
-	}
-	
-	public float getRadius(){
-		return radius;
-	}
-	
-	public int numSlices(){
-		return slices;
-	}
-	
-	public int numStacks(){
-		return stacks;
-	}
-	
-	@Override
-	public int getNumIndices(){
-		return numIndices;
+		 super(copy);
+		 radius = copy.radius;
+		 slices = copy.slices;
+		 stacks = copy.stacks;
 	}
 
 	@Override
-	public ArrayList<Vertex> getVertices() {
-		return vertices;
-	}
-
-	@Override
-	public ArrayList<Face> getFaces() {
-		return faces;
-	}
-
-	@Override
-	public boolean equals(Object o){
-		if(o instanceof Sphere){
-			Sphere casted = (Sphere)o;
-			return casted.numSlices() == slices && casted.numStacks() == stacks;
-		}else{
-			return false;
-		}
-	}
-	
-	@Override
-	public void render(){
-		glBindVertexArray(vao);
-		glEnableVertexAttribArray(vAttrib);
-		glEnableVertexAttribArray(nAttrib);
-		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glDrawElements((isAdjBuffered ? GL_TRIANGLES_ADJACENCY : GL_TRIANGLES), 
-				numIndices, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		glDisableVertexAttribArray(vAttrib);
-		glDisableVertexAttribArray(nAttrib);
-		glBindVertexArray(0);
-	}
-
-	@Override
-	public Mat3 computeTensor(float mass) {
-		Mat3 tensor = new Mat3((2*mass*radius*radius)/5);
-		if(mass > 0){
-			tensor.invert();
-		}
-		return tensor;
+	public void addMode(RenderMode mode) {
+		// TODO Auto-generated method stub
 	}
 }

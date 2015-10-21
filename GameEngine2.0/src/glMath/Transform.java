@@ -14,6 +14,17 @@ public class Transform {
 	}
 	
 	/**
+	 * Constructs this Transform using the given Transform's data to initialize its fields
+	 * 
+	 * @param copy Transform to copy from
+	 */
+	public Transform(Transform copy){
+		orientation = new Quaternion(copy.orientation);
+		position = new Vec3(copy.position);
+		scale = new Vec3(copy.scale);
+	}
+	
+	/**
 	 * Scales this transform
 	 * 
 	 * @param x Amount to scale along the x axis

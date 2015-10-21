@@ -18,7 +18,7 @@ public class IndexBuffer{
 	public IndexBuffer(RenderMode mode, IndexType type){
 		renderMode = mode;
 		this.type = type;
-		buffer = new BufferObject(GL_ELEMENT_ARRAY_BUFFER);
+		buffer = new BufferObject(BufferType.ELEMENT_ARRAY);
 	}
 	
 	/**
@@ -73,7 +73,7 @@ public class IndexBuffer{
 	 * 
 	 * @param usage How the buffer is to be used on the GPU
 	 */
-	public void flush(int usage){
+	public void flush(BufferUsage usage){
 		buffer.flush(usage);
 	}
 	

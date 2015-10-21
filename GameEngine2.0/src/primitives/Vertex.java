@@ -76,7 +76,7 @@ public class Vertex{
 	 * Constructs a vertex object using the given vectors to initialize the vertex's fields, these vectors are copied 
 	 * into their respective fields, the normal, values will be normalized in the vertex
 	 * <p>
-	 * This will contruct a vertex without a tangent and bitangent being initialized, future calls to these functions will 
+	 * This will construct a vertex without a tangent and bitangent being initialized, future calls to these functions will 
 	 * either return null when calling a getter function, or will instantiate a new vector for the variable if a setter
 	 * or if a summing function is called.
 	 * 
@@ -85,10 +85,32 @@ public class Vertex{
 	 * @param textCoord Texture coordinates for this vertex
 	 */
 	public Vertex(Vec3 pos, Vec3 normal, Vec2 textCoord){
-		this.pos = new Vec3(pos);
-		this.normal = new Vec3(normal);
+		this(pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, textCoord.x, textCoord.y);
+	}
+	
+	/**
+	 * Constructs a vertex object using the given float values
+	 * <p>
+	 * This will construct a vertex without a tangent and bitangent being initialized, future calls to these functions will 
+	 * either return null when calling a getter function, or will instantiate a new vector for the variable if a setter
+	 * or if a summing function is called.
+	 * 
+	 * @param x X component of this vertex's position
+	 * @param y Y component of this vertex's position
+	 * @param z Z component of this vertex's position
+	 * 
+	 * @param normalX X component of this vertex's normal
+	 * @param normalY Y component of this vertex's normal
+	 * @param normalZ Z component of this vertex's normal
+	 * 
+	 * @param u X component of this vertex's texture coordinate
+	 * @param v Y component of this vertex's texture coordinate
+	 */
+	public Vertex(float x, float y, float z, float normalX, float normalY, float normalZ, float u, float v){
+		this.pos = new Vec3(x, y, z);
+		this.normal = new Vec3(normalX, normalY, normalZ);
 		this.normal.normalize();
-		this.textCoords = new Vec2(textCoord);
+		this.textCoords = new Vec2(u, v);
 		this.tangent = null;
 		this.bitangent = null;
 	}

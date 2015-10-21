@@ -75,6 +75,43 @@ public class Mesh {
 	}
 	
 	/**
+	 * Gets the number of vertices stored in this mesh
+	 * 
+	 * @return Number of vertices in this mesh
+	 */
+	public int getNumVertices(){
+		return vertices.size();
+	}
+	
+	/**
+	 * Gets the number of faces in this mesh, a face is defined as a triangular portion of the mesh
+	 * comprised of 3 connected vertices
+	 * 
+	 * @return Number of faces in this mesh
+	 */
+	public int getNumFaces(){
+		return faces.size();
+	}
+	
+	/**
+	 * Gets the vertices of this mesh
+	 * 
+	 * @return ArrayList of the vertices stored in this mesh
+	 */
+	public ArrayList<Vertex> getVertices(){
+		return vertices;
+	}
+	
+	/**
+	 * Gets the faces of this mesh
+	 * 
+	 * @return ArrayList contained the faces stored in this mesh
+	 */
+	public ArrayList<Face> getFaces(){
+		return faces;
+	}
+	
+	/**
 	 * Inserts this meshes vertices into the given BufferObject
 	 * 
 	 * @param vao BUfferObject to add the vertices to
