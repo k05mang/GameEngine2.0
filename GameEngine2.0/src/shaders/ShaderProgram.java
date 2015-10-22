@@ -70,7 +70,8 @@ public class ShaderProgram {
 	}
 	
 	/**
-	 * Links this shader program on the GPU and generates the binary executables for the GPU to run
+	 * Links this shader program on the GPU and generates the binary executables for the GPU to run.
+	 * Additionally any shaders are detached from the program after linking is successful
 	 * 
 	 * @return True if the linking was successful, false otherwise
 	 */
@@ -83,6 +84,8 @@ public class ShaderProgram {
 			//get all the structs parsed from the shader associated with this program
 			for(Shader shader : shaders){
 				structs.putAll(shader.getStructs());
+				//detach the shaders
+				shader.detach(programId);
 			}
 			//iterate and add uniforms
 			for(Shader shader : shaders){
