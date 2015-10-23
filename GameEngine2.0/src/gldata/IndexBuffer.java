@@ -1,11 +1,8 @@
 package gldata;
-import static org.lwjgl.opengl.GL15.*;
+
 import static org.lwjgl.opengl.GL11.*;
 
-import renderers.RenderMode;
-
 public class IndexBuffer{
-	private RenderMode renderMode;
 	private IndexType type;
 	private BufferObject buffer;
 	
@@ -15,8 +12,7 @@ public class IndexBuffer{
 	 * @param mode Mode to render this index buffer as with opengl rendering calls
 	 * @param type Type to store the buffers data as for calls to opengl rendering calls
 	 */
-	public IndexBuffer(RenderMode mode, IndexType type){
-		renderMode = mode;
+	public IndexBuffer(IndexType type){
 		this.type = type;
 		buffer = new BufferObject(BufferType.ELEMENT_ARRAY);
 	}
@@ -54,9 +50,9 @@ public class IndexBuffer{
 			case BYTE:
 				return buffer.size();
 			case SHORT:
-				return buffer.size()/2;
+				return buffer.size() >> 1;
 			case INT:
-				return buffer.size()/4;
+				return buffer.size() >> 2;
 		}
 		return 0;
 	}
@@ -104,24 +100,6 @@ public class IndexBuffer{
 	 */
 	public IndexType getType(){
 		return type;
-	}
-	
-	/**
-	 * Gets the rendering mode for this buffer
-	 * 
-	 * @return 
-	 */
-	public RenderMode getRenderMode(){
-		return renderMode;
-	}
-	
-	/**
-	 * Sets the rendering mode for this buffer
-	 * 
-	 * @param mode RenderMode enum specifying how this buffer should be rendered
-	 */
-	public void setRenderMode(RenderMode mode){
-		renderMode = mode;
 	}
 	
 
@@ -264,6 +242,19 @@ public class IndexBuffer{
 		
 		private IndexType(int type){
 			enumType = type;
+		}
+		
+		@Override
+		public String toString(){
+			switch(this){
+				case BYTE:
+					return "BYTE";
+				case SHORT:
+					return "SHORT";
+				case INT:
+					return "INT";
+			}
+			return "";
 		}
 	}
 }

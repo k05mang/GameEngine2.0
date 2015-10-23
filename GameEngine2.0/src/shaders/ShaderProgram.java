@@ -41,6 +41,7 @@ public class ShaderProgram {
 	 * Deletes this shader program object from the GPU
 	 */
 	public void delete(){
+		glUseProgram(0);
 		glDeleteProgram(programId);
 	}
 	

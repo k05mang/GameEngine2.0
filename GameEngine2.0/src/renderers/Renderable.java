@@ -99,4 +99,8 @@ public abstract class Renderable {
 	 * @param mode RenderMode to add to this Renderable
 	 */
 	public abstract void addMode(RenderMode mode);
+	
+	public void delete(){
+		vao.delete();
+	}
 }

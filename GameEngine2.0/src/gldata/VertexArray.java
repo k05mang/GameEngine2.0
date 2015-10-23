@@ -73,7 +73,7 @@ public class VertexArray {
 	 * @param defaultType Default IndexType for this VertexArray's IndexBuffer 
 	 */
 	public VertexArray(RenderMode defaultMode, IndexBuffer.IndexType defaultType){
-		vaoId = glGenVertexArrays();
+		vaoId = glCreateVertexArrays();
 		
 		vbos = new HashMap<String, BufferObject>();
 		defaultVbo = new BufferObject(BufferType.ARRAY);
@@ -81,7 +81,7 @@ public class VertexArray {
 		vbos.put("default", defaultVbo);
 		
 		ibos = new HashMap<RenderMode, IndexBuffer>();
-		defaultIbo = new IndexBuffer(defaultMode, defaultType);
+		defaultIbo = new IndexBuffer(defaultType);
 		//put this vertex array's default index buffer as "default"
 		ibos.put(defaultMode, defaultIbo);
 		//set the current id for what buffer to use
@@ -107,7 +107,7 @@ public class VertexArray {
 				glVertexArrayAttribFormat(vaoId, attribData.index, attribData.attribute.size, attribData.attribute.type, attribData.normalize, stride);
 				stride += attribData.attribute.bytes;
 			}
-			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo).getId(), 0, stride);
+			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo.toString()).getId(), 0, stride);
 			glVertexArrayElementBuffer(vaoId, ibos.get(ibo).getId());
 			finished = true;
 		}
@@ -117,6 +117,7 @@ public class VertexArray {
 	 * Deletes this vertex array and its associated buffers, other buffers passed to this vertex array are not deleted
 	 */
 	public void delete(){
+		glBindVertexArray(0);
 		glDeleteVertexArrays(vaoId);
 		defaultVbo.delete();
 		defaultIbo.delete();
@@ -149,12 +150,6 @@ public class VertexArray {
 		return ibos.get(ibo).numElements();
 	}
 	
-	/**
-	 * Adds a vertex buffer to the specified name for this vertex array, only if the BufferObject is of type 
-	 * @param name
-	 * @param buffer
-	 * @return
-	 */
 	public boolean addVertexBuffer(String name, BufferObject buffer){
 		//check to make sure the buffer being added doesn't have the name of default which is reserved
 		//additionally check that the buffer type is a valid type 
@@ -171,15 +166,15 @@ public class VertexArray {
 		if(vbos.get(name) != null){
 			vbo.replace(0, vbo.length(), name);
 			vbo.trimToSize();
-			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo).getId(), 0, stride);
+			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo.toString()).getId(), 0, stride);
 			return true;
 		}else{
 			return false;
 		}
 	}
 	
-	public void addIndexBuffer(IndexBuffer buffer){
-		ibos.put(buffer.getRenderMode(), buffer);
+	public void addIndexBuffer(RenderMode mode, IndexBuffer buffer){
+		ibos.put(mode, buffer);
 	}
 	
 	public boolean setIndexBuffer(RenderMode mode){
@@ -383,7 +378,7 @@ public class VertexArray {
 	 */
 	public void add(float value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -394,7 +389,7 @@ public class VertexArray {
 	 */
 	public void add(double value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -405,7 +400,7 @@ public class VertexArray {
 	 */
 	public void add(byte value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -416,7 +411,7 @@ public class VertexArray {
 	 */
 	public void add(short value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -427,7 +422,7 @@ public class VertexArray {
 	 */
 	public void add(int value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -438,7 +433,7 @@ public class VertexArray {
 	 */
 	public void add(Vec2 value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -449,7 +444,7 @@ public class VertexArray {
 	 */
 	public void add(Vec3 value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -460,7 +455,7 @@ public class VertexArray {
 	 */
 	public void add(Vec4 value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -471,7 +466,7 @@ public class VertexArray {
 	 */
 	public void add(Mat2 value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -482,7 +477,7 @@ public class VertexArray {
 	 */
 	public void add(Mat3 value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -493,7 +488,7 @@ public class VertexArray {
 	 */
 	public void add(Mat4 value){
 		if(!finished){
-			vbos.get(vbo).add(value);
+			defaultVbo.add(value);
 		}
 	}
 
@@ -504,7 +499,7 @@ public class VertexArray {
 	 */
 	public void addIndex(byte value){
 		if(!finished){
-			ibos.get(ibo).add(value);
+			defaultIbo.add(value);
 		}
 	}
 
@@ -515,7 +510,7 @@ public class VertexArray {
 	 */
 	public void addIndex(short value){
 		if(!finished){
-			ibos.get(ibo).add(value);
+			defaultIbo.add(value);
 		}
 	}
 
@@ -526,7 +521,7 @@ public class VertexArray {
 	 */
 	public void addIndex(int value){
 		if(!finished){
-			ibos.get(ibo).add(value);
+			defaultIbo.add(value);
 		}
 	}
 	

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import org.lwjgl.BufferUtils;
 
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL45.*;
 
@@ -28,7 +29,7 @@ public class BufferObject {
 	 * @param bufferType The type of buffer this BufferObject will represent
 	 */
 	public BufferObject(BufferType type){
-		bufferId = glGenBuffers();
+		bufferId = glCreateBuffers();
 		bufferType = type;
 		data = new ArrayList<Byte>();
 		size = 0;
@@ -66,6 +67,7 @@ public class BufferObject {
 	 * Deletes this buffer object from the GPU
 	 */
 	public void delete(){
+		glBindBuffer(bufferType.type, 0);
 		glDeleteBuffers(bufferId);
 		bufferId = 0;
 	}
@@ -107,7 +109,7 @@ public class BufferObject {
 		//TODO potentially make this function backwards compatible, for now though it will only be opengl 4.5 compliant
 		//check if there is any data to buffer
 		if(!data.isEmpty() && !finished){
-			//craete the buffer and buffer the data into it to send to the GPU
+			//create the buffer and buffer the data into it to send to the GPU
 			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(data.size());
 			for(Byte dataByte : data){
 				dataBuffer.put(dataByte);

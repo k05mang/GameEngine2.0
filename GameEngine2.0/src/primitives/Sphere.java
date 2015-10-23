@@ -12,6 +12,8 @@ import gldata.IndexBuffer;
 import gldata.VertexArray;
 import renderers.RenderMode;
 import renderers.Renderable;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 
 public class Sphere extends Renderable{
 	private float radius;
@@ -32,7 +34,7 @@ public class Sphere extends Renderable{
 			dataType = IndexBuffer.IndexType.BYTE;
 		}else if(lastIndex < Short.MAX_VALUE){
 			dataType = IndexBuffer.IndexType.SHORT;
-		}if(lastIndex < Integer.MAX_VALUE){
+		}else if(lastIndex < Integer.MAX_VALUE){
 			dataType = IndexBuffer.IndexType.INT;
 		}else{
 			//TODO handle when the number of vertices and indices would exceed the max value
@@ -111,10 +113,10 @@ public class Sphere extends Renderable{
 			for(RenderMode curMode : modes){
 				//check if the primary RenderMode passed to main was already processed, this way it isn't redundantly processed
 				if(curMode != main){
-					IndexBuffer modeBuffer = new IndexBuffer(curMode, dataType);
+					IndexBuffer modeBuffer = new IndexBuffer(dataType);
 					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
 					modeBuffer.flush(BufferUsage.STATIC_DRAW);
-					vao.addIndexBuffer(modeBuffer);
+					vao.addIndexBuffer(curMode, modeBuffer);
 				}
 			}
 		}
@@ -122,8 +124,33 @@ public class Sphere extends Renderable{
 		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
 		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
 		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
+		
 		//finalize the buffers in the vao
 		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+//		System.out.println(glGetError());
+//		switch(glGetError()){
+//			case GL_INVALID_ENUM:
+//				System.out.println("GL_INVALID_ENUM");
+//				break;
+//			case GL_INVALID_VALUE:
+//				System.out.println("GL_INVALID_VALUE");
+//				break;
+//			case GL_INVALID_OPERATION:
+//				System.out.println("GL_INVALID_OPERATION");
+//				break;
+//			case GL_INVALID_FRAMEBUFFER_OPERATION:
+//				System.out.println("GL_INVALID_FRAMEBUFFER_OPERATION");
+//				break;
+//			case GL_OUT_OF_MEMORY:
+//				System.out.println("GL_OUT_OF_MEMORY");
+//				break;
+//			case GL_STACK_UNDERFLOW:
+//				System.out.println("GL_STACK_UNDERFLOW");
+//				break;
+//			case GL_STACK_OVERFLOW:
+//				System.out.println("GL_STACK_OVERFLOW");
+//				break;
+//		}
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);

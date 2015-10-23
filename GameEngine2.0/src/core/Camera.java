@@ -94,7 +94,7 @@ public class Camera {
 
 	/**
 	 * Creates a camera with the given vector eye position, and a theta horizontal rotation
-	 * and a phi vertical rotation, additionall this creates and stores a perspective projection
+	 * and a phi vertical rotation, additionally this creates and stores a perspective projection
 	 * matrix formed using the given fovy, aspect, zNear, and zFar.
 	 * 
 	 * @param eye Vector that will be used for this cameras starting position
