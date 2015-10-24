@@ -1,4 +1,4 @@
-package window;
+package core;
 
 public class Window {
 
