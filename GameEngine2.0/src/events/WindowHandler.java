@@ -7,9 +7,9 @@ import org.lwjgl.glfw.GLFWWindowPosCallback;
 import org.lwjgl.glfw.GLFWWindowRefreshCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
 
-import core.Window;
+import windowing.Window;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
 
 public class WindowHandler{
 
@@ -53,7 +53,7 @@ public class WindowHandler{
 	GLFWWindowIconifyCallback.SAM{
 		
 		@Override
-		public void invoke(long handle, int iconified) {
+		public void invoke(long windowHandle, int iconified) {
 			if(iconified == GL_TRUE){
 				eventHandle.windowIconify(window);
 			}else{
@@ -73,7 +73,7 @@ public class WindowHandler{
 	GLFWWindowSizeCallback.SAM{
 		
 		@Override
-		public void invoke(long handle, int width, int height) {
+		public void invoke(long windowHandle, int width, int height) {
 			eventHandle.windowResize(window, width, height);
 		}
 		
@@ -89,7 +89,7 @@ public class WindowHandler{
 	GLFWWindowRefreshCallback.SAM{
 		
 		@Override
-		public void invoke(long handle) {
+		public void invoke(long windowHandle) {
 			eventHandle.windowRefresh(window);
 		}
 		
@@ -105,7 +105,7 @@ public class WindowHandler{
 	GLFWWindowFocusCallback.SAM{
 		
 		@Override
-		public void invoke(long handle, int focused) {
+		public void invoke(long windowHandle, int focused) {
 			eventHandle.windowFocus(window, (focused == GL_TRUE ? true : false));
 		}
 		
@@ -121,7 +121,7 @@ public class WindowHandler{
 	GLFWWindowCloseCallback.SAM{
 		
 		@Override
-		public void invoke(long handle) {
+		public void invoke(long windowHandle) {
 			eventHandle.windowClose(window);
 		}
 		
@@ -137,7 +137,7 @@ public class WindowHandler{
 	GLFWWindowPosCallback.SAM{
 		
 		@Override
-		public void invoke(long handle, int xpos, int ypos) {
+		public void invoke(long windowHandle, int xpos, int ypos) {
 			eventHandle.windowPosChange(window, xpos, ypos);
 		}
 		
@@ -153,7 +153,7 @@ public class WindowHandler{
 	GLFWFramebufferSizeCallback.SAM{
 
 		@Override
-		public void invoke(long handle, int width, int height) {
+		public void invoke(long windowHandle, int width, int height) {
 			eventHandle.frameBufferResize(window,  width,  height);
 		}
 		

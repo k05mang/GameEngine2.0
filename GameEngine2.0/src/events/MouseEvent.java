@@ -1,5 +1,5 @@
 package events;
-import core.Window;
+import windowing.Window;
 
 public interface MouseEvent {
 	/**
