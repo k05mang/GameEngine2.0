@@ -31,6 +31,8 @@ GLFWCursorEnterCallback.SAM{
 
 	@Override
 	public void invoke(long windowHandle, double xpos, double ypos) {
+		window.cursorX = xpos;
+		window.cursorY = ypos;
 		mouse.mouseMove(window, xpos, ypos);
 	}
 

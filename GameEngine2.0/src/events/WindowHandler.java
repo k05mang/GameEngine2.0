@@ -1,5 +1,7 @@
 package events;
 
+import java.nio.IntBuffer;
+
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.glfw.GLFWWindowFocusCallback;
 import org.lwjgl.glfw.GLFWWindowIconifyCallback;
@@ -7,9 +9,10 @@ import org.lwjgl.glfw.GLFWWindowPosCallback;
 import org.lwjgl.glfw.GLFWWindowRefreshCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 
 import windowing.Window;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
 
 public class WindowHandler{
 
@@ -74,6 +77,8 @@ public class WindowHandler{
 		
 		@Override
 		public void invoke(long windowHandle, int width, int height) {
+			window.width = width;
+			window.height = height;
 			eventHandle.windowResize(window, width, height);
 		}
 		
@@ -138,6 +143,8 @@ public class WindowHandler{
 		
 		@Override
 		public void invoke(long windowHandle, int xpos, int ypos) {
+			window.xpos = xpos;
+			window.ypos = ypos;
 			eventHandle.windowPosChange(window, xpos, ypos);
 		}
 		
@@ -154,6 +161,8 @@ public class WindowHandler{
 
 		@Override
 		public void invoke(long windowHandle, int width, int height) {
+			window.fbWidth = width;
+			window.fbHeight = height;
 			eventHandle.frameBufferResize(window,  width,  height);
 		}
 		

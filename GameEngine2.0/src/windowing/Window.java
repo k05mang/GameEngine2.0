@@ -1,7 +1,13 @@
 package windowing;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.opengl.GL11.GL_FALSE;
+import static org.lwjgl.system.MemoryUtil.NULL;
+
+import java.util.HashMap;
+
 import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.GL;
 
 import events.*;
 
@@ -15,23 +21,82 @@ public class Window {
 	private KeyboardHandler keyboard;
 	private MouseHandler mouse;
 	private WindowHandler windowHandler;
-	private int width, height;
+	public int width, height, xpos, ypos, fbWidth, fbHeight;
+	public double cursorX, cursorY;
+	private HashMap<WindowHint, Integer> windowHints;
 	
 	public Window(int width, int height){
-		window = 0L;
+		window = -1L;
 		keyboard = null;
 		mouse = null;
 		windowHandler = null;
 		this.width = width;
 		this.height = height;
+		xpos = ypos = fbWidth = fbHeight = 0;
+		cursorX = cursorY = 0.0;
+		windowHints = new HashMap<WindowHint, Integer>();
 	}
 	
-	public void init(){
-		
+	/**
+	 * Initializes the windowing and opengl libraries and creates the window
+	 * 
+	 * @param title Title of the window
+	 */
+	public void init(String title, boolean isFullscreen){
+		// Initialize GLFW
+        if ( glfwInit() != GL_TRUE ){
+        	throw new IllegalStateException("Unable to initialize GLFW");
+        }
+        
+        //set the window hints before creating the window
+        if(!windowHints.isEmpty()){
+        	for(WindowHint hint : windowHints.keySet()){
+        		glfwWindowHint(hint.type, windowHints.get(hint));
+        	}
+        }
+        
+        // Create the window
+        //TODO make this so it specifiies what monitor to make fullscreen for this window when adding support for multi-monitor
+        window = glfwCreateWindow(width, height, title, isFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+        //check to make sure it was created
+        if ( window == NULL ){
+        	throw new RuntimeException("Failed to create the GLFW window");
+        }
+        
+        //if is not fullscreen center the window
+        if(!isFullscreen){
+        	// Get the resolution of the primary monitor
+            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            // Center the window
+            glfwSetWindowPos(
+                window,
+                (vidmode.getWidth() - width) / 2,
+                (vidmode.getHeight() - height) / 2
+            );
+        }
+ 
+        // Make the OpenGL context current
+        glfwMakeContextCurrent(window);
+        // Enable v-sync
+        glfwSwapInterval(1);
+        
+        // Make the window visible
+        show();
+        
+        //create OpenGL context
+        GL.createCapabilities();
 	}
 	
 	public void launch(/*something here*/){
-		
+		//while the user has not attempted to close the window keep looping
+		while ( glfwWindowShouldClose(window) == GL_FALSE ) {
+            
+ 
+            glfwSwapBuffers(window); // swap the color buffers
+ 
+            // Poll for window events
+            glfwPollEvents();
+        }
 	}
 	
 	/**
@@ -113,7 +178,7 @@ public class Window {
 	 * @param value Value to set the given hint to
 	 */
 	public void setHint(WindowHint hint, int value){
-		glfwWindowHint(hint.type, value);
+		windowHints.put(hint, value);
 	}
 
 	/**
@@ -123,7 +188,7 @@ public class Window {
 	 * @param value Value to set the given hint to
 	 */
 	public void setHint(WindowHint hint, boolean value){
-		glfwWindowHint(hint.type, value ? GL_TRUE : GL_FALSE);
+		windowHints.put(hint, value ? GL_TRUE : GL_FALSE);
 	}
 
 	/**
@@ -133,7 +198,7 @@ public class Window {
 	 * @param value Value to set the given hint to
 	 */
 	public void setHint(WindowHint hint, HintConstant value){
-		glfwWindowHint(hint.type, value.type);
+		windowHints.put(hint, value.type);
 	}
 	
 	/**
@@ -187,10 +252,6 @@ public class Window {
 		glfwSetWindowPos(window, xpos, ypos);
 	}
 	
-//	public void center(){
-//		
-//	}
-	
 	/**
 	 * Sets the aspect ratio for this window. 
 	 * <p>
@@ -230,5 +291,125 @@ public class Window {
 	  */
 	public String getClipboard(){
 		return glfwGetClipboardString(window);
+	}
+	
+	/**
+	 * Gets the width of this window
+	 * 
+	 * @return Width of this window in pixels
+	 */
+	public int getWidth(){
+		return width;
+	}
+	
+	/**
+	 * Gets the height of this window
+	 * 
+	 * @return Height of this window in pixels
+	 */
+	public int getHeight(){
+		return height;
+	}
+	
+	/**
+	 * Gets the x position of this window relative to the monitor
+	 * 
+	 * @return X position of this window relative to the current monitor
+	 */
+	public int getXPosition(){
+		return xpos;
+	}
+
+	/**
+	 * Gets the y position of this window relative to the monitor
+	 * 
+	 * @return Y position of this window relative to the current monitor
+	 */
+	public int getYPosition(){
+		return ypos;
+	}
+	
+	/**
+	 * Hides the cursor when the mouse enters the window
+	 */
+	public void hideCursor(){
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	}
+	
+	/**
+	 * Displays the cursor when the mouse is inside the window
+	 */
+	public void showCursor(){
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+	
+	/**
+	 * Locks the cursor and hides it, cursor inputs will still be read and passed to the respective callback
+	 * however the cursor will never leave the window and will remain hidden. This effectively allows the cursor
+	 * to move in an "infinite" space, which is useful for mouse based camera movements.
+	 */
+	public void lockCursor(){
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+	
+	/**
+	 * Unlocks the cursor and returns it to normal function
+	 */
+	public void unlockCursor(){
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+	
+	/**
+	 * Determines whether the cursor has been locked
+	 * 
+	 * @return True if the cursor is in a locked state
+	 */
+	public boolean isCursorLocked(){
+		return glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED;
+	}
+	
+	/**
+	 * Determines whether the cursor is hidden
+	 * 
+	 * @return True if the cursor is hidden
+	 */
+	public boolean isCursorHidden(){
+		return glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_HIDDEN || isCursorLocked();
+	}
+	
+	/**
+	 * Gets the width of the framebuffer for this window
+	 * 
+	 * @return Width of the framebuffer for this window
+	 */
+	public int getFramebufferWidth(){
+		return fbWidth;
+	}
+	
+	/**
+	 * Gets the height of the framebuffer for this window
+	 * 
+	 * @return Height of the framebuffer for this window
+	 */
+	public int getFramebufferHeight(){
+		return fbHeight;
+	}
+	
+	/**
+	 * Gets the current x position of the cursor
+	 * 
+	 * @return Double precision x position of the cursor
+	 */
+	public double getCursorX(){
+		return cursorX;
+	}
+
+	/**
+	 * Gets the current y position of the cursor
+	 * 
+	 * @return Double precision y position of the cursor
+	 */
+	public double getCursorY(){
+		return cursorY;
 	}
 }
