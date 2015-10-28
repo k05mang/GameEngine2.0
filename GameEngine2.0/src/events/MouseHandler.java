@@ -39,11 +39,11 @@ GLFWCursorEnterCallback.SAM{
 	@Override
 	public void invoke(long windowHandle, int button, int action, int mods) {
 		if(action == GLFW.GLFW_PRESS){
-			mouse.mousePress(window, button, false, mods);
+			mouse.mousePress(window, MouseButton.getButton(button), false, ModKey.getMods(mods));
 		}else if(action == GLFW.GLFW_REPEAT){
-			mouse.mousePress(window, button, true, mods);
+			mouse.mousePress(window,  MouseButton.getButton(button), true, ModKey.getMods(mods));
 		}else{
-			mouse.mouseRelease(window, button, mods);
+			mouse.mouseRelease(window,  MouseButton.getButton(button), ModKey.getMods(mods));
 		}
 	}
 	

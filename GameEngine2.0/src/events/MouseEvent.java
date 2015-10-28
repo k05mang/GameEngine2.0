@@ -8,18 +8,18 @@ public interface MouseEvent {
 	 * @param window Window that called this callback function
 	 * @param button GLFW button code
 	 * @param isRepeat Indicates whether the button is being held and is a repeat value
-	 * @param mods Bitfield of modifier keys that were held with this mouse press
+	 * @param mods Array containing the mod keys that were pressed
 	 */
-	public void mousePress(Window window, int button, boolean isRepeat, int mods);
+	public void mousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods);
 	
 	/**
 	 * Function callback for when a mouse button is released
 	 * 
 	 * @param window Window that called this callback function
 	 * @param button GLFW button code
-	 * @param mods Bitfield of modifier keys that were held with this mouse press
+	 * @param mods Array containing the mod keys that were pressed
 	 */
-	public void mouseRelease(Window window, int button, int mods);
+	public void mouseRelease(Window window, MouseButton button, ModKey[] mods);
 	
 	/**
 	 * Function callback for when the mouse or touch pad is scrolled

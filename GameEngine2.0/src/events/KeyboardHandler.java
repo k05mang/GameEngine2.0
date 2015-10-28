@@ -22,7 +22,7 @@ GLFWCharModsCallback.SAM{
 	
 	@Override
 	public void invoke(long windowHandle, int codepoint, int mods) {
-		keyboard.charInputMods(window, codepoint, mods);
+		keyboard.charInputMods(window, codepoint, ModKey.getMods(mods));
 	}
 
 	@Override
@@ -33,11 +33,11 @@ GLFWCharModsCallback.SAM{
 	@Override
 	public void invoke(long windowHandle, int key, int scancode, int action, int mods) {
 		if(action == GLFW.GLFW_PRESS){
-			keyboard.keyPress(window, key, false, mods);
+			keyboard.keyPress(window, Key.getKey(key), false, ModKey.getMods(mods));
 		}else if(action == GLFW.GLFW_REPEAT){
-			keyboard.keyPress(window, key, true, mods);
+			keyboard.keyPress(window, Key.getKey(key), true, ModKey.getMods(mods));
 		}else{
-			keyboard.keyRelease(window, key, mods);
+			keyboard.keyRelease(window, Key.getKey(key), ModKey.getMods(mods));
 		}
 	}
 

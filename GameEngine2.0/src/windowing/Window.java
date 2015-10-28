@@ -9,6 +9,7 @@ import java.util.HashMap;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
+import core.Scene;
 import events.*;
 
 /**
@@ -41,6 +42,7 @@ public class Window {
 	 * Initializes the windowing and opengl libraries and creates the window
 	 * 
 	 * @param title Title of the window
+	 * @param isFullscreen Indicates whether the window should start out as fullscreen or windowed mode
 	 */
 	public void init(String title, boolean isFullscreen){
 		// Initialize GLFW
@@ -56,7 +58,12 @@ public class Window {
         }
         
         // Create the window
-        //TODO make this so it specifiies what monitor to make fullscreen for this window when adding support for multi-monitor
+        //TODO make this so it specifies what monitor to make fullscreen for this window when adding support for multi-monitor
+        
+        // Get the resolution of the primary monitor
+        GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+        width = isFullscreen ? vidmode.getWidth() : width;
+        height = isFullscreen ? vidmode.getHeight() : height;
         window = glfwCreateWindow(width, height, title, isFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
         //check to make sure it was created
         if ( window == NULL ){
@@ -65,8 +72,6 @@ public class Window {
         
         //if is not fullscreen center the window
         if(!isFullscreen){
-        	// Get the resolution of the primary monitor
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
             // Center the window
             glfwSetWindowPos(
                 window,
@@ -87,16 +92,37 @@ public class Window {
         GL.createCapabilities();
 	}
 	
-	public void launch(/*something here*/){
+	/**
+	 * Starts the main loop for the system to run
+	 * 
+	 * @param control Scene object that will utilize the window and render, perform logic, and handle input events
+	 */
+	public void launch(Scene control){
 		//while the user has not attempted to close the window keep looping
 		while ( glfwWindowShouldClose(window) == GL_FALSE ) {
-            
+            control.computeScene(this);
  
             glfwSwapBuffers(window); // swap the color buffers
  
             // Poll for window events
             glfwPollEvents();
         }
+		control.cleanup();
+		terminate();
+	}
+	
+	/**
+	 * Destroys this window and its resources
+	 */
+	public void destroy(){
+		glfwDestroyWindow(window);
+	}
+	
+	/**
+	 * Terminates the entire underlying windowing system
+	 */
+	public static void terminate(){
+		glfwTerminate();
 	}
 	
 	/**
@@ -240,6 +266,7 @@ public class Window {
 	 */
 	public void close(){
 		glfwSetWindowShouldClose(window, GL_TRUE);
+		Callbacks.glfwReleaseCallbacks(window);//release the callbacks
 	}
 	
 	/**
