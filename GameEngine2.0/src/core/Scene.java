@@ -6,5 +6,5 @@ public interface Scene {
 	
 	public void cleanup();
 	
-	public void launch();
+//	public void launch();
 }

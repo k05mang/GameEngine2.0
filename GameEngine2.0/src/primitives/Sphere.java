@@ -27,7 +27,8 @@ public class Sphere extends Renderable{
 		this.radius = radius <= 0 ? .01f : radius;
 		
 		int lastIndex = this.stacks*this.slices+1;//value of the last index
-		
+
+		System.out.println(lastIndex);
 		IndexBuffer.IndexType dataType = null;
 		//determine what data type the index buffer should be
 		if(lastIndex < Byte.MAX_VALUE){
@@ -41,7 +42,6 @@ public class Sphere extends Renderable{
 		}
 		//instantiate the vertex array
 		vao = new VertexArray(main, dataType);
-		
 		int upperStack = this.stacks+1;
 		//add the top vertex
 		//TODO calculate UV
@@ -70,16 +70,8 @@ public class Sphere extends Renderable{
 				if(curStack == 1){
 					mesh.add(new Face(
 							0,
-							curSlice+1,
-							cycleControl+1
-							));
-				}else if(curStack == upperStack){
-					//index choice will maintain winding
-					int lastRingStart = lastIndex-this.slices;
-					mesh.add(new Face(
-							lastIndex,
-							lastRingStart+cycleControl,//next index
-							lastRingStart+curSlice//current index
+							cycleControl+1,
+							curSlice+1
 							));
 				}else{
 					//two triangles need to be made per face
@@ -88,14 +80,24 @@ public class Sphere extends Renderable{
 					//the left triangle of the quad
 					mesh.add(new Face(
 							prevIndexStart+curSlice,//previous index at the same slice
-							curIndexStart+curSlice,//current index
-							prevIndexStart+cycleControl//next index of the previous stack 
+							prevIndexStart+cycleControl,//next index of the previous stack 
+							curIndexStart+curSlice//current index
 							));
 					//and the right triangle of the quad
 					mesh.add(new Face(
 							prevIndexStart+cycleControl,//next index of the previous stack 
-							curIndexStart+curSlice,//current index
-							curIndexStart+cycleControl//next index of current stack
+							curIndexStart+cycleControl,//next index of current stack
+							curIndexStart+curSlice//current index
+							));
+				}
+				
+				if(curStack == upperStack-1){
+					//index choice will maintain winding
+					int lastRingStart = lastIndex-this.slices;
+					mesh.add(new Face(
+							lastIndex,
+							lastRingStart+curSlice,//current index
+							lastRingStart+cycleControl//next index
 							));
 				}
 			}
@@ -127,30 +129,6 @@ public class Sphere extends Renderable{
 		
 		//finalize the buffers in the vao
 		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
-//		System.out.println(glGetError());
-//		switch(glGetError()){
-//			case GL_INVALID_ENUM:
-//				System.out.println("GL_INVALID_ENUM");
-//				break;
-//			case GL_INVALID_VALUE:
-//				System.out.println("GL_INVALID_VALUE");
-//				break;
-//			case GL_INVALID_OPERATION:
-//				System.out.println("GL_INVALID_OPERATION");
-//				break;
-//			case GL_INVALID_FRAMEBUFFER_OPERATION:
-//				System.out.println("GL_INVALID_FRAMEBUFFER_OPERATION");
-//				break;
-//			case GL_OUT_OF_MEMORY:
-//				System.out.println("GL_OUT_OF_MEMORY");
-//				break;
-//			case GL_STACK_UNDERFLOW:
-//				System.out.println("GL_STACK_UNDERFLOW");
-//				break;
-//			case GL_STACK_OVERFLOW:
-//				System.out.println("GL_STACK_OVERFLOW");
-//				break;
-//		}
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
