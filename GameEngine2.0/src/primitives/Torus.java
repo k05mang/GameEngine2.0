@@ -2,61 +2,63 @@ package primitives;
 
 import glMath.Mat3;
 import glMath.Vec3;
-
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import gldata.AttribType;
+import gldata.BufferUsage;
+import gldata.IndexBuffer;
+import gldata.VertexArray;
 import static java.lang.Math.PI;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL32.GL_TRIANGLES_ADJACENCY;
-
-import org.lwjgl.BufferUtils;
-
 import renderers.Renderable;
+import renderers.RenderMode;
 
 public class Torus extends Renderable {
 	
-	private ArrayList<Face> faces;
-	private ArrayList<Vertex> vertices;
-	private int rings, ringSegs, numIndices;
+	private int rings, ringSegs;
 	private float tubeRadius, radius;
 
-	public Torus(float radius, float tubeRadius, int rings, int ringSegs, 
-			int vAttrib, boolean bufferAdj){
-		super(vAttrib, vAttrib+1, bufferAdj);
+	/**
+	 * Constructs a torus with the given radius, and tube radius, with the specified number of rings with the given number of
+	 * segments per ring. The torus will be constructed such that it is compatible with the give RenderModes
+	 * 
+	 * Rings and ringSegs must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
+	 * 
+	 * @param radius Radius of the torus measured from the center of the torus to the middle of the torus's tube
+	 * @param tubeRadius Radius of the tube of the torus
+	 * @param rings Number of vertical segments defining the smoothness of the ring of the torus
+	 * @param ringSegs Number of horizontal segments defining the smoothness of the torus tube
+	 * @param modes RenderModes this Cone should be compatible with, the first mode is the initial mode
+	 * for the Cone to render with
+	 */
+	public Torus(float radius, float tubeRadius, int rings, int ringSegs, RenderMode... modes){
+		super();
 		
 		this.radius = radius;
 		this.tubeRadius = tubeRadius;
 		this.rings = rings < 3 ? 3 : rings;
 		this.ringSegs = ringSegs < 3 ? 3 : ringSegs;
-		faces = new ArrayList<Face>(2*this.rings*this.ringSegs);
-		vertices = new ArrayList<Vertex>(this.rings*this.ringSegs);
-		HashMap<Face.Edge, Face.HalfEdge> edgeMap = new HashMap<Face.Edge, Face.HalfEdge>();
-		numIndices = 2*(bufferAdj ? Face.INDEX_ADJ : Face.INDEX_NOADJ)*this.rings*this.ringSegs;
 		
-		IntBuffer indices = BufferUtils.createIntBuffer(numIndices);
-		ByteBuffer vertData = BufferUtils.createByteBuffer(this.rings*this.ringSegs*Vertex.SIZE_IN_BYTES);
+		int lastIndex = this.ringSegs*this.rings-1;
+		IndexBuffer.IndexType dataType = null;
 		
+		//determine what data type the index buffer should be
+		if(lastIndex < Byte.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.BYTE;
+		}else if(lastIndex < Short.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.SHORT;
+		}else if(lastIndex < Integer.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.INT;
+		}else{
+			//TODO handle when the number of vertices and indices would exceed the max value
+		}
+		//instantiate the vertex array
+		vao = new VertexArray(modes[0], dataType);
+		
+		//loop controlling what ring is being calculated
 		for(int curRing = 0; curRing < this.rings; curRing++){
-			for(int ring = 0; ring < this.ringSegs; ring++){
-				double phi = 2*PI*(ring/(double)this.ringSegs);
+			//loop controlling what segment of the current ring is being calculated
+			for(int ringSeg = 0; ringSeg < this.ringSegs; ringSeg++){
+				double phi = 2*PI*(ringSeg/(double)this.ringSegs);
 				double theta = 2*PI*(curRing/(double)this.rings);
 				
 				float x = (float)( (radius + tubeRadius*cos(phi))*cos(theta) );
@@ -67,119 +69,93 @@ public class Torus extends Renderable {
 				float normZ = z-radius*(float)sin(theta);
 				
 				Vertex vert = new Vertex(x, y, z,  normX, y, normZ,  0, 0);
-				vert.store(vertData);
-				vertices.add(vert);
+				vert.addTo(vao);
+				mesh.add(vert);
 				
-				Face face1 = new Face(
-						Integer.valueOf(ring+this.rings*curRing),
-						Integer.valueOf((ring+1)%this.ringSegs+this.rings*( (curRing+1)%this.rings )),
-						Integer.valueOf(ring+this.rings*( (curRing+1)%this.rings ))
-						);
+				int ringSegCycle = (ringSeg+1)%this.ringSegs;//controls the cycle connecting the last segment of the
+				//current ring to the first segment
 				
-				Face face2 = new Face(
-						Integer.valueOf(ring+this.rings*curRing),
-						Integer.valueOf((ring+1)%this.ringSegs+this.rings*curRing),
-						Integer.valueOf((ring+1)%this.ringSegs+this.rings*( (curRing+1)%this.rings ))
-						);
-				super.setUpTriangle(face1,  edgeMap);
-				super.setUpTriangle(face2,  edgeMap);
+				int ringCyle = this.rings*( (curRing+1)%this.rings );//controls the cycle connecting the last ring to the
+				//first ring
 				
-				faces.add(face1);
-				faces.add(face2);
+				mesh.add(new Face(
+						ringSeg+this.rings*curRing,//current vertex (current segment of current rings)
+						ringSegCycle+ringCyle,//next segment of next ring
+						ringSeg+ringCyle//next segment of current ring
+						));
+				
+				mesh.add(new Face(
+						ringSeg+this.rings*curRing,//current vertex (current segment of current rings)
+						ringSegCycle+this.rings*curRing,//current segment of next ring
+						ringSegCycle+ringCyle//next segment of next ring
+						));
 			}
 		}
 		
-		for(Face face : faces){
-			face.initAdjacent();
-			
-			if(bufferAdj){
-				face.storeAllIndices(indices);
-			}else{
-				face.storePrimitiveIndices(indices);
+		mesh.insertIndices(vao, modes[0]);//insert indices for the initial RenderMode
+		
+		//check if there are additional modes that need to be accounted for
+		if(modes.length > 0){
+			for(RenderMode curMode : modes){
+				//check if the primary RenderMode was already processed, this way it isn't redundantly processed
+				if(curMode != modes[0]){
+					IndexBuffer modeBuffer = new IndexBuffer(dataType);
+					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+					modeBuffer.flush(BufferUsage.STATIC_DRAW);
+					vao.addIndexBuffer(curMode, modeBuffer);
+				}
 			}
-			
 		}
+		//specify the attributes for the vertex array
+		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
+		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
-		vertData.flip();
-		indices.flip();
-		
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, vertData, GL_STATIC_DRAW);
-		glVertexAttribPointer(vAttrib, 3, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 0);
-		glVertexAttribPointer(nAttrib, 3, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 12);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices , GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		//finalize the buffers in the vao
+		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+		//enable the attributes for the vertex array
+		vao.enableAttribute(0);
+		vao.enableAttribute(1);
+		vao.enableAttribute(2);
 	}
 	
+	/**
+	 * Constructs a copy of the given torus
+	 * 
+	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * for more information about cautions with the copy constructor
+	 * 
+	 * @param copy Torus to copy
+	 */
 	public Torus(Torus copy){
 		super(copy);
-		this.faces = copy.faces;
-		this.vertices = copy.vertices;
 		rings = copy.rings;
 		ringSegs = copy.ringSegs; 
-		numIndices = copy.numIndices;
-	}
-	
-	@Override
-	public Torus copy(){
-		return new Torus(this);
-	}
-	
-	@Override
-	public int getNumIndices(){
-		return numIndices;
-	}
-	
-	public ArrayList<Face> getFaces() {
-		return faces;
+		radius = copy.radius;
+		tubeRadius = copy.tubeRadius; 
 	}
 
-	public ArrayList<Vertex> getVertices() {
-		return vertices;
+	/**
+	 * Gets the radius of the ring of the torus measured from the middle of the torus to the middle of the tube of the torus
+	 * 
+	 * @return Radius of the torus from the middle to the middle of the tube
+	 */
+	public float getRadius() {
+		return radius;
 	}
 
-	public int getRings() {
-		return rings;
-	}
-
-	public int getRingSegs() {
-		return ringSegs;
+	/**
+	 * Gets the radius of the tube of the torus
+	 * 
+	 * @return Radius of the tube of the torus
+	 */
+	public float getTubeRadius() {
+		return tubeRadius;
 	}
 
 	@Override
-	public void render(){
-		glBindVertexArray(vao);
-		glEnableVertexAttribArray(vAttrib);
-		glEnableVertexAttribArray(nAttrib);
+	public void addMode(RenderMode mode) {
+		// TODO Auto-generated method stub
 		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glDrawElements((isAdjBuffered ? GL_TRIANGLES_ADJACENCY : GL_TRIANGLES), 
-				numIndices, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		glDisableVertexAttribArray(vAttrib);
-		glDisableVertexAttribArray(nAttrib);
-		glBindVertexArray(0);
-	}
-
-	@Override
-	public Mat3 computeTensor(float mass) {
-		float radiusSq = radius*radius;
-		float tubeRadiusSq = tubeRadius*tubeRadius;
-		float iXY = .125f*(4*tubeRadiusSq+5*radiusSq);
-		Mat3 tensor = new Mat3(
-				new Vec3(iXY, 0, 0),
-				new Vec3(0, (tubeRadiusSq+.75f*radiusSq)*mass, 0),
-				new Vec3(0, 0, iXY)
-				);
-		if(mass > 0){
-			tensor.invert();
-		}
-		return tensor;
 	}
 }

@@ -10,7 +10,7 @@ public class Transform {
 	public Transform(){
 		orientation = new Quaternion();
 		position = new Vec3();
-		scale = new Vec3();
+		scale = new Vec3(1);
 	}
 	
 	/**

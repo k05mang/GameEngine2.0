@@ -150,6 +150,14 @@ public class VertexArray {
 		return ibos.get(ibo).numElements();
 	}
 	
+	/**
+	 * Adds the given BufferObject to this VertexArray's list of BufferObjects that are usable as
+	 * vertex buffers in this array
+	 * 
+	 * @param name String key naming this BufferObject for easy switching of vertex buffers
+	 * @param buffer Finalized BufferObject compatible with this VertexArray
+	 * @return True if the given BufferObject is a compatible type and was added, false otherwise
+	 */
 	public boolean addVertexBuffer(String name, BufferObject buffer){
 		//check to make sure the buffer being added doesn't have the name of default which is reserved
 		//additionally check that the buffer type is a valid type 
@@ -161,6 +169,12 @@ public class VertexArray {
 		}
 	}
 	
+	/**
+	 * Sets the VertexBuffer of this VertexArray to the given name of a BufferObject stored in this VertexArray
+	 * 
+	 * @param name Name of the BufferObject to use as the vertex buffer for this VertexArray
+	 * @return True if the BufferObject with the given anme exists in this VertexArray
+	 */
 	public boolean setVertexBuffer(String name){
 		//check to make sure the buffer being set exists
 		if(vbos.get(name) != null){
@@ -173,10 +187,24 @@ public class VertexArray {
 		}
 	}
 	
+	/**
+	 * Adds a given IndexBuffer to this VertexArray's IndexBuffers
+	 * 
+	 * @param mode The type of RenderMode this IndexBuffer is compatible with, this will override existing IndexBuffers
+	 * in this VertexArray if one already exists with the specified RenderMode
+	 * @param buffer IndexBuffer to add to this VertexArray
+	 */
 	public void addIndexBuffer(RenderMode mode, IndexBuffer buffer){
 		ibos.put(mode, buffer);
 	}
 	
+	/**
+	 * Sets this VertexArray's IndexBuffer to the given value, this will specify the RenderMode used in renderers
+	 * 
+	 * @param mode RenderMode to make active for this VertexArray by binding an IndexBuffer compatible with the given RenderMode
+	 * that was previously added and stored in this VertexArray
+	 * @return True if there exists an IndexBuffer with the given RenderMode in this VertexArray, false otherwise
+	 */
 	public boolean setIndexBuffer(RenderMode mode){
 		//check to make sure the buffer being set exists
 		if(ibos.get(mode) != null){

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import gldata.BufferObject;
+import glMath.Matrix;
+import glMath.Vector;
 
 public class ShaderProgram {
 	private HashMap<String, Uniform> uniforms;//mapping of uniform names to their uniform handlers
@@ -224,6 +226,55 @@ public class ShaderProgram {
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
 			return found.setMat(transpose, data);
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Sets a vector uniform to the given vector
+	 * 
+	 * @param uniformName Name of uniform to modify
+	 * @param value Vector to set the uniform with
+	 * @return True if the uniform was found and set to the given data
+	 */
+	public boolean setUniform(String uniformName, Vector value){
+		Uniform found = uniforms.get(uniformName);
+		if(found != null){
+			return found.set(value.asBuffer());
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Sets a matrix uniform specified by the given name
+	 * 
+	 * @param uniformName Name of uniform to modify
+	 * @param value Matrix to set the uniform to
+	 * @return True if the uniform was found and set to the given data
+	 */
+	public boolean setUniform(String uniformName, Matrix value){
+		Uniform found = uniforms.get(uniformName);
+		if(found != null){
+			return found.setMat(false, value.asBuffer());
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Sets a matrix uniform specified by the given name
+	 * 
+	 * @param uniformName Name of uniform to modify
+	 * @param transpose Whether to transpose the data as it is being passed to the GPU
+	 * @param value Matrix to set the uniform to
+	 * @return True if the uniform was found and set to the given data
+	 */
+	public boolean setUniform(String uniformName, boolean transpose, Matrix value){
+		Uniform found = uniforms.get(uniformName);
+		if(found != null){
+			return found.setMat(transpose, value.asBuffer());
 		}else{
 			return false;
 		}

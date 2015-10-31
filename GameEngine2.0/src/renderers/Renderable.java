@@ -22,6 +22,16 @@ public abstract class Renderable {
 		transforms = new Transform();
 	}
 	
+	/**
+	 * Creates a copy of the given Renderable.
+	 * <p>
+	 * This Renderable will share the underlying VertexArray object as well as the Mesh object. Caution should be taken as this
+	 * can lead to errors when the delete function is called since the shared VertexArray will be deleted.
+	 * 
+	 * The Transform object for this Renderable will be a copy of the Transform for the given Renderable and will not be shared.
+	 * </p>
+	 * @param copy
+	 */
 	public Renderable(Renderable copy){
 		vao = copy.vao;
 		mesh = copy.mesh;

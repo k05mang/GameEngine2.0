@@ -3,188 +3,193 @@ package primitives;
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL32.GL_TRIANGLES_ADJACENCY;
-import glMath.Mat3;
-import glMath.Mat4;
-import glMath.MatrixUtil;
-import glMath.Vec3;
-import glMath.Vec4;
-
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.lwjgl.BufferUtils;
-
-import collision.ConvexHull;
+import gldata.AttribType;
+import gldata.BufferUsage;
+import gldata.IndexBuffer;
+import gldata.VertexArray;
 import renderers.Renderable;
+import renderers.RenderMode;
 
 public class Cone extends Renderable {
 
-	private ArrayList<Face> faces;
-	private ArrayList<Vertex> vertices;
-	private int subdiv, numIndices;
+	private int subdiv;
 	private float length, radius;
 	
-	public Cone(float radius, float length, int subdivisions, int vAttrib, boolean bufferAdj){
-		super(vAttrib, vAttrib+1, bufferAdj);
-			
-		subdiv = (subdivisions > 2 ? subdivisions : 3);
+	/**
+	 * Constructs a cone primitive with the given radius, length, and subdivisions while making
+	 * it compatible with the given RenderModes.
+	 * 
+	 * Radius must be a value greater than 0, if radius is less than or equal to 0 then a default value 
+	 * of .01 will be used instead.
+	 * 
+	 * Slices must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
+	 * 
+	 * @param radius Radius of the base of the cone
+	 * @param length Length of the cone from the base to the tip
+	 * @param slices Number of subdivisions to make for the cone
+	 * @param centered Whether the cone should start with its center at the middle of the cone or at the tip of the cone
+	 * @param modes RenderModes this Cone should be compatible with, the first mode is the initial mode
+	 * for the Cone to render with
+	 */
+	public Cone(float radius, float length, int slices, boolean centered, RenderMode... modes){
+		super();
+		
+		//check and restrict the values passed to the constructor if they do not meet minimum requirements
+		subdiv = slices < 3 ? 3 : slices;
 		this.radius = radius <= 0 ? .01f : radius;
-		this.length = length == 0 ? .0001f : length;
+		this.length = length;
+		float vertOffset = centered ? this.length/2.0f : this.length;
 		
-		faces = new ArrayList<Face>();
-		vertices = new ArrayList<Vertex>();
-		numIndices = (subdiv+(subdiv-2))*(bufferAdj ? Face.INDEX_ADJ : Face.INDEX_NOADJ);
+		IndexBuffer.IndexType dataType = null;
 		
-		HashMap<Face.Edge, Face.HalfEdge> edgesMap = new HashMap<Face.Edge, Face.HalfEdge>();
+		//determine what data type the index buffer should be
+		if(subdiv < Byte.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.BYTE;
+		}else if(subdiv < Short.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.SHORT;
+		}else if(subdiv < Integer.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.INT;
+		}else{
+			//TODO handle when the number of vertices and indices would exceed the max value
+		}
+		//instantiate the vertex array
+		vao = new VertexArray(modes[0], dataType);
 		
-		ByteBuffer vertData = BufferUtils.createByteBuffer((subdiv+1)*Vertex.SIZE_IN_BYTES);
-		IntBuffer indicesBuffer = BufferUtils.createIntBuffer(numIndices);
-		
-		Vertex tip = new Vertex(0,this.length/2.0f,0, 0,this.length/2.0f,0, 0,0);
-		vertices.add(tip);
-		tip.store(vertData);
+		Vertex tip = new Vertex(0, centered ? this.length/2.0f : 0 ,0, 0,1,0, 0,0);
+		mesh.add(tip);
+		tip.addTo(vao);
 		for(int segment = 1; segment < subdiv+1; segment++){
 			double theta = 2*PI*(segment/(double)subdiv);
 			
 			float x = this.radius*(float)(cos(theta));
 			float z = this.radius*(float)(sin(theta));
 			
-			Vertex vert1 = new Vertex(x, -this.length/2.0f, z,  x, -this.length/2.0f, z, 0,0);
-			vertices.add(vert1);
-			vert1.store(vertData);
+			Vertex bottomVert = new Vertex(x, -vertOffset, z,  x, -vertOffset, z, 0,0);
+			mesh.add(bottomVert);
+			bottomVert.addTo(vao);
 			
 			Face side = new Face(
-					Integer.valueOf(0),	
-					Integer.valueOf( (segment+1)%(subdiv+1) == 0 ? 1 : (segment+1)%(subdiv+1)),
-					Integer.valueOf(segment)
+					0,	
+					(segment+1)%(subdiv+1) == 0 ? 1 : (segment+1)%(subdiv+1),
+					segment
 					);
-			super.setUpTriangle(side, edgesMap);
-			faces.add(side);
+			mesh.add(side);
 			
 			if(segment < subdiv-1){
-			Face bottom = new Face(
-					Integer.valueOf(1),						//the first bottom vertex
-					Integer.valueOf( segment+1), 	//the vertex that is segment+1 of the bottom ring
-					Integer.valueOf( segment+2)  //the vertex that is segment+2 of the bottom ring
-					);
-			super.setUpTriangle(bottom, edgesMap);
-			faces.add(bottom);
+				Face bottom = new Face(
+						1,			//the first bottom vertex
+						segment+1, 	//the vertex that is segment+1 of the bottom ring
+						segment+2   //the vertex that is segment+2 of the bottom ring
+						);
+				mesh.add(bottom);
 			}
 		}
-
-		vertData.flip();
-		for(Face face : faces){
-			face.initAdjacent();
-			
-			if(bufferAdj){
-				face.storeAllIndices(indicesBuffer);
-			}else{
-				face.storePrimitiveIndices(indicesBuffer);
+//		float tipY = centered ? this.length/2.0f : 0;
+//		for(int segment = 0; segment < subdiv; segment++){
+//			double theta = 2*PI*(segment/(double)subdiv);
+//			double thetaTop = 2*PI*((segment+.5)/(double)subdiv);
+//			
+//			float x = this.radius*(float)(cos(theta));
+//			float z = this.radius*(float)(sin(theta));
+//			
+//			float xTop = this.radius*(float)(cos(thetaTop));
+//			float zTop = this.radius*(float)(sin(thetaTop));
+//			
+//			Vertex top = new Vertex(0, tipY, 0,  xTop, this.length, zTop, 0,0);
+//			mesh.add(top);
+//			top.addTo(vao);
+//			
+//			Vertex side = new Vertex(x, -vertOffset, z,  x, this.length, z, 0,0);
+//			mesh.add(side);
+//			side.addTo(vao);
+//			
+//			
+//			Vertex bottom = new Vertex(x, -vertOffset, z,  0, -1, 0, 0,0);
+//			mesh.add(bottom);
+//			bottom.addTo(vao);
+//			
+//			//make the side face
+//			mesh.add(new Face(
+//					segment*3,//tip vert
+//					((segment+1)%subdiv)*3+1,//bottom right vert
+//					segment*3+1//bottom left vert
+//					));
+//			
+//			//make the bottom face
+//			//condition to prevent extra faces from being added due to how the bottom indices are formed
+//			if(segment < subdiv-2){
+//				mesh.add(new Face(
+//						2,//first bottom vert will act as the base vertex for the bottom faces triangles
+//						(segment+1)*3+2,//second segment bottom vert
+//						(segment+2)*3+2//third segment bottom vert
+//						
+//						));
+//			}
+//		}
+		
+		mesh.insertIndices(vao, modes[0]);//insert indices for the initial RenderMode
+		
+		//check if there are additional modes that need to be accounted for
+		if(modes.length > 0){
+			for(RenderMode curMode : modes){
+				//check if the primary RenderMode was already processed, this way it isn't redundantly processed
+				if(curMode != modes[0]){
+					IndexBuffer modeBuffer = new IndexBuffer(dataType);
+					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+					modeBuffer.flush(BufferUsage.STATIC_DRAW);
+					vao.addIndexBuffer(curMode, modeBuffer);
+				}
 			}
-			
 		}
+		//specify the attributes for the vertex array
+		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
+		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
-		indicesBuffer.flip();
-		
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, vertData, GL_STATIC_DRAW);
-		glVertexAttribPointer(vAttrib, 3, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 0);
-		glVertexAttribPointer(nAttrib, 3, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 12);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer , GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		this.collider = new ConvexHull(vertices, faces.get(0));
+		//finalize the buffers in the vao
+		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+		//enable the attributes for the vertex array
+		vao.enableAttribute(0);
+		vao.enableAttribute(1);
+		vao.enableAttribute(2);
 	}
 	
+	/**
+	 * Constructs a copy of the given cone
+	 * 
+	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * for more information about cautions with the copy constructor
+	 * 
+	 * @param copy Cone to copy
+	 */
 	public Cone(Cone copy){
 		super(copy);
-		this.faces = copy.faces;
-		this.vertices = copy.vertices;
-		numIndices = copy.numIndices;
-		subdiv = copy.subdiv; 
-		length = copy.length; 
+		subdiv = copy.subdiv;
 		radius = copy.radius;
+		length = copy.length;
 	}
-	
-	@Override
-	public Cone copy(){
-		return new Cone(this);
-	}
-	
+
+	/**
+	 * Gets the radius of the base of this cone
+	 *  
+	 * @return Radius of the base of this cone
+	 */
 	public float getRadius(){
 		return radius;
 	}
 	
+	/**
+	 * Gets the length of this cone
+	 * 
+	 * @return Length of this cone
+	 */
 	public float getLength(){
 		return length;
 	}
-	
-	@Override
-	public int getNumIndices(){
-		return numIndices;
-	}
-	
-	public ArrayList<Face> getFaces() {
-		return faces;
-	}
-
-	public ArrayList<Vertex> getVertices() {
-		return vertices;
-	}
-
-	public int getSubdivisions() {
-		return subdiv;
-	}
 
 	@Override
-	public void render() {
-		glBindVertexArray(vao);
-		glEnableVertexAttribArray(vAttrib);
-		glEnableVertexAttribArray(nAttrib);
+	public void addMode(RenderMode mode) {
+		// TODO Auto-generated method stub
 		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glDrawElements((isAdjBuffered ? GL_TRIANGLES_ADJACENCY : GL_TRIANGLES), 
-				numIndices, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		glDisableVertexAttribArray(vAttrib);
-		glDisableVertexAttribArray(nAttrib);
-		glBindVertexArray(0);
 	}
-
-	@Override
-	public Mat3 computeTensor(float mass) {
-		Mat3 tensor = new Mat3(
-				new Vec3((3*mass/5)*((radius*radius)/4+length*length), 0, 0),
-				new Vec3(0, 3*mass/10*(radius*radius), 0),
-				new Vec3(0, 0, (3*mass/5)*((radius*radius)/4+length*length))
-				);
-		if(mass > 0){
-			tensor.invert();
-		}
-		return tensor;
-	}
-
 }
