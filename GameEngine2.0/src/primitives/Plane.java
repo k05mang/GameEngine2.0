@@ -10,17 +10,26 @@ import renderers.RenderMode;
 public class Plane extends Renderable{
 	float width, length;
 	
+	/**
+	 * Constructs a plane with the given width being the dimension along the x axis, and length
+	 * being the dimension along the z axis. The plane is initially centered at the origin.
+	 * 
+	 * @param width Width of this plane along the x axis
+	 * @param length Length of this plane along the z axis
+	 * @param modes RenderModes this Plane should be compatible with, the first mode is the initial mode
+	 * for the Plane to render with
+	 */
 	public Plane(float width, float length, RenderMode... modes){
 		super();
-		this.width = width;
-		this.length = length;
+		this.width = width/2.0f;
+		this.length = length/2.0f;
 		
 		vao = new VertexArray(modes[0], IndexBuffer.IndexType.BYTE);
 		
-		Vertex topLeft = new Vertex(-width,0,-length, 0,1,0, 0,1);
-		Vertex bottomLeft = new Vertex(-width,0,length, 0,1,0, 0,0);
-		Vertex topRight = new Vertex(width,0,-length, 0,1,0, 1,1);
-		Vertex bottomRight = new Vertex(width,0,length, 0,1,0, 1,0);
+		Vertex topLeft = new Vertex(-this.width,0,-this.length, 0,1,0, 0,1);
+		Vertex bottomLeft = new Vertex(-this.width,0,this.length, 0,1,0, 0,0);
+		Vertex topRight = new Vertex(this.width,0,-this.length, 0,1,0, 1,1);
+		Vertex bottomRight = new Vertex(this.width,0,this.length, 0,1,0, 1,0);
 		
 		topLeft.addTo(vao);
 		bottomLeft.addTo(vao);
@@ -62,20 +71,46 @@ public class Plane extends Renderable{
 		vao.enableAttribute(2);
 	}
 	
+	/**
+	 * Constructs a plane with the given length defining the dimensions of the plane, this
+	 * effectively makes the plane square.
+	 * 
+	 * @param sideLength Length to set for the width and height of the plane
+	 * @param modes RenderModes this Plane should be compatible with, the first mode is the initial mode
+	 * for the Cone to render with
+	 */
 	public Plane(float sideLength, RenderMode... modes){
 		this(sideLength, sideLength, modes);
 	}
-	
+
+	/**
+	 * Constructs a copy of the given plane
+	 * 
+	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * for more information about cautions with the copy constructor
+	 * 
+	 * @param copy Plane to copy
+	 */
 	public Plane(Plane copy){
 		super(copy);
 		width = copy.width;
 		length = copy.length;
 	}
 	
+	/**
+	 * Gets the length of the plane along the z axis
+	 * 
+	 * @return Length of the plane along the z axis
+	 */
 	public float getLength(){
 		return length;
 	}
 	
+	/**
+	 * Gets the width of the plane along the x axis
+	 * 
+	 * @return Width of the plane along the x axis
+	 */
 	public float getWidth(){
 		return width;
 	}

@@ -14,7 +14,6 @@ import renderers.RenderMode;
 
 public class Torus extends Renderable {
 	
-	private int rings, ringSegs;
 	private float tubeRadius, radius;
 
 	/**
@@ -27,18 +26,18 @@ public class Torus extends Renderable {
 	 * @param tubeRadius Radius of the tube of the torus
 	 * @param rings Number of vertical segments defining the smoothness of the ring of the torus
 	 * @param ringSegs Number of horizontal segments defining the smoothness of the torus tube
-	 * @param modes RenderModes this Cone should be compatible with, the first mode is the initial mode
-	 * for the Cone to render with
+	 * @param modes RenderModes this Torus should be compatible with, the first mode is the initial mode
+	 * for the Torus to render with
 	 */
 	public Torus(float radius, float tubeRadius, int rings, int ringSegs, RenderMode... modes){
 		super();
 		
 		this.radius = radius;
 		this.tubeRadius = tubeRadius;
-		this.rings = rings < 3 ? 3 : rings;
-		this.ringSegs = ringSegs < 3 ? 3 : ringSegs;
+		int maxRing = rings < 3 ? 3 : rings;
+		int maxRingSeg = ringSegs < 3 ? 3 : ringSegs;
 		
-		int lastIndex = this.ringSegs*this.rings-1;
+		int lastIndex = maxRingSeg*maxRing-1;
 		IndexBuffer.IndexType dataType = null;
 		
 		//determine what data type the index buffer should be
@@ -55,11 +54,11 @@ public class Torus extends Renderable {
 		vao = new VertexArray(modes[0], dataType);
 		
 		//loop controlling what ring is being calculated
-		for(int curRing = 0; curRing < this.rings; curRing++){
+		for(int curRing = 0; curRing < maxRing; curRing++){
 			//loop controlling what segment of the current ring is being calculated
-			for(int ringSeg = 0; ringSeg < this.ringSegs; ringSeg++){
-				double phi = 2*PI*(ringSeg/(double)this.ringSegs);
-				double theta = 2*PI*(curRing/(double)this.rings);
+			for(int ringSeg = 0; ringSeg < maxRingSeg; ringSeg++){
+				double phi = 2*PI*(ringSeg/(double)maxRingSeg);
+				double theta = 2*PI*(curRing/(double)maxRing);
 				
 				float x = (float)( (radius + tubeRadius*cos(phi))*cos(theta) );
 				float y = (float)(tubeRadius*sin(phi));
@@ -72,21 +71,21 @@ public class Torus extends Renderable {
 				vert.addTo(vao);
 				mesh.add(vert);
 				
-				int ringSegCycle = (ringSeg+1)%this.ringSegs;//controls the cycle connecting the last segment of the
+				int ringSegCycle = (ringSeg+1)%maxRingSeg;//controls the cycle connecting the last segment of the
 				//current ring to the first segment
 				
-				int ringCyle = this.rings*( (curRing+1)%this.rings );//controls the cycle connecting the last ring to the
+				int ringCyle = maxRing*( (curRing+1)%maxRing );//controls the cycle connecting the last ring to the
 				//first ring
 				
 				mesh.add(new Face(
-						ringSeg+this.rings*curRing,//current vertex (current segment of current rings)
+						ringSeg+maxRing*curRing,//current vertex (current segment of current rings)
 						ringSegCycle+ringCyle,//next segment of next ring
 						ringSeg+ringCyle//next segment of current ring
 						));
 				
 				mesh.add(new Face(
-						ringSeg+this.rings*curRing,//current vertex (current segment of current rings)
-						ringSegCycle+this.rings*curRing,//current segment of next ring
+						ringSeg+maxRing*curRing,//current vertex (current segment of current rings)
+						ringSegCycle+maxRing*curRing,//current segment of next ring
 						ringSegCycle+ringCyle//next segment of next ring
 						));
 			}
@@ -129,8 +128,6 @@ public class Torus extends Renderable {
 	 */
 	public Torus(Torus copy){
 		super(copy);
-		rings = copy.rings;
-		ringSegs = copy.ringSegs; 
 		radius = copy.radius;
 		tubeRadius = copy.tubeRadius; 
 	}

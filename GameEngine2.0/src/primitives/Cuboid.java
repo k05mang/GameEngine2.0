@@ -1,228 +1,226 @@
 package primitives;
 
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
-import static org.lwjgl.opengl.GL11.glDrawElements;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL32.GL_TRIANGLES_ADJACENCY;
-import glMath.Mat3;
-import glMath.Mat4;
-import glMath.MatrixUtil;
-import glMath.Quaternion;
 import glMath.Vec3;
-
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.lwjgl.BufferUtils;
-
-import collision.ConvexHull;
-import collision.OBB;
+import gldata.AttribType;
+import gldata.BufferUsage;
+import gldata.IndexBuffer;
+import gldata.VertexArray;
+import renderers.RenderMode;
 import renderers.Renderable;
 
 public class Cuboid extends Renderable {
-	private ArrayList<Vertex> vertices;
-	private ArrayList<Face> faces;
-	private int numIndices;
-	private Vec3 dimensions, halfDimensions;
+	private Vec3 halfDimensions;
 	
-	public Cuboid(float width, float height, float length, boolean invertNormals, int vAttrib, boolean adjBuffered){
-		super(vAttrib, vAttrib+1, adjBuffered);
+	/**
+	 * Constructs a cuboid with the given width, height, and depth while also being compatible with the given RenderModes
+	 * 
+	 * @param width X dimension of the cuboid
+	 * @param height Y dimension of the cuboid
+	 * @param depth Z dimension of the cuboid
+	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
+	 * for the Cuboid to render with
+	 */
+	public Cuboid(float width, float height, float depth, RenderMode... modes){
+		super();
 		
-		halfDimensions = new Vec3(width/2.0f,height/2.0f,length/2.0f);
-		dimensions = new Vec3(width, height, length);
+		halfDimensions = new Vec3(width/2.0f,height/2.0f,depth/2.0f);
 		
-		HashMap<Face.Edge, Face.HalfEdge> edgesMap = new HashMap<Face.Edge, Face.HalfEdge>();
-		faces = new ArrayList<Face>(12);
-		vertices = new ArrayList<Vertex>(24);
-		numIndices = 12 * (isAdjBuffered ? Face.INDEX_ADJ : Face.INDEX_NOADJ);
+		vao = new VertexArray(modes[0], IndexBuffer.IndexType.BYTE);
 		
-		IntBuffer indices = BufferUtils.createIntBuffer((adjBuffered ? Face.INDEX_ADJ : Face.INDEX_NOADJ) * 12);
-		ByteBuffer verts = BufferUtils.createByteBuffer(24 * Vertex.SIZE_IN_BYTES);
+		//-----zpos face------
+		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+				0, 0, 1,
+				0, 1));
+		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+				0, 0, 1, 
+				0, 0));
+		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+				0, 0, 1, 
+				1, 1));
+		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+				0, 0, 1, 
+				1, 0));
+		//-----zneg face------
+		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+				0, 0, -1, 
+				0, 1));
+		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+				0, 0, -1,
+				0, 0));
+		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+				0, 0, -1, 
+				1, 1));
+		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+				0, 0, -1, 
+				1, 0));
 		
-		//-----zpos------
-		vertices.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 0, 0, (invertNormals ? -1
-				: 1), 0, 1));
-		vertices.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 0, 0, (invertNormals ? -1
-				: 1), 0, 0));
-		vertices.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 0, 0, (invertNormals ? -1
-				: 1), 1, 1));
-		vertices.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 0, 0, (invertNormals ? -1
-				: 1), 1, 0));
-		//-----zneg------
-		vertices.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 0, 0, (invertNormals ? 1
-				: -1), 0, 1));
-		vertices.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 0, 0, (invertNormals ? 1
-				: -1), 0, 0));
-		vertices.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 0, 0, (invertNormals ? 1
-				: -1), 1, 1));
-		vertices.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 0, 0, (invertNormals ? 1
-				: -1), 1, 0));
+		//-----xpos face------
+		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+				1, 0, 0, 
+				0, 1));
+		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+				1, 0, 0, 
+				0, 0));
+		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+				1, 0, 0, 
+				1, 1));
+		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+				1, 0, 0, 
+				1, 0));
+		//-----xneg face------
+		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+				-1, 0, 0, 
+				0, 1));
+		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+				-1, 0, 0, 
+				0, 0));
+		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+				-1, 0, 0, 
+				1, 1));
+		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+				-1, 0, 0, 
+				1, 0));
 		
-		//-----xpos------
-		vertices.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, (invertNormals ? -1 : 1), 0,
-				0, 0, 1));
-		vertices.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, (invertNormals ? -1 : 1),
-				0, 0, 0, 0));
-		vertices.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, (invertNormals ? -1 : 1),
-				0, 0, 1, 1));
-		vertices.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, (invertNormals ? -1 : 1),
-				0, 0, 1, 0));
-		//-----xneg------
-		vertices.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, (invertNormals ? 1 : -1),
-				0, 0, 0, 1));
-		vertices.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, (invertNormals ? 1 : -1),
-				0, 0, 0, 0));
-		vertices.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, (invertNormals ? 1 : -1),
-				0, 0, 1, 1));
-		vertices.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, (invertNormals ? 1 : -1),
-				0, 0, 1, 0));
+		//-----ypos face------
+		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+				0, 1, 0, 
+				0, 1));
+		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+				0, 1, 0, 
+				0, 0));
+		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+				0, 1, 0, 
+				1, 1));
+		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+				0, 1, 0, 
+				1, 0));
+		//-----yneg face------
+		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+				0, -1, 0, 
+				0, 1));
+		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+				0, -1, 0, 
+				0, 0));
+		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+				0, -1, 0, 
+				1, 1));
+		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+				0, -1, 0, 
+				1, 0));
 		
-		//-----ypos------
-		vertices.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 0,
-				(invertNormals ? -1 : 1), 0, 0, 1));
-		vertices.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 0,
-				(invertNormals ? -1 : 1), 0, 0, 0));
-		vertices.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 0,
-				(invertNormals ? -1 : 1), 0, 1, 1));
-		vertices.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 0, (invertNormals ? -1 : 1),
-				0, 1, 0));
-		//-----yneg------
-		vertices.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 0,
-				(invertNormals ? 1 : -1), 0, 0, 1));
-		vertices.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 0, (invertNormals ? 1
-				: -1), 0, 0, 0));
-		vertices.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 0,
-				(invertNormals ? 1 : -1), 0, 1, 1));
-		vertices.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 0,
-				(invertNormals ? 1 : -1), 0, 1, 0));
-		
+		//generate the face indices
 		for (int face = 0; face < 6; face++) {
-			vertices.get(0 + 4 * face).store(verts);
-			vertices.get(1 + 4 * face).store(verts);
-			vertices.get(2 + 4 * face).store(verts);
-			vertices.get(3 + 4 * face).store(verts);
-
-			Face face1 = new Face(Integer.valueOf(0 + 4 * face),
-					Integer.valueOf(1 + 4 * face),
-					Integer.valueOf(3 + 4 * face));
-			Face face2 = new Face(Integer.valueOf(0 + 4 * face),
-					Integer.valueOf(3 + 4 * face),
-					Integer.valueOf(2 + 4 * face));
-			super.setUpTriangle(face1, edgesMap);
-			super.setUpTriangle(face2, edgesMap);
-			faces.add(face1);
-			faces.add(face2);
+			mesh.add(new Face(
+					0 + 4 * face,
+					1 + 4 * face,
+					3 + 4 * face
+					));
+			mesh.add(new Face(
+					0 + 4 * face,
+					3 + 4 * face,
+					2 + 4 * face
+					));
 		}
+		mesh.insertVertices(vao);
+		mesh.insertIndices(vao, modes[0]);//insert indices for the initial RenderMode
 		
-		for(Face face : faces){
-			//face.initAdjacent();
-			
-			if(adjBuffered){
-				face.storeAllIndices(indices);
-			}else{
-				face.storePrimitiveIndices(indices);
+		//check if there are additional modes that need to be accounted for
+		if(modes.length > 0){
+			for(RenderMode curMode : modes){
+				//check if the primary RenderMode was already processed, this way it isn't redundantly processed
+				if(curMode != modes[0]){
+					IndexBuffer modeBuffer = new IndexBuffer(IndexBuffer.IndexType.BYTE);
+					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+					modeBuffer.flush(BufferUsage.STATIC_DRAW);
+					vao.addIndexBuffer(curMode, modeBuffer);
+				}
 			}
-			
 		}
-		verts.flip();
-		indices.flip();
+		//specify the attributes for the vertex array
+		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
+		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, verts, GL_STATIC_DRAW);
-		glVertexAttribPointer(vAttrib, 3, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 0);
-		glVertexAttribPointer(nAttrib, 3, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 12);
-		glVertexAttribPointer(nAttrib+1, 2, GL_FLOAT, false, Vertex.SIZE_IN_BYTES, 24);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices , GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		this.collider = new OBB(width, height, length);
+		//finalize the buffers in the vao
+		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+		//enable the attributes for the vertex array
+		vao.enableAttribute(0);
+		vao.enableAttribute(1);
+		vao.enableAttribute(2);
 	}
 	
-	public Cuboid(Vec3 dimensions, boolean invertNormals, int vAttrib, boolean adjBuffered){
-		this(dimensions.x, dimensions.y, dimensions.z, invertNormals, vAttrib, adjBuffered);
+	/**
+	 * Constructs a cuboid with the dimensions to use given as a vector. The components of the vector are assigned as such
+	 * <ul>
+	 * <li>X -> width</li>
+	 * <li>Y -> height</li>
+	 * <li>Z -> depth</li>
+	 * </ul>
+	 * 
+	 * @param dimensions Vector containing the dimensions of the cuboid
+	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
+	 * for the Cone to render with
+	 */
+	public Cuboid(Vec3 dimensions, RenderMode... modes){
+		this(dimensions.x, dimensions.y, dimensions.z, modes);
 	}
 	
-	public Cuboid(float scale, boolean invertNormals, int vAttrib, boolean adjBuffered){
-		this(scale, scale, scale, invertNormals, vAttrib, adjBuffered);
+	/**
+	 * Constructs a cuboid with the given scale defining the different dimensions for the cuboid. The resulting cuboid will be a cube
+	 * with width = height = depth = scale.
+	 * 
+	 * @param scale Dimension for the width, height, and depth of the cuboid
+	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
+	 * for the Cone to render with
+	 */
+	public Cuboid(float scale, RenderMode... modes){
+		this(scale, scale, scale, modes);
 	}
 	
+	/**
+	 * Constructs a copy of the given cuboid
+	 * 
+	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * for more information about cautions with the copy constructor
+	 * 
+	 * @param copy Cuboid to copy
+	 */
 	public Cuboid(Cuboid copy){
 		super(copy);
-		this.faces = copy.faces;
-		this.vertices = copy.vertices;
-		numIndices = copy.numIndices;
-		this.dimensions = copy.dimensions;
 		this.halfDimensions = copy.halfDimensions;
 	}
 	
-	@Override
-	public Cuboid copy(){
-		return new Cuboid(this);
-	}
-	
-	@Override
-	public int getNumIndices() {
-		return numIndices;
-	}
-
-	public ArrayList<Face> getFaces() {
-		return faces;
+	/**
+	 * Gets the width of the cuboid
+	 * 
+	 * @return Width of the cuboid
+	 */
+	public float getWidth(){
+		return halfDimensions.x*2;
 	}
 
-	public ArrayList<Vertex> getVertices() {
-		return vertices;
+	/**
+	 * Gets the height of the cuboid
+	 * 
+	 * @return Height of the cuboid
+	 */
+	public float getHeight(){
+		return halfDimensions.y*2;
+	}
+
+	/**
+	 * Gets the depth of the cuboid
+	 * 
+	 * @return Depth of the cuboid
+	 */
+	public float getDepth(){
+		return halfDimensions.z*2;
 	}
 
 	@Override
-	public void render() {
-		glBindVertexArray(vao);
-		glEnableVertexAttribArray(vAttrib);
-		glEnableVertexAttribArray(nAttrib);
-		glEnableVertexAttribArray(nAttrib+1);
+	public void addMode(RenderMode mode) {
+		// TODO Auto-generated method stub
 		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glDrawElements((isAdjBuffered ? GL_TRIANGLES_ADJACENCY : GL_TRIANGLES), 
-				numIndices, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		
-		glDisableVertexAttribArray(vAttrib);
-		glDisableVertexAttribArray(nAttrib);
-		glEnableVertexAttribArray(nAttrib+1);
-		glBindVertexArray(0);
-	}
-
-	@Override
-	public Mat3 computeTensor(float mass) {
-		float widthSq = dimensions.x*dimensions.x;
-		float heightSq = dimensions.y*dimensions.y;
-		float lengthSq = dimensions.z*dimensions.z;
-		Mat3 tensor = new Mat3(
-				new Vec3((mass/12)*(heightSq+lengthSq), 0, 0),
-				new Vec3(0, (mass/12)*(widthSq+lengthSq), 0),
-				new Vec3(0, 0, (mass/12)*(widthSq+heightSq))
-				);
-		if(mass > 0){
-			tensor.invert();
-		}
-		return tensor;
 	}
 
 }

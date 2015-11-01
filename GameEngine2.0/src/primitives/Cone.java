@@ -12,7 +12,6 @@ import renderers.RenderMode;
 
 public class Cone extends Renderable {
 
-	private int subdiv;
 	private float length, radius;
 	
 	/**
@@ -35,7 +34,7 @@ public class Cone extends Renderable {
 		super();
 		
 		//check and restrict the values passed to the constructor if they do not meet minimum requirements
-		subdiv = slices < 3 ? 3 : slices;
+		int subdiv = slices < 3 ? 3 : slices;
 		this.radius = radius <= 0 ? .01f : radius;
 		this.length = length;
 		float vertOffset = centered ? this.length/2.0f : this.length;
@@ -164,7 +163,6 @@ public class Cone extends Renderable {
 	 */
 	public Cone(Cone copy){
 		super(copy);
-		subdiv = copy.subdiv;
 		radius = copy.radius;
 		length = copy.length;
 	}

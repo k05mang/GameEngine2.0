@@ -17,7 +17,6 @@ import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 
 public class Sphere extends Renderable{
 	private float radius;
-	private int slices, stacks;
 
 	/**
 	 * Constructs a sphere primitive with the given radius, and subdivisions while making it compatible
@@ -39,11 +38,11 @@ public class Sphere extends Renderable{
 	public Sphere(float radius, int slices, int stacks, RenderMode... modes){
 		super();
 		
-		this.slices = slices < 3 ? 3 : slices;
-		this.stacks = stacks < 1 ? 1 : stacks;
+		int maxSlice = slices < 3 ? 3 : slices;
+		int maxStack = stacks < 1 ? 1 : stacks;
 		this.radius = radius <= 0 ? .01f : radius;
 		
-		int lastIndex = this.stacks*this.slices+1;//value of the last index
+		int lastIndex = maxStack*maxSlice+1;//value of the last index
 
 		IndexBuffer.IndexType dataType = null;
 		//determine what data type the index buffer should be
@@ -58,17 +57,17 @@ public class Sphere extends Renderable{
 		}
 		//instantiate the vertex array
 		vao = new VertexArray(modes[0], dataType);
-		int upperStack = this.stacks+1;
+		int upperStack = maxStack+1;
 		//add the top vertex
 		//TODO calculate UV
 		Vertex top = new Vertex(0,this.radius,0, 0,1,0, 0,0);
 		mesh.add(top);
 		top.addTo(vao);//add vertex to the vertex array
 		for(int curStack = 1; curStack < upperStack; curStack++){
-			for(int curSlice = 0; curSlice < this.slices; curSlice++){
+			for(int curSlice = 0; curSlice < maxSlice; curSlice++){
 				//pre-calculate the angles for the trig functions
 				double phi = PI*(curStack/(double)upperStack);
-				double theta = 2*PI*(curSlice/(double)this.slices);
+				double theta = 2*PI*(curSlice/(double)maxSlice);
 				
 				float x = (float)( this.radius*cos(theta)*sin(phi) );
 				float y = (float)( this.radius*cos(phi) );//since y is the up axis have it use the conventional z calculation
@@ -78,7 +77,7 @@ public class Sphere extends Renderable{
 				mesh.add(vert);
 				vert.addTo(vao);//add vertex to vertex array
 				
-				int cycleControl = (curSlice+1)%this.slices;//controls the offset from the start of a stack, when the first slice is reached
+				int cycleControl = (curSlice+1)%maxSlice;//controls the offset from the start of a stack, when the first slice is reached
 				//this will loop back to 0 to specify using the start index
 				
 				//calculate indices
@@ -91,8 +90,8 @@ public class Sphere extends Renderable{
 							));
 				}else{
 					//two triangles need to be made per face
-					int curIndexStart = (curStack-1)*this.slices+1;
-					int prevIndexStart = (curStack-2)*this.slices+1;
+					int curIndexStart = (curStack-1)*maxSlice+1;
+					int prevIndexStart = (curStack-2)*maxSlice+1;
 					//the left triangle of the quad
 					mesh.add(new Face(
 							prevIndexStart+curSlice,//previous index at the same slice
@@ -109,7 +108,7 @@ public class Sphere extends Renderable{
 				
 				if(curStack == upperStack-1){
 					//index choice will modes[0]tain winding
-					int lastRingStart = lastIndex-this.slices;
+					int lastRingStart = lastIndex-maxSlice;
 					mesh.add(new Face(
 							lastIndex,
 							lastRingStart+curSlice,//current index
@@ -175,8 +174,6 @@ public class Sphere extends Renderable{
 	public Sphere(Sphere copy){
 		 super(copy);
 		 radius = copy.radius;
-		 slices = copy.slices;
-		 stacks = copy.stacks;
 	}
 	
 	/**

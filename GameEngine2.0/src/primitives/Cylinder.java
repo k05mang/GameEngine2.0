@@ -12,7 +12,6 @@ import gldata.VertexArray;
 
 public class Cylinder extends Renderable{
 	private float length, radius;
-	private int segments;
 	
 	/**
 	 * Constructs a cylinder with the given radius, length, and subdivisions while making it compatible with the
@@ -26,17 +25,17 @@ public class Cylinder extends Renderable{
 	 * @param radius Radius of the cylinder
 	 * @param length Length of the cylinder from one end to the other
 	 * @param segments Number of segments to define this cylinder
-	 * @param modes RenderModes this Cone should be compatible with, the first mode is the initial mode
-	 * for the Cone to render with
+	 * @param modes RenderModes this Cylinder should be compatible with, the first mode is the initial mode
+	 * for the Cylinder to render with
 	 */
 	public Cylinder(float radius, float length, int segments, RenderMode... modes){
 		super();
 		
-		this.segments = segments < 3 ? 3 : segments;
+		int maxSegment = segments < 3 ? 3 : segments;
 		this.length = length;
 		this.radius = radius <= 0 ? .01f : radius;
 		
-		int lastIndex = this.segments*4-1;
+		int lastIndex = maxSegment*4-1;
 		IndexBuffer.IndexType dataType = null;
 		
 		//determine what data type the index buffer should be
@@ -52,8 +51,8 @@ public class Cylinder extends Renderable{
 		//instantiate the vertex array
 		vao = new VertexArray(modes[0], dataType);
 		
-		for(int segment = 0; segment < this.segments; segment++){
-			double theta = 2*PI*(segment/(double)this.segments);
+		for(int segment = 0; segment < maxSegment; segment++){
+			double theta = 2*PI*(segment/(double)maxSegment);
 			
 			float x = this.radius*(float)(cos(theta));
 			float y = this.length/2.0f;
@@ -75,7 +74,7 @@ public class Cylinder extends Renderable{
 			sideBottom.addTo(vao);
 			capBottom.addTo(vao);
 			
-			int nextSeg = (segment+1)%this.segments;//due to constantly computing this value cache it for reuse
+			int nextSeg = (segment+1)%maxSegment;//due to constantly computing this value cache it for reuse
 			//left side face
 			mesh.add(new Face(
 					segment*4+1,//current segment top left
@@ -90,14 +89,14 @@ public class Cylinder extends Renderable{
 					nextSeg*4+2//next segment bottom right
 					));
 			
-			//only compute the cap indices if we are 3 or more segments form the end
+			//only compute the cap indices if we are 3 or more segments from the end
 			//since the caps are generated with indices two segments ahead of the current one
 			//this will prevent redundant face generation at the end
-			if(segment < this.segments-2){
+			if(segment < maxSegment-2){
 				//top cap face
 				mesh.add(new Face(
 						0,//base top cap vert which is 0
-						((segment+2)%this.segments)*4,//vert that is the second next segment
+						((segment+2)%maxSegment)*4,//vert that is the second next segment
 						(nextSeg)*4//vert that is the next segment
 						));
 				
@@ -105,7 +104,7 @@ public class Cylinder extends Renderable{
 				mesh.add(new Face(
 						3,//base bottom cap vert which is 3
 						(nextSeg)*4+3,//vert that is the next segment
-						((segment+2)%this.segments)*4+3//vert that is the second next segment
+						((segment+2)%maxSegment)*4+3//vert that is the second next segment
 						));
 			}
 		}
@@ -147,7 +146,6 @@ public class Cylinder extends Renderable{
 	 */
 	public Cylinder(Cylinder copy){
 		super(copy);
-		segments = copy.segments;
 		radius = copy.radius;
 		length = copy.length;
 	}
