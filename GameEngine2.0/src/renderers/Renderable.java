@@ -1,25 +1,30 @@
 package renderers;
 
+import java.util.ArrayList;
+
 import primitives.Mesh;
 import glMath.Mat4;
 import glMath.Transform;
 import gldata.VertexArray;
+import gldata.BufferObject;
+import gldata.IndexBuffer;
 
 public abstract class Renderable {
 	protected Transform transforms;
 	protected Mesh mesh;
 	protected VertexArray vao;
+	protected ArrayList<BufferObject> vbos;
+	protected ArrayList<IndexBuffer> ibos;
 	
 	/**
-	 * Constructs a Renderable object with a default Mesh, Transform, and RenderMode. Additionally the
-	 * Renderable contains a VertexArray that is set to null in this constructor and should be instantiated
-	 * in the derived class. This is allow better use of the VertexArray's default IndexBuffer, giving a derived
-	 * class the flexibility of specifying a specific RenderMode and IndexType for the default buffer.
+	 * Constructs a Renderable with a VertexArray, Mesh, Transform, and array of BufferObjects and IndexBuffers
 	 */
 	public Renderable(){
-		vao = null;
+		vao = new VertexArray();
 		mesh = new Mesh();
 		transforms = new Transform();
+		vbos = new ArrayList<BufferObject>();
+		ibos = new ArrayList<IndexBuffer>();
 	}
 	
 	/**
@@ -112,5 +117,11 @@ public abstract class Renderable {
 	
 	public void delete(){
 		vao.delete();
+		for(BufferObject buffer : vbos){
+			buffer.delete();
+		}
+		for(IndexBuffer buffer : ibos){
+			buffer.delete();
+		}
 	}
 }

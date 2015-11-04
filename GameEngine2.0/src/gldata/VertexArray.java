@@ -20,73 +20,23 @@ public class VertexArray {
 	private int vaoId, stride;
 	private HashMap<String, BufferObject> vbos;
 	private HashMap<RenderMode, IndexBuffer> ibos;
-	private BufferObject defaultVbo;
-	private IndexBuffer defaultIbo;
-	private StringBuilder vbo;
+	private String vbo;
 	private RenderMode ibo;
 	private ArrayList<VertexAttrib> attributes;
 	private boolean finished;
 	
 	/**
-	 * Constructs this vertex array object with a default vertex buffer and default index buffer under the name
-	 * of "default".
-	 * <p>
-	 * The default index buffer for this vertex array will have a RenderMode of type TRIANGLES and an IndexType of INT.
+	 * Constructs an empty vertex array with an associated handle on the GPU
 	 */
 	public VertexArray(){
-		this(RenderMode.TRIANGLES, IndexBuffer.IndexType.INT);
-	}
-	
-	/**
-	 * Constructs this vertex array object with a default vertex buffer and default index buffer under the name
-	 * of "default".
-	 * <p>
-	 * The default index buffer for this vertex array will have a RenderMode specified by the given RenderMode
-	 * and an IndexType of INT.
-	 * 
-	 * @param defaultMode Default rendering mode for the index buffer
-	 */
-	public VertexArray(RenderMode defaultMode){
-		this(defaultMode, IndexBuffer.IndexType.INT);
-	}
-	
-	/**
-	 * Constructs this vertex array object with a default vertex buffer and default index buffer under the name
-	 * of "default".
-	 * <p>
-	 * The default index buffer for this vertex array will have an index type specified by the given IndexType
-	 * and will have a RenderMode of TIRANGLES.
-	 * 
-	 * @param defaultType The IndexType to set this vertex array's default index buffer to
-	 */
-	public VertexArray(IndexBuffer.IndexType defaultType){
-		this(RenderMode.TRIANGLES, defaultType);
-	}
-	
-	/**
-	 * Constructs this vertex array object with a default vertex buffer and default index buffer under the name
-	 * of "default".
-	 * <p>
-	 * The index buffer will have a 
-	 * 
-	 * @param defaultMode Default RenderMode for this VertexArray's IndexBuffer
-	 * @param defaultType Default IndexType for this VertexArray's IndexBuffer 
-	 */
-	public VertexArray(RenderMode defaultMode, IndexBuffer.IndexType defaultType){
+		//create the vao handle on the gpu
 		vaoId = glCreateVertexArrays();
-		
+		//vertex buffer mapping to different names
 		vbos = new HashMap<String, BufferObject>();
-		defaultVbo = new BufferObject(BufferType.ARRAY);
-		//put this vertex array's default vertex buffer as "default"
-		vbos.put("default", defaultVbo);
 		
 		ibos = new HashMap<RenderMode, IndexBuffer>();
-		defaultIbo = new IndexBuffer(defaultType);
-		//put this vertex array's default index buffer as "default"
-		ibos.put(defaultMode, defaultIbo);
-		//set the current id for what buffer to use
-		vbo = new StringBuilder("default");
-		ibo = defaultMode;
+		vbo = "default";
+		ibo = null;
 		attributes = new ArrayList<VertexAttrib>();
 		finished = false;
 	}
@@ -97,10 +47,8 @@ public class VertexArray {
 	 * @param bufferUsage GLenum determining how the vertex buffer is to be used
 	 * @param ibosUsage GLenum determining how the index buffer is to be used
 	 */
-	public void finalize(BufferUsage bufferUsage, BufferUsage ibosUsage){
+	public void finalize(){
 		if(!finished){
-			defaultVbo.flush(bufferUsage);
-			defaultIbo.flush(bufferUsage);
 			stride = 0;
 			for(VertexAttrib attribData : attributes){
 				glVertexArrayAttribBinding(vaoId, attribData.index, 0);
@@ -119,8 +67,6 @@ public class VertexArray {
 	public void delete(){
 		glBindVertexArray(0);
 		glDeleteVertexArrays(vaoId);
-		defaultVbo.delete();
-		defaultIbo.delete();
 	}
 	
 	/**
@@ -178,8 +124,7 @@ public class VertexArray {
 	public boolean setVertexBuffer(String name){
 		//check to make sure the buffer being set exists
 		if(vbos.get(name) != null){
-			vbo.replace(0, vbo.length(), name);
-			vbo.trimToSize();
+			vbo = name;
 			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo.toString()).getId(), 0, stride);
 			return true;
 		}else{
@@ -398,162 +343,7 @@ public class VertexArray {
 	public void disableAttribute(int attrib){
 		glDisableVertexArrayAttrib(vaoId, attrib);
 	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(float value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(double value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(byte value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(short value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(int value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(Vec2 value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(Vec3 value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(Vec4 value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(Mat2 value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(Mat3 value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's vertex buffer for use in the attributes
-	 * 
-	 * @param value Value to add to the vertex buffer associated with this vertex array
-	 */
-	public void add(Mat4 value){
-		if(!finished){
-			defaultVbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's index buffer for use in indexed rendering functions
-	 * 
-	 * @param value Index to add to the buffer
-	 */
-	public void addIndex(byte value){
-		if(!finished){
-			defaultIbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's index buffer for use in indexed rendering functions
-	 * 
-	 * @param value Index to add to the buffer
-	 */
-	public void addIndex(short value){
-		if(!finished){
-			defaultIbo.add(value);
-		}
-	}
-
-	/**
-	 * Adds the given value to this vertex array's index buffer for use in indexed rendering functions
-	 * 
-	 * @param value Index to add to the buffer
-	 */
-	public void addIndex(int value){
-		if(!finished){
-			defaultIbo.add(value);
-		}
-	}
 	
-
 	protected class VertexAttrib {
 	
 		public AttribType attribute;

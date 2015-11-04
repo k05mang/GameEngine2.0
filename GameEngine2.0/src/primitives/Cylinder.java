@@ -6,6 +6,8 @@ import renderers.RenderMode;
 import renderers.Renderable;
 import glMath.*;
 import gldata.AttribType;
+import gldata.BufferObject;
+import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import gldata.VertexArray;
@@ -48,8 +50,9 @@ public class Cylinder extends Renderable{
 		}else{
 			//TODO handle when the number of vertices and indices would exceed the max value
 		}
-		//instantiate the vertex array
-		vao = new VertexArray(modes[0], dataType);
+		
+		BufferObject vbo = new BufferObject(BufferType.ARRAY);
+		vbos.add(vbo);
 		
 		for(int segment = 0; segment < maxSegment; segment++){
 			double theta = 2*PI*(segment/(double)maxSegment);
@@ -69,10 +72,10 @@ public class Cylinder extends Renderable{
 			mesh.add(sideBottom);
 			mesh.add(capBottom);
 			
-			capTop.addTo(vao);
-			sideTop.addTo(vao);
-			sideBottom.addTo(vao);
-			capBottom.addTo(vao);
+			capTop.addTo(vbo);
+			sideTop.addTo(vbo);
+			sideBottom.addTo(vbo);
+			capBottom.addTo(vbo);
 			
 			int nextSeg = (segment+1)%maxSegment;//due to constantly computing this value cache it for reuse
 			//left side face
@@ -108,20 +111,23 @@ public class Cylinder extends Renderable{
 						));
 			}
 		}
+		vbo.flush(BufferUsage.STATIC_DRAW);
+		vao.addVertexBuffer("default", vbo);
 		
-		mesh.insertIndices(vao, modes[0]);//insert indices for the initial RenderMode
+		IndexBuffer indices = new IndexBuffer(dataType);
+		ibos.add(indices);
+		indices.flush(BufferUsage.STATIC_DRAW);
 		
 		//check if there are additional modes that need to be accounted for
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
-				//check if the primary RenderMode was already processed, this way it isn't redundantly processed
-				if(curMode != modes[0]){
-					IndexBuffer modeBuffer = new IndexBuffer(dataType);
-					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
-					modeBuffer.flush(BufferUsage.STATIC_DRAW);
-					vao.addIndexBuffer(curMode, modeBuffer);
-				}
+				IndexBuffer modeBuffer = new IndexBuffer(dataType);
+				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				modeBuffer.flush(BufferUsage.STATIC_DRAW);
+				vao.addIndexBuffer(curMode, modeBuffer);
+				ibos.add(modeBuffer);
 			}
+			vao.setIndexBuffer(modes[0]);
 		}
 		//specify the attributes for the vertex array
 		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
@@ -129,7 +135,7 @@ public class Cylinder extends Renderable{
 		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
 		//finalize the buffers in the vao
-		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+		vao.finalize();
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);

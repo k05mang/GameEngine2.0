@@ -4,6 +4,8 @@ import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import gldata.AttribType;
+import gldata.BufferObject;
+import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import gldata.VertexArray;
@@ -51,12 +53,12 @@ public class Cone extends Renderable {
 		}else{
 			//TODO handle when the number of vertices and indices would exceed the max value
 		}
-		//instantiate the vertex array
-		vao = new VertexArray(modes[0], dataType);
+		BufferObject vbo = new BufferObject(BufferType.ARRAY);
+		vbos.add(vbo);
 		
 		Vertex tip = new Vertex(0, centered ? this.length/2.0f : 0 ,0, 0,1,0, 0,0);
 		mesh.add(tip);
-		tip.addTo(vao);
+		tip.addTo(vbo);
 		for(int segment = 1; segment < subdiv+1; segment++){
 			double theta = 2*PI*(segment/(double)subdiv);
 			
@@ -65,7 +67,7 @@ public class Cone extends Renderable {
 			
 			Vertex bottomVert = new Vertex(x, -vertOffset, z,  x, -vertOffset, z, 0,0);
 			mesh.add(bottomVert);
-			bottomVert.addTo(vao);
+			bottomVert.addTo(vbo);
 			
 			Face side = new Face(
 					0,	
@@ -96,16 +98,16 @@ public class Cone extends Renderable {
 //			
 //			Vertex top = new Vertex(0, tipY, 0,  xTop, this.length, zTop, 0,0);
 //			mesh.add(top);
-//			top.addTo(vao);
+//			top.addTo(vbo);
 //			
 //			Vertex side = new Vertex(x, -vertOffset, z,  x, this.length, z, 0,0);
 //			mesh.add(side);
-//			side.addTo(vao);
+//			side.addTo(vbo);
 //			
 //			
 //			Vertex bottom = new Vertex(x, -vertOffset, z,  0, -1, 0, 0,0);
 //			mesh.add(bottom);
-//			bottom.addTo(vao);
+//			bottom.addTo(vbo);
 //			
 //			//make the side face
 //			mesh.add(new Face(
@@ -125,20 +127,24 @@ public class Cone extends Renderable {
 //						));
 //			}
 //		}
+
+		vbo.flush(BufferUsage.STATIC_DRAW);
+		vao.addVertexBuffer("default", vbo);
 		
-		mesh.insertIndices(vao, modes[0]);//insert indices for the initial RenderMode
+		IndexBuffer indices = new IndexBuffer(dataType);
+		ibos.add(indices);
+		indices.flush(BufferUsage.STATIC_DRAW);
 		
 		//check if there are additional modes that need to be accounted for
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
-				//check if the primary RenderMode was already processed, this way it isn't redundantly processed
-				if(curMode != modes[0]){
-					IndexBuffer modeBuffer = new IndexBuffer(dataType);
-					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
-					modeBuffer.flush(BufferUsage.STATIC_DRAW);
-					vao.addIndexBuffer(curMode, modeBuffer);
-				}
+				IndexBuffer modeBuffer = new IndexBuffer(dataType);
+				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				modeBuffer.flush(BufferUsage.STATIC_DRAW);
+				vao.addIndexBuffer(curMode, modeBuffer);
+				ibos.add(modeBuffer);
 			}
+			vao.setIndexBuffer(modes[0]);
 		}
 		//specify the attributes for the vertex array
 		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
@@ -146,7 +152,7 @@ public class Cone extends Renderable {
 		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
 		//finalize the buffers in the vao
-		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+		vao.finalize();
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);

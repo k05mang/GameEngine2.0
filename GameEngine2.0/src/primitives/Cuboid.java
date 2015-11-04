@@ -2,6 +2,8 @@ package primitives;
 
 import glMath.Vec3;
 import gldata.AttribType;
+import gldata.BufferObject;
+import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import gldata.VertexArray;
@@ -25,7 +27,8 @@ public class Cuboid extends Renderable {
 		
 		halfDimensions = new Vec3(width/2.0f,height/2.0f,depth/2.0f);
 		
-		vao = new VertexArray(modes[0], IndexBuffer.IndexType.BYTE);
+		BufferObject vbo = new BufferObject(BufferType.ARRAY);
+		vbos.add(vbo);
 		
 		//-----zpos face------
 		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
@@ -121,20 +124,25 @@ public class Cuboid extends Renderable {
 					2 + 4 * face
 					));
 		}
-		mesh.insertVertices(vao);
-		mesh.insertIndices(vao, modes[0]);//insert indices for the initial RenderMode
+
+		mesh.insertVertices(vbo);
+		vbo.flush(BufferUsage.STATIC_DRAW);
+		vao.addVertexBuffer("default", vbo);
+		
+		IndexBuffer indices = new IndexBuffer(IndexBuffer.IndexType.BYTE);
+		ibos.add(indices);
+		indices.flush(BufferUsage.STATIC_DRAW);
 		
 		//check if there are additional modes that need to be accounted for
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
-				//check if the primary RenderMode was already processed, this way it isn't redundantly processed
-				if(curMode != modes[0]){
-					IndexBuffer modeBuffer = new IndexBuffer(IndexBuffer.IndexType.BYTE);
-					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
-					modeBuffer.flush(BufferUsage.STATIC_DRAW);
-					vao.addIndexBuffer(curMode, modeBuffer);
-				}
+				IndexBuffer modeBuffer = new IndexBuffer(IndexBuffer.IndexType.BYTE);
+				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				modeBuffer.flush(BufferUsage.STATIC_DRAW);
+				vao.addIndexBuffer(curMode, modeBuffer);
+				ibos.add(modeBuffer);
 			}
+			vao.setIndexBuffer(modes[0]);
 		}
 		//specify the attributes for the vertex array
 		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
@@ -142,7 +150,7 @@ public class Cuboid extends Renderable {
 		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
 		//finalize the buffers in the vao
-		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+		vao.finalize();
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);

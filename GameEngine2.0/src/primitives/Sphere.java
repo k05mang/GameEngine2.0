@@ -7,6 +7,8 @@ import static java.lang.Math.cos;
 import java.util.ArrayList;
 
 import gldata.AttribType;
+import gldata.BufferObject;
+import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import gldata.VertexArray;
@@ -55,14 +57,15 @@ public class Sphere extends Renderable{
 		}else{
 			//TODO handle when the number of vertices and indices would exceed the max value
 		}
-		//instantiate the vertex array
-		vao = new VertexArray(modes[0], dataType);
+		BufferObject vbo = new BufferObject(BufferType.ARRAY);
+		vbos.add(vbo);
+		
 		int upperStack = maxStack+1;
 		//add the top vertex
 		//TODO calculate UV
 		Vertex top = new Vertex(0,this.radius,0, 0,1,0, 0,0);
 		mesh.add(top);
-		top.addTo(vao);//add vertex to the vertex array
+		top.addTo(vbo);//add vertex to the vertex array
 		for(int curStack = 1; curStack < upperStack; curStack++){
 			for(int curSlice = 0; curSlice < maxSlice; curSlice++){
 				//pre-calculate the angles for the trig functions
@@ -75,7 +78,7 @@ public class Sphere extends Renderable{
 				//TODO calculate UV
 				Vertex vert = new Vertex(x,y,z, x,y,z, 0,0);
 				mesh.add(vert);
-				vert.addTo(vao);//add vertex to vertex array
+				vert.addTo(vbo);//add vertex to vertex array
 				
 				int cycleControl = (curSlice+1)%maxSlice;//controls the offset from the start of a stack, when the first slice is reached
 				//this will loop back to 0 to specify using the start index
@@ -121,21 +124,25 @@ public class Sphere extends Renderable{
 		//TODO calculate UV
 		Vertex bottom = new Vertex(0,-this.radius,0, 0,-1,0, 0,0);
 		mesh.add(bottom);
-		bottom.addTo(vao);//add vertex to vertex array
+		bottom.addTo(vbo);//add vertex to vertex array
 		
-		mesh.insertIndices(vao, modes[0]);//insert indices for the initial RenderMode
+		vbo.flush(BufferUsage.STATIC_DRAW);
+		vao.addVertexBuffer("default", vbo);
+		
+		IndexBuffer indices = new IndexBuffer(dataType);
+		ibos.add(indices);
+		indices.flush(BufferUsage.STATIC_DRAW);
 		
 		//check if there are additional modes that need to be accounted for
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
-				//check if the primary RenderMode was already processed, this way it isn't redundantly processed
-				if(curMode != modes[0]){
-					IndexBuffer modeBuffer = new IndexBuffer(dataType);
-					mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
-					modeBuffer.flush(BufferUsage.STATIC_DRAW);
-					vao.addIndexBuffer(curMode, modeBuffer);
-				}
+				IndexBuffer modeBuffer = new IndexBuffer(dataType);
+				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				modeBuffer.flush(BufferUsage.STATIC_DRAW);
+				vao.addIndexBuffer(curMode, modeBuffer);
+				ibos.add(modeBuffer);
 			}
+			vao.setIndexBuffer(modes[0]);
 		}
 		//specify the attributes for the vertex array
 		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
@@ -143,7 +150,7 @@ public class Sphere extends Renderable{
 		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
 		//finalize the buffers in the vao
-		vao.finalize(BufferUsage.STATIC_DRAW, BufferUsage.STATIC_DRAW);
+		vao.finalize();
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);

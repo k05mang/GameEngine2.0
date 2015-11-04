@@ -12,6 +12,9 @@ public class Mesh {
 	private ArrayList<Face> faces;
 	private HashMap<Edge, HalfEdge> edgeMap;
 	
+	/**
+	 * Constructs an empty mesh for storing vertices and triangular faces
+	 */
 	public Mesh(){
 		vertices = new ArrayList<Vertex>();
 		faces = new ArrayList<Face>();
@@ -94,6 +97,36 @@ public class Mesh {
 	}
 	
 	/**
+	 * Gets the Vertex at the specified index of this mesh
+	 * 
+	 * @param index Index of the Vertex to retrieve
+	 * @return Vertex at the specified index in this mesh
+	 * @throws IndexOutOfBoundsException
+	 */
+	public Vertex getVertex(int index) throws IndexOutOfBoundsException{
+		if(index > vertices.size()-1){
+			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Vertex from mesh");
+		}else{
+			return vertices.get(index);
+		}
+	}
+
+	/**
+	 * Gets the Face at the specified index of this mesh
+	 * 
+	 * @param index Index of the Face to retrieve
+	 * @return Face at the specified index in this mesh
+	 * @throws IndexOutOfBoundsException
+	 */
+	public Face getFace(int index) throws IndexOutOfBoundsException{
+		if(index > vertices.size()-1){
+			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Face from mesh");
+		}else{
+			return faces.get(index);
+		}
+	}
+	
+	/**
 	 * Gets the vertices of this mesh
 	 * 
 	 * @return ArrayList of the vertices stored in this mesh
@@ -119,17 +152,6 @@ public class Mesh {
 	public void insertVertices(BufferObject buffer){
 		for(Vertex vert : vertices){
 			vert.addTo(buffer);
-		}
-	}
-	
-	/**
-	 * Inserts this meshes vertices into the given vertex array
-	 * 
-	 * @param vao VertexArray to add the vertices to
-	 */
-	public void insertVertices(VertexArray vao){
-		for(Vertex vert : vertices){
-			vert.addTo(vao);
 		}
 	}
 
@@ -188,62 +210,6 @@ public class Mesh {
 				break;
 		}
 	}
-	
-	/**
-	 * Adds this meshes indices to the given vertex array with the specified RenderMode.
-	 * <p>
-	 * The following are the currently supported types for index insertion:
-	 * <ul>
-	 * <li>GL_POINTS</li>
-	 * <li>GL_LINES</li>
-	 * <li>GL_TRIANGLES</li>
-	 * <li>GL_TRIANGLES_ADJACENCY</li>
-	 * </ul>
-	 * 
-	 * @param vao VertexArray to add indices to
-	 * @param type RenderMode specifying the format with which to insert the indices
-	 */
-	public void insertIndices(VertexArray vao, RenderMode type){
-		switch(type){
-			case POINTS:
-				for(int index = 0; index < vertices.size(); index++){
-					vao.addIndex(index);
-				}
-				break;
-			case LINES:
-				insertLines(vao);
-				break;
-			case LINES_ADJ:
-				break;
-			case LINE_LOOP:
-				break;
-			case LINE_STRIP:
-				break;
-			case LINE_STRIP_ADJ:
-				break;
-				
-			case TRIANGLES:
-				for(Face curFace : faces){
-					curFace.insertPrim(vao);
-				}
-				break;
-			case TRIANGLES_ADJ:
-				for(Face curFace : faces){
-					curFace.insertPrimAdj(vao);
-				}
-				break;
-			case TRIANGLE_FAN:
-				break;
-			case TRIANGLE_STRIP:
-				break;
-			case TRIANGLE_STRIP_ADJ:
-				break;
-				
-			
-			case PATCHES:
-				break;
-		}
-	}
 
 	/**
 	 * Inserts this meshes indices into the given buffer object as separate lines without repeating pairs
@@ -275,41 +241,6 @@ public class Mesh {
 			if(visited.get(edge3) == null){//if we didn't find it, it means it wasn't added yet
 				buffer.add(curFace.e3.start);
 				buffer.add(curFace.e3.end);
-				visited.put(curFace.e3, true);
-			}
-		}
-	}
-
-	/**
-	 * Inserts this meshes indices into the given vertex array as separate lines without repeating pairs
-	 * 
-	 * @param vao VertexArray to insert indices into
-	 */
-	private void insertLines(VertexArray vao){
-		HashMap<Edge, Boolean> visited = new HashMap<Edge, Boolean>();
-		for(Face curFace : faces){
-			//create edge that is ordered opposite since the edge in the map will have an opposite ordering when it was added
-			Edge edge1 = new Edge(curFace.e1.end, curFace.e1.start);
-			//check if the line being processed from this face was already added as part of another face iteration
-			if(visited.get(edge1) == null){//if we didn't find it, it means it wasn't added yet
-				vao.addIndex(curFace.e1.start);
-				vao.addIndex(curFace.e1.end);
-				visited.put(curFace.e1, true);
-			}
-
-			Edge edge2 = new Edge(curFace.e2.end, curFace.e2.start);
-			//check if the line being processed from this face was already added as part of another face iteration
-			if(visited.get(edge2) == null){//if we didn't find it, it means it wasn't added yet
-				vao.addIndex(curFace.e2.start);
-				vao.addIndex(curFace.e2.end);
-				visited.put(curFace.e2, true);
-			}
-			
-			Edge edge3 = new Edge(curFace.e3.end, curFace.e3.start);
-			//check if the line being processed from this face was already added as part of another face iteration
-			if(visited.get(edge3) == null){//if we didn't find it, it means it wasn't added yet
-				vao.addIndex(curFace.e3.start);
-				vao.addIndex(curFace.e3.end);
 				visited.put(curFace.e3, true);
 			}
 		}

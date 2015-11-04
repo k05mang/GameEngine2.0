@@ -24,7 +24,7 @@ public class BufferObject {
 	private ArrayList<Byte> data;
 	
 	/**
-	 * Creates this buffer with the given type designating this buffers type on the GPU
+	 * Creates a buffer with the given type designating the underlying GLenum type on the GPU
 	 * 
 	 * @param bufferType The type of buffer this BufferObject will represent
 	 */

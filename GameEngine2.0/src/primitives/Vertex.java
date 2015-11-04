@@ -366,35 +366,6 @@ public class Vertex{
 		}
 	}
 	
-	/**
-	 * Adds this vertex to the given vertex array object.
-	 * <p>
-	 * All fields will be added to the vertex array including tangent and bitangent if applicable.
-	 * <p>
-	 * The fields will be added in the following order:
-	 * <ul>
-	 * <li>position</li>
-	 * <li>normal</li>
-	 * <li>texture coordinates</li>
-	 * <li>tangent(if applicable)</li>
-	 * <li>bitangent(if applicable)</li>
-	 * </ul>
-	 * 
-	 * @param buffer Vertex array object to add this vertex to
-	 */
-	public void addTo(VertexArray buffer){
-		buffer.add(pos);
-		buffer.add(normal);
-		buffer.add(textCoords);
-		if(tangent != null){
-			buffer.add(tangent);
-		}
-		
-		if(bitangent != null){
-			buffer.add(bitangent);
-		}
-	}
-	
 	@Override
 	public boolean equals(Object o){
 		if(o instanceof Vertex){
