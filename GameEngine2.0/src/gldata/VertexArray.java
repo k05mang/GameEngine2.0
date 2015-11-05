@@ -20,10 +20,7 @@ public class VertexArray {
 	private int vaoId, stride;
 	private HashMap<String, BufferObject> vbos;
 	private HashMap<RenderMode, IndexBuffer> ibos;
-	private String vbo;
 	private RenderMode ibo;
-	private ArrayList<VertexAttrib> attributes;
-	private boolean finished;
 	
 	/**
 	 * Constructs an empty vertex array with an associated handle on the GPU
@@ -35,34 +32,12 @@ public class VertexArray {
 		vbos = new HashMap<String, BufferObject>();
 		
 		ibos = new HashMap<RenderMode, IndexBuffer>();
-		vbo = "default";
 		ibo = null;
-		attributes = new ArrayList<VertexAttrib>();
-		finished = false;
+		stride = 0;
 	}
 	
 	/**
-	 * Finalizes this vertex array by uploading its default buffers to the GPU and setting attribute data
-	 * 
-	 * @param bufferUsage GLenum determining how the vertex buffer is to be used
-	 * @param ibosUsage GLenum determining how the index buffer is to be used
-	 */
-	public void finalize(){
-		if(!finished){
-			stride = 0;
-			for(VertexAttrib attribData : attributes){
-				glVertexArrayAttribBinding(vaoId, attribData.index, 0);
-				glVertexArrayAttribFormat(vaoId, attribData.index, attribData.attribute.size, attribData.attribute.type, attribData.normalize, stride);
-				stride += attribData.attribute.bytes;
-			}
-			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo.toString()).getId(), 0, stride);
-			glVertexArrayElementBuffer(vaoId, ibos.get(ibo).getId());
-			finished = true;
-		}
-	}
-	
-	/**
-	 * Deletes this vertex array and its associated buffers, other buffers passed to this vertex array are not deleted
+	 * Deletes this vertex array, any externally attached buffers are not deleted
 	 */
 	public void delete(){
 		glBindVertexArray(0);
@@ -105,8 +80,7 @@ public class VertexArray {
 	 * @return True if the given BufferObject is a compatible type and was added, false otherwise
 	 */
 	public boolean addVertexBuffer(String name, BufferObject buffer){
-		//check to make sure the buffer being added doesn't have the name of default which is reserved
-		//additionally check that the buffer type is a valid type 
+		//check that the buffer type is a valid type 
 		if(buffer.getType() == BufferType.ARRAY){
 			vbos.put(name, buffer);
 			return true;
@@ -119,13 +93,13 @@ public class VertexArray {
 	 * Sets the VertexBuffer of this VertexArray to the given name of a BufferObject stored in this VertexArray
 	 * 
 	 * @param name Name of the BufferObject to use as the vertex buffer for this VertexArray
-	 * @return True if the BufferObject with the given anme exists in this VertexArray
+	 * @param bindingIndex Index to bind the vertex buffer object to on the gpu
+	 * @return True if the BufferObject with the given name exists in this VertexArray
 	 */
-	public boolean setVertexBuffer(String name){
+	public boolean setVertexBuffer(String name, int bindingIndex){
 		//check to make sure the buffer being set exists
 		if(vbos.get(name) != null){
-			vbo = name;
-			glVertexArrayVertexBuffer(vaoId, 0, vbos.get(vbo.toString()).getId(), 0, stride);
+			glVertexArrayVertexBuffer(vaoId, bindingIndex, vbos.get(name).getId(), 0, stride);
 			return true;
 		}else{
 			return false;
@@ -168,147 +142,154 @@ public class VertexArray {
 	 * @param type The glsl attribute type that will define how the attribute will behave
 	 * @param normalize Indicates whether the data being sent to the attribute should be normalized
 	 * @param divisor Attribute divisor that decides the frequency of updating the attribute from the vertex buffer
+	 * @param bufferIndex Index of the vertex buffer binding the attribute will read from
 	 */
-	public void addAttrib(int index, AttribType type, boolean normalize, int divisor){
-		//check if we have finalized this vertex array
-		if (!finished) {
-			//check if the attribute is a matrix or double vector greater than 2 and decompose it into simpler types so that they can be passed to the GPU
-			switch (type) {
-				case DVEC3:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DOUBLE, normalize, divisor));
-					break;
-				case DVEC4:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DVEC2, normalize, divisor));
-					break;
-				case MAT2:
-					attributes.add(new VertexAttrib(index, AttribType.VEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC2, normalize, divisor));
-					break;
-				case MAT2x3:
-					attributes.add(new VertexAttrib(index, AttribType.VEC3, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC3, normalize, divisor));
-					break;
-				case MAT2x4:
-					attributes.add(new VertexAttrib(index, AttribType.VEC4, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC4, normalize, divisor));
-					break;
-	
-				case MAT3:
-					attributes.add(new VertexAttrib(index, AttribType.VEC3, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC3, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.VEC3, normalize, divisor));
-					break;
-				case MAT3x2:
-					attributes.add(new VertexAttrib(index, AttribType.VEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.VEC2, normalize, divisor));
-					break;
-				case MAT3x4:
-					attributes.add(new VertexAttrib(index, AttribType.VEC3, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC3, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.VEC3, normalize, divisor));
-					break;
-	
-				case MAT4:
-					attributes.add(new VertexAttrib(index, AttribType.VEC4, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC4, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.VEC4, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.VEC4, normalize, divisor));
-					break;
-				case MAT4x2:
-					attributes.add(new VertexAttrib(index, AttribType.VEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.VEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.VEC2, normalize, divisor));
-					break;
-				case MAT4x3:
-					attributes.add(new VertexAttrib(index, AttribType.VEC3, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.VEC3, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.VEC3, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.VEC3, normalize, divisor));
-					break;
-	
-				case DMAT2:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DVEC2, normalize, divisor));
-					break;
-				case DMAT2x3:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DOUBLE, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.DOUBLE, normalize, divisor));
-					break;
-				case DMAT2x4:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.DVEC2, normalize, divisor));
-					break;
-	
-				case DMAT3:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DOUBLE, normalize, divisor));
+	public void addAttrib(int index, AttribType type, boolean normalize, int divisor, int bufferIndex){
 
-					attributes.add(new VertexAttrib(index+2, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.DOUBLE, normalize, divisor));
+		ArrayList<AttribType> attributes = new ArrayList<AttribType>();
+		//check if the attribute is a matrix or double vector greater than 2 and decompose it into simpler types so that they can be passed to the GPU
+		switch (type) {
+			case DVEC3:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				break;
+			case DVEC4:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case MAT2:
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				break;
+			case MAT2x3:
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				break;
+			case MAT2x4:
+				attributes.add(AttribType.VEC4);
+				attributes.add(AttribType.VEC4);
+				break;
 
-					attributes.add(new VertexAttrib(index+4, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+5, AttribType.DOUBLE, normalize, divisor));
-					break;
-				case DMAT3x2:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.DVEC2, normalize, divisor));
-					break;
-				case DMAT3x4:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DVEC2, normalize, divisor));
-					
-					attributes.add(new VertexAttrib(index+2, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.DVEC2, normalize, divisor));
-					
-					attributes.add(new VertexAttrib(index+4, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+5, AttribType.DVEC2, normalize, divisor));
-					break;
-	
-				case DMAT4:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DVEC2, normalize, divisor));
-					
-					attributes.add(new VertexAttrib(index+2, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.DVEC2, normalize, divisor));
-					
-					attributes.add(new VertexAttrib(index+4, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+5, AttribType.DVEC2, normalize, divisor));
-					
-					attributes.add(new VertexAttrib(index+6, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+7, AttribType.DVEC2, normalize, divisor));
-					break;
-				case DMAT4x2:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+2, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.DVEC2, normalize, divisor));
-					break;
-				case DMAT4x3:
-					attributes.add(new VertexAttrib(index, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+1, AttribType.DOUBLE, normalize, divisor));
-					
-					attributes.add(new VertexAttrib(index+2, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+3, AttribType.DOUBLE, normalize, divisor));
-					
-					attributes.add(new VertexAttrib(index+4, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+5, AttribType.DOUBLE, normalize, divisor));
-					
-					attributes.add(new VertexAttrib(index+6, AttribType.DVEC2, normalize, divisor));
-					attributes.add(new VertexAttrib(index+7, AttribType.DOUBLE, normalize, divisor));
-					break;
-				default://if it is just a basic type then add it normally
-					attributes.add(new VertexAttrib(index, type, normalize, divisor));
-					break;
-			}
+			case MAT3:
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				break;
+			case MAT3x2:
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				break;
+			case MAT3x4:
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				break;
+
+			case MAT4:
+				attributes.add(AttribType.VEC4);
+				attributes.add(AttribType.VEC4);
+				attributes.add(AttribType.VEC4);
+				attributes.add(AttribType.VEC4);
+				break;
+			case MAT4x2:
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				break;
+			case MAT4x3:
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				break;
+
+			case DMAT2:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case DMAT2x3:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				break;
+			case DMAT2x4:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+
+			case DMAT3:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				break;
+			case DMAT3x2:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case DMAT3x4:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+
+			case DMAT4:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case DMAT4x2:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case DMAT4x3:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				break;
+			default:
+				attributes.add(type);
+				break;
+		}
+		//set the attribute data
+		for(int curIndex = 0; curIndex <  attributes.size(); curIndex++){
+			AttribType curType = attributes.get(curIndex);
+			glVertexArrayAttribBinding(vaoId, index+curIndex, bufferIndex);
+			glVertexArrayAttribFormat(vaoId, index+curIndex, curType.size, curType.type, normalize, stride);
+			stride += curType.bytes;
 		}
 	}
 	
@@ -342,19 +323,5 @@ public class VertexArray {
 	 */
 	public void disableAttribute(int attrib){
 		glDisableVertexArrayAttrib(vaoId, attrib);
-	}
-	
-	protected class VertexAttrib {
-	
-		public AttribType attribute;
-		public boolean normalize;
-		public int index, divisor;
-		
-		public VertexAttrib(int index, AttribType type, boolean normalize, int divisor){
-			this.attribute = type;
-			this.normalize = normalize;
-			this.divisor = divisor;
-			this.index = index;
-		}
 	}
 }

@@ -113,7 +113,7 @@ public class Transform {
 	 * @return This object after trasnformation
 	 */
 	public Transform transform(Transform value){
-		orientation.set(Quaternion.multiply(value.orientation, orientation));
+		orientation = Quaternion.multiply(value.orientation, orientation);
 		position.add(value.position);
 		Vec3 scalars = value.scale;
 		scale.set(scale.x*scalars.x, scale.y*scalars.y, scale.z*scalars.z);

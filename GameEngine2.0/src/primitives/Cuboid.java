@@ -126,6 +126,7 @@ public class Cuboid extends Renderable {
 		}
 
 		mesh.insertVertices(vbo);
+		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
@@ -145,12 +146,13 @@ public class Cuboid extends Renderable {
 			vao.setIndexBuffer(modes[0]);
 		}
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(0, AttribType.VEC3, false, 0, 0);//position
+		vao.addAttrib(1, AttribType.VEC3, false, 0, 0);//normal
+		vao.addAttrib(2, AttribType.VEC2, false, 0, 0);//uv
 		
-		//finalize the buffers in the vao
-		vao.finalize();
+		//tell the vao the vertex buffer to use
+		vao.setVertexBuffer("default", 0);
+		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
