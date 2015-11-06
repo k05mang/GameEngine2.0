@@ -12,7 +12,7 @@ import gldata.VertexArray;
 import renderers.Renderable;
 import renderers.RenderMode;
 
-public class Cone extends Renderable {
+public final class Cone extends Renderable {
 
 	private float length, radius;
 	

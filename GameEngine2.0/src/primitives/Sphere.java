@@ -4,20 +4,16 @@ import static java.lang.Math.PI;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
 
-import java.util.ArrayList;
 
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
-import gldata.VertexArray;
 import renderers.RenderMode;
 import renderers.Renderable;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 
-public class Sphere extends Renderable{
+public final class Sphere extends Renderable{
 	private float radius;
 
 	/**

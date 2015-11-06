@@ -1,20 +1,18 @@
 package primitives;
 
-import glMath.Mat3;
-import glMath.Vec3;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
-import gldata.VertexArray;
+
 import static java.lang.Math.PI;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
 import renderers.Renderable;
 import renderers.RenderMode;
 
-public class Torus extends Renderable {
+public final class Torus extends Renderable {
 	
 	private float tubeRadius, radius;
 

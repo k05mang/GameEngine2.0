@@ -6,11 +6,10 @@ import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
-import gldata.VertexArray;
 import renderers.RenderMode;
 import renderers.Renderable;
 
-public class Cuboid extends Renderable {
+public final class Cuboid extends Renderable {
 	private Vec3 halfDimensions;
 	
 	/**

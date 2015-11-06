@@ -4,15 +4,13 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import renderers.RenderMode;
 import renderers.Renderable;
-import glMath.*;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
-import gldata.VertexArray;
 
-public class Cylinder extends Renderable{
+public final class Cylinder extends Renderable{
 	private float length, radius;
 	
 	/**

@@ -5,11 +5,10 @@ import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
-import gldata.VertexArray;
 import renderers.Renderable;
 import renderers.RenderMode;
 
-public class Plane extends Renderable{
+public final class Plane extends Renderable{
 	float width, length;
 	
 	/**

@@ -10,11 +10,10 @@ import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
-import gldata.VertexArray;
 import renderers.RenderMode;
 import renderers.Renderable;
 
-public class Icosphere extends Renderable {
+public final class Icosphere extends Renderable {
 	private float radius;
 	
 	/**
