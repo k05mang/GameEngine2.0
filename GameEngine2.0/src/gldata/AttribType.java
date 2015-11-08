@@ -44,11 +44,6 @@ public enum AttribType {
 	DMAT4(16, 128, GL_DOUBLE),
 	DMAT4x2(8, 64, GL_DOUBLE),
 	DMAT4x3(12, 96, GL_DOUBLE);
-	/*
-	 * BYTE,
-		UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, INT, UNSIGNED_INT, FLOAT,
-		HALF_FLOAT, or DOUBLE
-	 * */
 
 	public final int bytes, size, type;
 	
