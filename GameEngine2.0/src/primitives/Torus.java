@@ -34,8 +34,8 @@ public final class Torus extends Renderable {
 		
 		this.radius = radius;
 		this.tubeRadius = tubeRadius;
-		int maxRing = rings < 3 ? 3 : rings;
-		int maxRingSeg = ringSegs < 3 ? 3 : ringSegs;
+		int maxRing = Math.max(3, rings);
+		int maxRingSeg = Math.max(3, ringSegs);
 		
 		int lastIndex = maxRingSeg*maxRing-1;
 		IndexBuffer.IndexType dataType = null;

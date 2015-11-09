@@ -9,6 +9,7 @@ import static org.lwjgl.opengl.GL32.*;
 import static org.lwjgl.opengl.GL40.*;
 
 public enum TextureType {
+	//proxy types not listed
 	_1D(GL_TEXTURE_1D),
 	_2D(GL_TEXTURE_2D),
 	_3D(GL_TEXTURE_3D),

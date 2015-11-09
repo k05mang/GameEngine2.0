@@ -20,9 +20,6 @@ public final class Cone extends Renderable {
 	 * Constructs a cone primitive with the given radius, length, and subdivisions while making
 	 * it compatible with the given RenderModes.
 	 * 
-	 * Radius must be a value greater than 0, if radius is less than or equal to 0 then a default value 
-	 * of .01 will be used instead.
-	 * 
 	 * Slices must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
 	 * 
 	 * @param radius Radius of the base of the cone
@@ -36,8 +33,8 @@ public final class Cone extends Renderable {
 		super();
 		
 		//check and restrict the values passed to the constructor if they do not meet minimum requirements
-		int subdiv = slices < 3 ? 3 : slices;
-		this.radius = radius <= 0 ? .01f : radius;
+		int subdiv = Math.max(3, slices);
+		this.radius = radius;
 		this.length = length;
 		float vertOffset = centered ? this.length/2.0f : this.length;
 		

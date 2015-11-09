@@ -20,9 +20,6 @@ public final class Sphere extends Renderable{
 	 * Constructs a sphere primitive with the given radius, and subdivisions while making it compatible
 	 * with the given RenderModes.
 	 * 
-	 * Radius must be a value greater than 0, if radius is less than or equal to 0 then a default value 
-	 * of .01 will be used instead.
-	 * 
 	 * Slices must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
 	 * 
 	 * Stacks must be greater than 0, if teh value given is less than 1 then a default value of 1 will be used instead.
@@ -36,9 +33,9 @@ public final class Sphere extends Renderable{
 	public Sphere(float radius, int slices, int stacks, RenderMode... modes){
 		super();
 		
-		int maxSlice = slices < 3 ? 3 : slices;
-		int maxStack = stacks < 1 ? 1 : stacks;
-		this.radius = radius <= 0 ? .01f : radius;
+		int maxSlice = Math.max(3, slices);
+		int maxStack = Math.max(1, stacks);
+		this.radius = radius;
 		
 		int lastIndex = maxStack*maxSlice+1;//value of the last index
 

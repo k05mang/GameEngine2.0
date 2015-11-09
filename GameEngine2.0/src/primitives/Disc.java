@@ -26,7 +26,7 @@ public final class Disc extends Renderable {
 	public Disc(float radius, int segments, RenderMode... modes){
 		this.radius = radius;
 		
-		int maxSegment = segments < 3 ? 3 : segments;
+		int maxSegment = Math.max(3, segments);
 		IndexBuffer.IndexType dataType = null;
 		
 		//determine what data type the index buffer should be

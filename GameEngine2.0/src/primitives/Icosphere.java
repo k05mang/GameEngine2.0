@@ -33,7 +33,7 @@ public final class Icosphere extends Renderable {
 	public Icosphere(float radius, int order, RenderMode... modes){
 		super();
 		this.radius = radius;
-		int clampedOrder = order < 0 ? 0 : order;
+		int clampedOrder = Math.max(0,  order);
 		int lastIndex = 11+((1 << (clampedOrder << 1))-1)*10;//11+(2^(clampedOrder*2)-1)*10
 		
 		IndexBuffer.IndexType dataType = null;

@@ -17,9 +17,6 @@ public final class Cylinder extends Renderable{
 	 * Constructs a cylinder with the given radius, length, and subdivisions while making it compatible with the
 	 * given RenderModes
 	 * 
-	 * Radius must be a value greater than 0, if radius is less than or equal to 0 then a default value 
-	 * of .01 will be used instead.
-	 * 
 	 * Segments must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
 	 * 
 	 * @param radius Radius of the cylinder
@@ -31,9 +28,9 @@ public final class Cylinder extends Renderable{
 	public Cylinder(float radius, float length, int segments, RenderMode... modes){
 		super();
 		
-		int maxSegment = segments < 3 ? 3 : segments;
+		int maxSegment = Math.max(3, segments);
 		this.length = length;
-		this.radius = radius <= 0 ? .01f : radius;
+		this.radius = radius;
 		
 		int lastIndex = maxSegment*4-1;
 		IndexBuffer.IndexType dataType = null;
