@@ -5,15 +5,12 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import static org.lwjgl.opengl.GL45.*;
 
-public class Texture1D extends Texture {
-	protected int width;
-	
-	public Texture1D(InternalFormat format, int levels, int width) {
-		super(TextureType._1D, format, levels);
-		this.width = width;
-		glTextureStorage1D(id, levels, format.value, width);
+public class Texture1DArray extends Texture {
+
+	public Texture1DArray(TextureType texType, InternalFormat format, int levels_samples) {
+		super(texType, format, levels_samples);
+		// TODO Auto-generated constructor stub
 	}
 
 	public void bufferData(ByteBuffer pixels, BaseFormat format, TexDataType type, int level) {
@@ -40,5 +37,4 @@ public class Texture1D extends Texture {
 		// TODO Auto-generated method stub
 
 	}
-
 }
