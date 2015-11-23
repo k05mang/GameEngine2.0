@@ -59,14 +59,15 @@ public class Texture1D extends Texture implements BasicTexture{
 	}
 	
 	/**
-	 * ......If the texture's internal format is a 
-	 * compressed type this version of the <code>bufferData</code> function does nothing.
-	 * @param pixels
-	 * @param format
-	 * @param type
-	 * @param level
-	 * @param offset
-	 * @param width
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * the texture defined by <code>offset</code> and <code>width</code>.
+	 * 
+	 * @param pixels Pixel data to pass to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param level Mipamp level to modify with the given pixel data
+	 * @param offset Offset from the beginning of the texture to start modifying with the given data
+	 * @param width Width from the offset to modify with the given data
 	 */
 	public void subImage(ByteBuffer pixels, BaseFormat format, TexDataType type, int level, int offset, int width){
 		if(iformat.isCompressedFormat()){
@@ -75,25 +76,73 @@ public class Texture1D extends Texture implements BasicTexture{
 			glTextureSubImage1D(id, level, 0, width, format.value, type.value, pixels);
 		}
 	}
-	
+
+	/**
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture's internal format is a compressed type function does nothing,
+	 * to buffer data to a compressed format type use @link{#subImage(ByteBuffer, BaseFormat, TexDataType, int, int, int) bufferData}.
+	 * 
+	 * @param pixels Pixel data to pass to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param level Mipamp level to modify with the given pixel data
+	 * @param offset Offset from the beginning of the texture to start modifying with the given data
+	 * @param width Width from the offset to modify with the given data
+	 */
 	public void subImage(ShortBuffer pixels, BaseFormat format, TexDataType type, int level, int offset, int width){
 		if(!iformat.isCompressedFormat()){
 			glTextureSubImage1D(id, level, 0, width, format.value, type.value, pixels);
 		}
 	}
-	
+
+	/**
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture's internal format is a compressed type function does nothing,
+	 * to buffer data to a compressed format type use @link{#subImage(ByteBuffer, BaseFormat, TexDataType, int, int, int) bufferData}.
+	 * 
+	 * @param pixels Pixel data to pass to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param level Mipamp level to modify with the given pixel data
+	 * @param offset Offset from the beginning of the texture to start modifying with the given data
+	 * @param width Width from the offset to modify with the given data
+	 */
 	public void subImage(IntBuffer pixels, BaseFormat format, TexDataType type, int level, int offset, int width){
 		if(!iformat.isCompressedFormat()){
 			glTextureSubImage1D(id, level, 0, width, format.value, type.value, pixels);
 		}
 	}
-	
+
+	/**
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture's internal format is a compressed type function does nothing,
+	 * to buffer data to a compressed format type use @link{#subImage(ByteBuffer, BaseFormat, TexDataType, int, int, int) bufferData}.
+	 * 
+	 * @param pixels Pixel data to pass to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param level Mipamp level to modify with the given pixel data
+	 * @param offset Offset from the beginning of the texture to start modifying with the given data
+	 * @param width Width from the offset to modify with the given data
+	 */
 	public void subImage(FloatBuffer pixels, BaseFormat format, TexDataType type, int level, int offset, int width){
 		if(!iformat.isCompressedFormat()){
 			glTextureSubImage1D(id, level, 0, width, format.value, type.value, pixels);
 		}
 	}
-	
+
+	/**
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture's internal format is a compressed type function does nothing,
+	 * to buffer data to a compressed format type use @link{#subImage(ByteBuffer, BaseFormat, TexDataType, int, int, int) bufferData}.
+	 * 
+	 * @param pixels Pixel data to pass to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param level Mipamp level to modify with the given pixel data
+	 * @param offset Offset from the beginning of the texture to start modifying with the given data
+	 * @param width Width from the offset to modify with the given data
+	 */
 	public void subImage(DoubleBuffer pixels, BaseFormat format, TexDataType type, int level, int offset, int width){
 		if(!iformat.isCompressedFormat()){
 			glTextureSubImage1D(id, level, 0, width, format.value, type.value, pixels);

@@ -9,7 +9,7 @@ import java.nio.ShortBuffer;
 public interface BasicTexture {
 
 	/**
-	 * Buffers the pixel data provided with the given format and type for the data to be read by the GPU. The 
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The 
 	 * data is applied to the entire texture at the given level.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU
@@ -20,9 +20,10 @@ public interface BasicTexture {
 	public void bufferData(ByteBuffer pixels, BaseFormat format, TexDataType type, int level);
 	
 	/**
-	 * Buffers the pixel data provided with the given format and type for the data to be read by the GPU. The 
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The 
 	 * data is applied to the entire texture at the given level. If the texture's internal format is a 
-	 * compressed type this version of the <code>bufferData</code> function does nothing.
+	 * compressed type this function does nothing, to buffer data to a compressed format type use 
+	 * @link{#bufferData(ByteBuffer, BaseFormat, TexDataType, int) bufferData}.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU
 	 * @param format Format of the pixel data
@@ -32,9 +33,10 @@ public interface BasicTexture {
 	public void bufferData(ShortBuffer pixels, BaseFormat format, TexDataType type, int level);
 	
 	/**
-	 * Buffers the pixel data provided with the given format and type for the data to be read by the GPU. The 
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The 
 	 * data is applied to the entire texture at the given level. If the texture's internal format is a 
-	 * compressed type this version of the <code>bufferData</code> function does nothing.
+	 * compressed type this function does nothing, to buffer data to a compressed format type use 
+	 * @link{#bufferData(ByteBuffer, BaseFormat, TexDataType, int) bufferData}.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU
 	 * @param format Format of the pixel data
@@ -44,9 +46,10 @@ public interface BasicTexture {
 	public void bufferData(IntBuffer pixels, BaseFormat format, TexDataType type, int level);
 	
 	/**
-	 * Buffers the pixel data provided with the given format and type for the data to be read by the GPU. The 
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The 
 	 * data is applied to the entire texture at the given level. If the texture's internal format is a 
-	 * compressed type this version of the <code>bufferData</code> function does nothing.
+	 * compressed type this function does nothing, to buffer data to a compressed format type use 
+	 * @link{#bufferData(ByteBuffer, BaseFormat, TexDataType, int) bufferData}.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU
 	 * @param format Format of the pixel data
@@ -56,9 +59,10 @@ public interface BasicTexture {
 	public void bufferData(FloatBuffer pixels, BaseFormat format, TexDataType type, int level);
 	
 	/**
-	 * Buffers the pixel data provided with the given format and type for the data to be read by the GPU. The 
+	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The 
 	 * data is applied to the entire texture at the given level. If the texture's internal format is a 
-	 * compressed type this version of the <code>bufferData</code> function does nothing.
+	 * compressed type this function does nothing, to buffer data to a compressed format type use 
+	 * @link{#bufferData(ByteBuffer, BaseFormat, TexDataType, int) bufferData}.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU
 	 * @param format Format of the pixel data
