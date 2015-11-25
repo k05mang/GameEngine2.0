@@ -10,6 +10,14 @@ import static org.lwjgl.opengl.GL45.*;
 public class Texture1D extends Texture implements BasicTexture{
 	private int width;
 	
+	/**
+	 * Constructs a texture object on the GPU with the given <code>InternalFormat</code>, mipmap <code>levels</code>, and
+	 * <code>width</code>.
+	 * 
+	 * @param format Internal GPU formatting of the texture data
+	 * @param levels Number of mipmap levels to apply to the texture
+	 * @param width Width of the texture
+	 */
 	public Texture1D(InternalFormat format, int levels, int width) {
 		super(TextureType._1D, format, levels);
 		this.width = width;
@@ -59,7 +67,7 @@ public class Texture1D extends Texture implements BasicTexture{
 	}
 	
 	/**
-	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * Buffers pixel data provided with the given <code>format</code> and <code>type</code> for the data to be read by the GPU. The pixel data is applied to the subimage of
 	 * the texture defined by <code>offset</code> and <code>width</code>.
 	 * 
 	 * @param pixels Pixel data to pass to the GPU
@@ -78,7 +86,7 @@ public class Texture1D extends Texture implements BasicTexture{
 	}
 
 	/**
-	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * Buffers pixel data provided with the given <code>format</code> and <code>type</code> for the data to be read by the GPU. The pixel data is applied to the subimage of
 	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture's internal format is a compressed type function does nothing,
 	 * to buffer data to a compressed format type use @link{#subImage(ByteBuffer, BaseFormat, TexDataType, int, int, int) bufferData}.
 	 * 
@@ -96,7 +104,7 @@ public class Texture1D extends Texture implements BasicTexture{
 	}
 
 	/**
-	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * Buffers pixel data provided with the given <code>format</code> and <code>type</code> for the data to be read by the GPU. The pixel data is applied to the subimage of
 	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture's internal format is a compressed type function does nothing,
 	 * to buffer data to a compressed format type use @link{#subImage(ByteBuffer, BaseFormat, TexDataType, int, int, int) bufferData}.
 	 * 
@@ -114,7 +122,7 @@ public class Texture1D extends Texture implements BasicTexture{
 	}
 
 	/**
-	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * Buffers pixel data provided with the given <code>format</code> and <code>type</code> for the data to be read by the GPU. The pixel data is applied to the subimage of
 	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture's internal format is a compressed type function does nothing,
 	 * to buffer data to a compressed format type use @link{#subImage(ByteBuffer, BaseFormat, TexDataType, int, int, int) bufferData}.
 	 * 
@@ -132,7 +140,7 @@ public class Texture1D extends Texture implements BasicTexture{
 	}
 
 	/**
-	 * Buffers pixel data provided with the given format and type for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * Buffers pixel data provided with the given <code>format</code> and <code>type</code> for the data to be read by the GPU. The pixel data is applied to the subimage of
 	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture's internal format is a compressed type function does nothing,
 	 * to buffer data to a compressed format type use @link{#subImage(ByteBuffer, BaseFormat, TexDataType, int, int, int) bufferData}.
 	 * 

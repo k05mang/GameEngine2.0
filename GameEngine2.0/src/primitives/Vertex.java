@@ -8,7 +8,7 @@ import gldata.BufferObject;
 
 /**
  * Class for working with generic vertex information such as position, normal, texture coordinate, and texture space tangent and bitangent.
- * Tangent and bitangent are optional fields are not required for the function of this class. The vertex operates primarily in 3D space but 
+ * Tangent and bitangent are optional fields and are not required for the function of this class. The vertex operates primarily in 3D space but 
  * theoretically could be applied to a 2D application.
  * 
  * @author Kevin Mango
@@ -79,6 +79,7 @@ public class Vertex{
 	 * This will construct a vertex without a tangent and bitangent being initialized, future calls to these functions will 
 	 * either return null when calling a getter function, or will instantiate a new vector for the variable if a setter
 	 * or if a summing function is called.
+	 * </p>
 	 * 
 	 * @param pos Position vector for this vertex
 	 * @param normal Normal vector for this vertex, the copy of this will be normalized in the vertex
@@ -94,6 +95,7 @@ public class Vertex{
 	 * This will construct a vertex without a tangent and bitangent being initialized, future calls to these functions will 
 	 * either return null when calling a getter function, or will instantiate a new vector for the variable if a setter
 	 * or if a summing function is called.
+	 * </p>
 	 * 
 	 * @param x X component of this vertex's position
 	 * @param y Y component of this vertex's position

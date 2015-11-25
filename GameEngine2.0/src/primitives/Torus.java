@@ -17,7 +17,7 @@ public final class Torus extends Renderable {
 	private float tubeRadius, radius;
 
 	/**
-	 * Constructs a torus with the given radius, and tube radius, with the specified number of rings with the given number of
+	 * Constructs a torus with the given radius, and tube radius, with the specified number of rings each with the given number of
 	 * segments per ring. The torus will be constructed such that it is compatible with the give RenderModes
 	 * 
 	 * Rings and ringSegs must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.

@@ -75,10 +75,12 @@ public abstract class Texture {
 	}
 	
 	/**
-	 * Generates mipmaps for this texture
+	 * Generates mipmaps for this texture, if the texture is a rectangle or buffer type this function does nothing
 	 */
 	public void genMipMaps(){
-		glGenerateTextureMipmap(id);
+		if(type != TextureType.RECTANGLE && type != TextureType.BUFFER){
+			glGenerateTextureMipmap(id);
+		}
 	}
 	
 	/**

@@ -96,9 +96,9 @@ public interface ArrayTexture {
 	public int getWidth();
 	
 	/**
-	 * Gets the height of the textures in the array, if the array is of one dimensional textures this will return 0
+	 * Gets the height of the textures in the array, if the array is of one dimensional textures this will return 1
 	 * 
-	 * @return Height of the textures in the array or 0 if they are one dimensional textures
+	 * @return Height of the textures in the array or 1 if they are one dimensional textures
 	 */
 	public int getHeight();
 }
