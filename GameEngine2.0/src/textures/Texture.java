@@ -39,7 +39,7 @@ public abstract class Texture {
 		type = texType;
 		id = glCreateTextures(type.value);
 		iformat = format;
-		this.levels_samples = Math.max(0,  levels_samples);//cap it
+		this.levels_samples = Math.max(1,  levels_samples);//cap it
 	}
 	
 	/**
