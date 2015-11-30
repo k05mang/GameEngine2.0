@@ -11,52 +11,137 @@ import java.nio.Buffer;
 
 public class TextureCubeMapArray extends Texture implements ArrayTexture {
 
-	private int dimension, length;
+	private int dimension, length, numTextures;
 	
+	/**
+	 * Constructs a texture array of <code>length</code> cube map textures each with the given <code>InternalFormat</code>, and
+	 * mipmap <code>levels</code>. <code>dimension</code> defines the width, height, and depth of each cube map texture in the array.
+	 * 
+	 * @param format Internal format of the cube map texture to store pixel data
+	 * @param levels Mipmap levels for the cube map textures
+	 * @param dimension Dimension of the cube map textures
+	 * @param length Number of cube map textures in the array
+	 */
 	public TextureCubeMapArray(InternalFormat format, int levels, int dimension, int length) {
 		super(TextureType.CUBE_MAP_ARRAY, format, levels);
 		this.dimension = dimension;
 		this.length = length;
-		glTextureStorage3D(id, levels_samples, format.value, dimension, dimension, 6*length);
+		numTextures = 6*length;
+		glTextureStorage3D(id, levels_samples, format.value, dimension, dimension, numTextures);
 	}
 
 	@Override
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int level) throws IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
-
+		subImage(pixels, format, type, 0, numTextures, level, 0, 0, dimension, dimension);
 	}
 
 	@Override
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int index, int level) throws IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
-
+		subImage(pixels, format, type, index, 6, level, 0, 0, dimension, dimension);
 	}
 
 	@Override
-	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int baseIndex, int count, int level)
-			throws IndexOutOfBoundsException {
-		// TODO Auto-generated method stub
+	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int baseIndex, int count, int level) throws IndexOutOfBoundsException {
+		subImage(pixels, format, type, baseIndex, 6*count, level, 0, 0, dimension, dimension);
+	}
 
+	/**
+	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code>
+	 * of all the faces of the cube map at <code>index</code> defined from <code>start</code> to <code>end</code> inclusive. <code>start</code> 
+	 * must be a cube map face whose layer index is less than <code>end</code>'s. If the texture has a compressed internal format then a 
+	 * <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * 
+	 * @param pixels Pixel data to send to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param index Index of the texture in the texture array to modify
+	 * @param level Mipmap level to modify of the texture at <code>index</code>
+	 * @param start Starting cube map face to modify of the texture at the specified <code>index</code>
+	 * @param end Last cube map face to modify of the texture at the specified <code>index</code>
+	 * @throws IndexOutOfBoundsException
+	 */
+	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int index, int level, CubeMapFace start, CubeMapFace end) throws IndexOutOfBoundsException {
+		subImage(pixels, format, type, index, level, start, end, 0, 0, dimension, dimension);
 	}
 	
+	/**
+	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code>
+	 * of all the faces of the cube map at <code>index</code> defined from <code>start</code> to <code>end</code> inclusive. <code>start</code> 
+	 * must be a cube map face whose layer index is less than <code>end</code>'s. <code>xoffset</code> and <code>yoffset</code> define a 
+	 * beginning offset point to start modifying each cube map face, and <code>width</code> and <code>height</code> define the area of the 
+	 * face to modify. If the texture has a compressed internal format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * 
+	 * @param pixels Pixel data to send to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param index Index of the texture in the texture array to modify
+	 * @param level Mipmap level to modify of the texture at <code>index</code>
+	 * @param start Starting cube map face to modify of the texture at the specified <code>index</code>
+	 * @param end Last cube map face to modify of the texture at the specified <code>index</code>
+	 * @param xoffset X offset to start modifying each face of the cube map from
+	 * @param yoffset Y offset to start modifying each face of the cube map from
+	 * @param width Width of the area of each cube map face to modify
+	 * @param height Height of the area of each cube map face to modify
+	 * @throws IndexOutOfBoundsException
+	 */
+	public void subImage(Buffer pixels, BaseFormat format, TexDataType type, int index, int level, CubeMapFace start, CubeMapFace end, int xoffset, int yoffset, int width, int height) 
+			throws IndexOutOfBoundsException{
+		if(index < 0 || index >= length){
+			throw new IndexOutOfBoundsException("Texture array index out of bounds\nindex:"+index+"\nlength:"+length);
+		}else if(!iformat.isCompressedFormat()){
+			if(pixels instanceof ByteBuffer){
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*index+start.layer, width, height, end.layer-start.layer+1, format.value, type.value, (ByteBuffer)pixels);
+			}else if(pixels instanceof ShortBuffer){
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*index+start.layer, width, height, end.layer-start.layer+1, format.value, type.value, (ShortBuffer)pixels);
+			}else if(pixels instanceof IntBuffer){
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*index+start.layer, width, height, end.layer-start.layer+1, format.value, type.value, (IntBuffer)pixels);
+			}else if(pixels instanceof FloatBuffer){
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*index+start.layer, width, height, end.layer-start.layer+1, format.value, type.value, (FloatBuffer)pixels);
+			}else if(pixels instanceof DoubleBuffer){
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*index+start.layer, width, height, end.layer-start.layer+1, format.value, type.value, (DoubleBuffer)pixels);
+			}
+		}else{
+			if(pixels instanceof ByteBuffer){
+				glCompressedTextureSubImage3D(id, level, xoffset, yoffset, 6*index+start.layer, width, height, end.layer-start.layer+1, format.value, type.value, (ByteBuffer)pixels);
+			}//else do nothing
+		}
+	}
+	
+	/**
+	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code> of all the faces of the cube maps from 
+	 * <code>baseIndex</code> through <code>baseIndex+count</code>. <code>xoffset</code> and <code>yoffset</code> define a beginning offset point to start modifying 
+	 * each cube map face, and <code>width</code> and <code>height</code> define the area of the face to modify. If the texture has a compressed internal format then a 
+	 * <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * 
+	 * @param pixels Pixel data to send to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param index Index of the texture in the texture array to modify
+	 * @param level Mipmap level to modify of the texture at <code>index</code>
+	 * @param xoffset X offset to start modifying each face of the cube map from
+	 * @param yoffset Y offset to start modifying each face of the cube map from
+	 * @param width Width of the area of each cube map face to modify
+	 * @param height Height of the area of each cube map face to modify
+	 * @throws IndexOutOfBoundsException
+	 */
 	public void subImage(Buffer pixels, BaseFormat format, TexDataType type, int baseIndex, int count, int level, int xoffset, int yoffset, int width, int height) throws IndexOutOfBoundsException{
 		if(baseIndex < 0 || baseIndex+count > length){
 			throw new IndexOutOfBoundsException("Texture array index range out of bounds\nbaseIndex:"+baseIndex+"\nrange upper bound:"+baseIndex+count+"\nlength:"+length);
 		}else if(!iformat.isCompressedFormat()){
 			if(pixels instanceof ByteBuffer){
-				glTextureSubImage3D(id, level, xoffset, yoffset, baseIndex, width, height, count, format.value, type.value, (ByteBuffer)pixels);
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*baseIndex, width, height, 6*count, format.value, type.value, (ByteBuffer)pixels);
 			}else if(pixels instanceof ShortBuffer){
-				glTextureSubImage3D(id, level, xoffset, yoffset, baseIndex, width, height, count, format.value, type.value, (ShortBuffer)pixels);
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*baseIndex, width, height, 6*count, format.value, type.value, (ShortBuffer)pixels);
 			}else if(pixels instanceof IntBuffer){
-				glTextureSubImage3D(id, level, xoffset, yoffset, baseIndex, width, height, count, format.value, type.value, (IntBuffer)pixels);
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*baseIndex, width, height, 6*count, format.value, type.value, (IntBuffer)pixels);
 			}else if(pixels instanceof FloatBuffer){
-				glTextureSubImage3D(id, level, xoffset, yoffset, baseIndex, width, height, count, format.value, type.value, (FloatBuffer)pixels);
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*baseIndex, width, height, 6*count, format.value, type.value, (FloatBuffer)pixels);
 			}else if(pixels instanceof DoubleBuffer){
-				glTextureSubImage3D(id, level, xoffset, yoffset, baseIndex, width, height, count, format.value, type.value, (DoubleBuffer)pixels);
+				glTextureSubImage3D(id, level, xoffset, yoffset, 6*baseIndex, width, height, 6*count, format.value, type.value, (DoubleBuffer)pixels);
 			}
 		}else{
 			if(pixels instanceof ByteBuffer){
-				glCompressedTextureSubImage3D(id, level, xoffset, yoffset, baseIndex, width, height, count, format.value, type.value, (ByteBuffer)pixels);
+				glCompressedTextureSubImage3D(id, level, xoffset, yoffset, 6*baseIndex, width, height, 6*count, format.value, type.value, (ByteBuffer)pixels);
 			}//else do nothing
 		}
 	}
