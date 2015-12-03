@@ -8,10 +8,10 @@ import java.io.File;
 
 public class Shader {
 	private int shaderId;
-	private ShaderType type;
+	private ShaderStage type;
 	private ShaderParser parser;
 	
-	public Shader(String fileName, ShaderType shaderType){
+	public Shader(String fileName, ShaderStage shaderType){
 		type = shaderType;
 		File shaderFile = new File(fileName);
 		parser = new ShaderParser(shaderFile);

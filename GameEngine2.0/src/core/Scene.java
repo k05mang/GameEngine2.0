@@ -14,7 +14,7 @@ public interface Scene {
 	
 	public void cleanup();
 	
-	public static void printEroor(){
+	public static void printError(){
 		System.out.println(glGetError());
 		switch(glGetError()){
 			case GL_INVALID_ENUM:
@@ -37,6 +37,9 @@ public interface Scene {
 				break;
 			case GL_STACK_OVERFLOW:
 				System.out.println("GL_STACK_OVERFLOW");
+				break;
+			default:
+				System.out.println("No error");
 				break;
 		}
 	}

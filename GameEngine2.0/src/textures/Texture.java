@@ -75,6 +75,14 @@ public abstract class Texture {
 	}
 	
 	/**
+	 * Deletes this texture from the GPU
+	 */
+	public void delete(){
+		glDeleteTextures(id);
+		id = 0;
+	}
+	
+	/**
 	 * Generates mipmaps for this texture, if the texture is a rectangle or buffer type this function does nothing
 	 */
 	public void genMipMaps(){
@@ -166,18 +174,5 @@ public abstract class Texture {
 		values.flip();
 		glTextureParameterfv(id, TexParam.SWIZZLE_RGBA.value, values);
 	}
-
-	/**
-	 * Uses the given buffer to set the pixel data of the texture on the GPU
-	 * 
-	 * @param pixels Data buffer of pixels to send to the GPu for this texture
-	 * @param format Format of the pixel data
-	 * @param type Data type of the pixel data being passed
-	 * @param level Level of the texture mipmap or array to set
-	 */
-//	public abstract void bufferData(ByteBuffer pixels, BaseFormat format, TexDataType type, int level);
-//	public abstract void bufferData(ShortBuffer pixels, BaseFormat format, TexDataType type, int level);
-//	public abstract void bufferData(IntBuffer pixels, BaseFormat format, TexDataType type, int level);
-//	public abstract void bufferData(FloatBuffer pixels, BaseFormat format, TexDataType type, int level);
-//	public abstract void bufferData(DoubleBuffer pixels, BaseFormat format, TexDataType type, int level);
+	
 }

@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL21.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL31.*;
+import static org.lwjgl.opengl.GL41.*;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -182,7 +183,7 @@ public class Uniform {
 	
 	/**
 	 * Copies the given uniform, the location variable is the only variable not copied and must be given a new value
-	 * with the getLocation function
+	 * with the @link{#getBinding(int) getBinding} function.
 	 * 
 	 * @param copy Uniform variable to copy
 	 */
@@ -252,7 +253,7 @@ public class Uniform {
 	 * @param data Buffer of data to use in changing the value of this uniform
 	 * @return True if the variable could be set false otherwise
 	 */
-	public boolean set(Buffer data){
+	public boolean set(int program, Buffer data){
 		//check what type of buffer was passed to this method to be able to properly cast the buffer to the right type
 		if(data instanceof FloatBuffer){
 			//cast the buffer
@@ -260,21 +261,21 @@ public class Uniform {
 			if(type == FLOAT){
 				switch(size){
 					case 1:
-						glUniform1fv(location, dataCast);
+						glProgramUniform1fv(program, location, dataCast);
 						break;
 					case 2:
-						glUniform2fv(location, dataCast);
+						glProgramUniform2fv(program, location, dataCast);
 						break;
 					case 3:
-						glUniform3fv(location, dataCast);
+						glProgramUniform3fv(program, location, dataCast);
 						break;
 					case 4:
-						glUniform4fv(location, dataCast);
+						glProgramUniform4fv(program, location, dataCast);
 						break;
 				}
 				return true;
 			}else if(type >= MAT2){
-				return this.setMat(false, dataCast);
+				return this.setMat(program, false, dataCast);
 			}else{
 				System.err.println("Types do not match, FloatBuffers can only be used with uniforms that are of type float or mat in GLSL");
 				return false;
@@ -284,16 +285,16 @@ public class Uniform {
 			if(type == INT || type == BOOL){
 				switch(size){
 					case 1:
-						glUniform1iv(location, dataCast);
+						glProgramUniform1iv(program, location, dataCast);
 						break;
 					case 2:
-						glUniform2iv(location, dataCast);
+						glProgramUniform2iv(program, location, dataCast);
 						break;
 					case 3:
-						glUniform3iv(location, dataCast);
+						glProgramUniform3iv(program, location, dataCast);
 						break;
 					case 4:
-						glUniform4iv(location, dataCast);
+						glProgramUniform4iv(program, location, dataCast);
 						break;
 				}
 				return true;
@@ -312,7 +313,7 @@ public class Uniform {
 	 * @param variables Data to pass to the GPU
 	 * @return True if the variable could be set false otherwise
 	 */
-	public boolean set(float... variables){
+	public boolean set(int program, float... variables){
 		ByteBuffer data = BufferUtils.createByteBuffer(size*4);
 		//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
 		//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
@@ -325,7 +326,6 @@ public class Uniform {
 					data.putInt((int)variables[insert]);
 				}
 			}
-			data.flip();//move the writer position back to the start of the buffer for reads
 		} else if (variables.length < size) {
 			//get the data that we can from the passed values
 			for (int insert = 0; insert < variables.length; insert++) {
@@ -346,13 +346,13 @@ public class Uniform {
 					data.putInt(0);
 				}
 			}
-			data.flip();
 		}
+		data.flip();//move the writer position back to the start of the buffer for reads
 		//call the set function variant that handles what function to call to update the uniform
 		if (type == FLOAT || type >= MAT2){
-			return this.set(data.asFloatBuffer());
+			return this.set(program, data.asFloatBuffer());
 		}else{
-			return this.set(data.asIntBuffer());
+			return this.set(program, data.asIntBuffer());
 		}
 	}
 
@@ -362,7 +362,7 @@ public class Uniform {
 	 * @param variables Data to pass to the GPU
 	 * @return True if the variable could be set false otherwise
 	 */
-	public boolean set(int... variables){
+	public boolean set(int program, int... variables){
 		ByteBuffer data = BufferUtils.createByteBuffer(size*4);
 		//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
 		//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
@@ -375,7 +375,6 @@ public class Uniform {
 					data.putInt(variables[insert]);
 				}
 			}
-			data.flip();//move the writer position back to the start of the buffer for reads
 		} else if (variables.length < size) {
 			//get the data that we can from the passed values
 			for (int insert = 0; insert < variables.length; insert++) {
@@ -396,13 +395,13 @@ public class Uniform {
 					data.putInt(0);
 				}
 			}
-			data.flip();
 		}
+		data.flip();//move the writer position back to the start of the buffer for reads
 		//call the set function variant that handles what function to call to update the uniform
 		if (type == FLOAT || type >= MAT2){
-			return this.set(data.asFloatBuffer());
+			return this.set(program, data.asFloatBuffer());
 		}else{
-			return this.set(data.asIntBuffer());
+			return this.set(program, data.asIntBuffer());
 		}
 	}
 
@@ -412,7 +411,7 @@ public class Uniform {
 	 * @param variables Data to pass to the GPU
 	 * @return True if the variable could be set false otherwise
 	 */
-	public boolean set(boolean... variables){
+	public boolean set(int program, boolean... variables){
 		if (type == BOOL) {
 			IntBuffer data = BufferUtils.createIntBuffer(size);
 			//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
@@ -421,7 +420,6 @@ public class Uniform {
 				for (int insert = 0; insert < size; insert++) {
 					data.put(variables[insert] ? 1 : 0);
 				}
-				data.flip();
 			} else if (variables.length < size) {
 				//get the data that we can from the passed values
 				for (int insert = 0; insert < variables.length; insert++) {
@@ -432,9 +430,9 @@ public class Uniform {
 				for (int remaining = size - variables.length; remaining < size; remaining++) {
 					data.put(0);
 				}
-				data.flip();
 			}
-			return this.set(data);
+			data.flip();//move the writer position back to the start of the buffer for reads
+			return this.set(program, data);
 		}else{
 			System.err.println("Types do not match, this uniform is not of type bool");
 			return false;
@@ -448,35 +446,35 @@ public class Uniform {
 	 * @param data Data buffer to set the uniform variable to
 	 * @return True if the variable could be set false otherwise
 	 */
-	public boolean setMat(boolean transpose, FloatBuffer data){
+	public boolean setMat(int program, boolean transpose, FloatBuffer data){
 		if(type >= MAT2){
 			switch (type) {
 				case MAT2:
-					glUniformMatrix2fv(location, transpose, data);
+					glProgramUniformMatrix2fv(program, location, transpose, data);
 					break;
 				case MAT2X3:
-					glUniformMatrix2x3fv(location, transpose, data);
+					glProgramUniformMatrix2x3fv(program, location, transpose, data);
 					break;
 				case MAT2X4:
-					glUniformMatrix2x4fv(location, transpose, data);
+					glProgramUniformMatrix2x4fv(program, location, transpose, data);
 					break;
 				case MAT3:
-					glUniformMatrix3fv(location, transpose, data);
+					glProgramUniformMatrix3fv(program, location, transpose, data);
 					break;
 				case MAT3X2:
-					glUniformMatrix3x2fv(location, transpose, data);
+					glProgramUniformMatrix3x2fv(program, location, transpose, data);
 					break;
 				case MAT3X4:
-					glUniformMatrix3x4fv(location, transpose, data);
+					glProgramUniformMatrix3x4fv(program, location, transpose, data);
 					break;
 				case MAT4:
-					glUniformMatrix4fv(location, transpose, data);
+					glProgramUniformMatrix4fv(program, location, transpose, data);
 					break;
 				case MAT4X2:
-					glUniformMatrix4x2fv(location, transpose, data);
+					glProgramUniformMatrix4x2fv(program, location, transpose, data);
 					break;
 				case MAT4X3:
-					glUniformMatrix4x3fv(location, transpose, data);
+					glProgramUniformMatrix4x3fv(program, location, transpose, data);
 					break;
 			}
 			return true;
