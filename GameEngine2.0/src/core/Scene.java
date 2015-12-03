@@ -15,8 +15,9 @@ public interface Scene {
 	public void cleanup();
 	
 	public static void printError(){
-		System.out.println(glGetError());
-		switch(glGetError()){
+		int error = glGetError();
+		System.out.println(error);
+		switch(error){
 			case GL_INVALID_ENUM:
 				System.out.println("GL_INVALID_ENUM");
 				break;
