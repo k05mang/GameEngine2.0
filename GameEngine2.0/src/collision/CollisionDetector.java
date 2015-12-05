@@ -2,8 +2,8 @@ package collision;
 
 import java.util.ArrayList;
 
-import glMath.Vec3;
 import glMath.VecUtil;
+import glMath.vectors.Vec3;
 
 public abstract class CollisionDetector {
 	

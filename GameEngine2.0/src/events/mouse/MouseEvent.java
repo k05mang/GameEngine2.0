@@ -1,4 +1,5 @@
-package events;
+package events.mouse;
+import events.keyboard.ModKey;
 import windowing.Window;
 
 public interface MouseEvent {

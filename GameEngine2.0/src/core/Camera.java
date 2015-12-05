@@ -1,6 +1,8 @@
 package core;
 import glMath.*;
-
+import glMath.matrices.Mat4;
+import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
 import static glMath.VecUtil.*;
 
 public class Camera {

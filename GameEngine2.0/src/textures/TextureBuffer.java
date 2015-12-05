@@ -6,7 +6,7 @@ import static org.lwjgl.opengl.GL45.*;
 public class TextureBuffer extends Texture {
 
 	/**
-	 * Constructs a buffer texture with the given <code>InternalFormat</code>.
+	 * Constructs a buffer texture with the given {@code InternalFormat}.
 	 * 
 	 * @param format Internal format of the texture buffer
 	 */
@@ -15,7 +15,7 @@ public class TextureBuffer extends Texture {
 	}
 	
 	/**
-	 * Constructs a buffer texture with the given <code>InternalFormat</code> and <code>BufferObject</code>.
+	 * Constructs a buffer texture with the given {@code InternalFormat} and {@code BufferObject}.
 	 * 
 	 * @param format Internal format of the texture buffer
 	 * @param buffer BufferObject to attach to this buffer texture
@@ -26,7 +26,7 @@ public class TextureBuffer extends Texture {
 	}
 
 	/**
-	 * Attaches a <code>BufferObject</code> to this buffer texture
+	 * Attaches a {@code BufferObject} to this buffer texture
 	 * 
 	 * @param buffer Buffer object to attach to this buffer texture
 	 */

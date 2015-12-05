@@ -13,8 +13,8 @@ public class Texture1D extends Texture implements BasicTexture{
 	private int width;
 	
 	/**
-	 * Constructs a texture object on the GPU with the given <code>InternalFormat</code>, mipmap <code>levels</code>, and
-	 * <code>width</code>.
+	 * Constructs a texture object on the GPU with the given {@code InternalFormat}, mipmap {@code levels}, and
+	 * {@code width}.
 	 * 
 	 * @param format Internal GPU formatting of the texture data
 	 * @param levels Number of mipmap levels to apply to the texture
@@ -37,8 +37,8 @@ public class Texture1D extends Texture implements BasicTexture{
 	}
 	
 	/**
-	 * Buffers pixel data provided with the given <code>format</code> and <code>type</code> for the data to be read by the GPU. The pixel data is applied to the subimage of
-	 * the texture defined by <code>offset</code> and <code>width</code>. If the texture has a compressed internal format then a <code>ByteBuffer</code> must
+	 * Buffers pixel data provided with the given {@code format} and {@code type} for the data to be read by the GPU. The pixel data is applied to the subimage of
+	 * the texture defined by {@code offset} and {@code width}. If the texture has a compressed internal format then a {@code ByteBuffer} must
 	 * be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to pass to the GPU

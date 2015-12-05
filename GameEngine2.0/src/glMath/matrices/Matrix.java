@@ -1,5 +1,8 @@
-package glMath;
+package glMath.matrices;
 
+import glMath.vectors.Vector;
+
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 /**
@@ -138,7 +141,7 @@ public interface Matrix {
 	 * @return Vector array used to store this matrix
 	 */
 	public Vector[] getMatrix();
-	
+
 	/**
 	 * Stores this matrix into a buffer 
 	 * 
@@ -147,11 +150,25 @@ public interface Matrix {
 	public void store(FloatBuffer storage);
 	
 	/**
+	 * Stores this matrix into a buffer 
+	 * 
+	 * @param storage Byte buffer to store into 
+	 */
+	public void store(ByteBuffer storage);
+	
+	/**
 	 * Returns this matrix as a column major ordered FloatBuffer
 	 * 
 	 * @return This matrix as a column major ordered FloatBuffer
 	 */
-	public FloatBuffer asBuffer();
+	public FloatBuffer asFloatBuffer();
+	
+	/**
+	 * Returns this matrix as a column major ordered ByteBuffer
+	 * 
+	 * @return This matrix as a column major ordered ByteBuffer
+	 */
+	public ByteBuffer asByteBuffer();
 	
 	/**
 	 * Prints the matrix in a readable format to the terminal

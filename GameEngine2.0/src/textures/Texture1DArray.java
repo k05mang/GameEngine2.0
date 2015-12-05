@@ -14,8 +14,8 @@ public class Texture1DArray extends Texture implements ArrayTexture{
 	private int width, length;
 	
 	/**
-	 * Constructs a texture array of one dimensional textures. Each texture will have the given <code>InternalFormat</code>,
-	 * <code>width</code>, and mipmap <code>levels</code>, <code>length</code> will define the number of textures in the array.
+	 * Constructs a texture array of one dimensional textures. Each texture will have the given {@code InternalFormat},
+	 * {@code width}, and mipmap {@code levels}, {@code length} will define the number of textures in the array.
 	 * 
 	 * @param format Internal GPU formatting of the texture data
 	 * @param width Width of the textures defined in the array
@@ -47,9 +47,9 @@ public class Texture1DArray extends Texture implements ArrayTexture{
 	}
 	
 	/**
-	 * Buffers the given pixel data to the area defined from <code>offset</code> through <code>width</code> to all textures in the array. 
-	 * The <code>format</code> and <code>type</code> tell the GPU how to read the pixel data. If the texture has a compressed internal 
-	 * format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the area defined from {@code offset} through {@code width} to all textures in the array. 
+	 * The {@code format} and {@code type} tell the GPU how to read the pixel data. If the texture has a compressed internal 
+	 * format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to buffer to the texture on the GPU
 	 * @param format Format of the pixel data being sent
@@ -63,9 +63,9 @@ public class Texture1DArray extends Texture implements ArrayTexture{
 	}
 	
 	/**
-	 * Buffers the given pixel data to the texture area defined from <code>offset</code> through <code>width</code> at the given <code>index</code>
-	 * and mipmap <code>level</code> of the texture array. The <code>format</code> and <code>type</code> tell the GPU how to read the pixel data.
-	 * If the texture has a compressed internal format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the texture area defined from {@code offset} through {@code width} at the given {@code index}
+	 * and mipmap {@code level} of the texture array. The {@code format} and {@code type} tell the GPU how to read the pixel data.
+	 * If the texture has a compressed internal format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to buffer to the texture on the GPU
 	 * @param format Format of the pixel data being sent
@@ -86,16 +86,16 @@ public class Texture1DArray extends Texture implements ArrayTexture{
 	}
 	
 	/**
-	 * Buffers the given pixel data to the texture area defined from <code>offset</code> through <code>width</code> of the textures at 
-	 * <code>baseIndex</code> through <code>baseIndex+count</code>. The <code>format</code> and <code>type</code> tell the GPU how to read 
-	 * the pixel data. If the texture has a compressed internal format then a <code>ByteBuffer</code> must be provided, all other buffer 
+	 * Buffers the given pixel data to the texture area defined from {@code offset} through {@code width} of the textures at 
+	 * {@code baseIndex} through {@code baseIndex+count}. The {@code format} and {@code type} tell the GPU how to read 
+	 * the pixel data. If the texture has a compressed internal format then a {@code ByteBuffer} must be provided, all other buffer 
 	 * types will be ignored.
 	 * 
 	 * @param pixels Pixel data to buffer to the texture on the GPU
 	 * @param format Format of the pixel data being sent
 	 * @param type Type of the pixel data being sent
 	 * @param baseIndex Index to start modifying the array textures
-	 * @param count Number of textures in the array from <code>baseIndex</code> to modify
+	 * @param count Number of textures in the array from {@code baseIndex} to modify
 	 * @param level Mipmap level of the texture at the specified index in the array
 	 * @param offset Offset from the start of the texture to begin modifying from
 	 * @param width Width of the area of the texture after offset to modify

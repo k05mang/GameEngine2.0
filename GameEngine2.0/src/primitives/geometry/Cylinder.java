@@ -1,7 +1,9 @@
-package primitives;
+package primitives.geometry;
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
+import primitives.Face;
+import primitives.Vertex;
 import renderers.RenderMode;
 import renderers.Renderable;
 import gldata.AttribType;

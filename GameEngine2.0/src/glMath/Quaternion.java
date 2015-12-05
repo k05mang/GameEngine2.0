@@ -1,5 +1,10 @@
 package glMath;
 
+import glMath.matrices.Mat3;
+import glMath.matrices.Mat4;
+import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
+
 public class Quaternion {
 	private Vec4 data;//retains this quaternions data, which consists of 4 components
 	

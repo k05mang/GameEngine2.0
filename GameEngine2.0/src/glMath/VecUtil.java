@@ -1,5 +1,10 @@
 package glMath;
 
+import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
+import glMath.vectors.Vector;
+
 public abstract class VecUtil {
 	public static final Vec3 
 	xAxis = new Vec3(1,0,0),

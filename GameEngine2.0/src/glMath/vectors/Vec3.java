@@ -1,4 +1,5 @@
-package glMath;
+package glMath.vectors;
+
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,211 +15,174 @@ import org.lwjgl.BufferUtils;
  * @author Kevin Mango
  *
  */
-public class Vec4 implements Vector {
+public class Vec3 implements Vector {
 
-	public float x, y, z, w;
-	public static final int SIZE_IN_BYTES = 16;
-	public static final int SIZE_IN_FLOATS = 4;
+	public float x, y, z;
+	public static final int SIZE_IN_BYTES = 12;
+	public static final int SIZE_IN_FLOATS = 3;
 	
 	/**
 	 * Default construct which initializes all vector components to 0
 	 */
-	public Vec4(){
-		this(0,0,0,0);
+	public Vec3(){
+		this(0,0,0);
 	}
 	
 	/**
-	 * Constructs a Vec4 object with 4 floats 
+	 * Constructs a Vec3 objects with 3 floats
 	 * 
 	 * @param x X component of this vector
 	 * @param y Y component of this vector
 	 * @param z Z component of this vector
-	 * @param w W component of this vector
 	 */
-	public Vec4(float x, float y, float z, float w){
+	public Vec3(float x, float y, float z){
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		this.w = w;
 	}
 	
 	/**
-	 * Constructs a Vec4 object with two Vec2 objects
+	 * Constructs a Vec3 object with a Vec2 for the x and y components of this vector
+	 * and a float for the z
 	 * 
-	 * @param vec1 Vec2 which initializes the x and y components of this vector
-	 * @param vec2 Vec2 which initializes the z and w components of this vector
+	 * @param vect Vec2 to use in the initialization of this Vec3
+	 * @param z Float to initialize the z component of this vector
 	 */
-	public Vec4(Vec2 vec1, Vec2 vec2){
-		this(vec1.x, vec1.y, vec2.x, vec2.y);
+	public Vec3(Vec2 vect, float z){
+		this(vect.x, vect.y, z);
 	}
 	
 	/**
-	 * Constructs a Vec4 object with a Vec2 and 2 floats
+	 * Constructs a Vec3 object with a Vec2 initializing the y and z components of this vector
+	 * and a float initializing the x component of this vector
 	 * 
-	 * @param vec Vec2 which initializes the x and y components of this vector
-	 * @param z Float for the z component
-	 * @param w Float for the w component
+	 * @param x Float to initialize the x component
+	 * @param vect Vec2 used in initializing the y and z components
 	 */
-	public Vec4(Vec2 vec, float z, float w){
-		this(vec.x, vec.y, z, w);
-	}
-
-	/**
-	 * Constructs a Vec4 object with 2 floats for the first components and a Vec2 for the last two components
-	 *  
-	 * @param x Float for the x component
-	 * @param y Float for the y component
-	 * @param vec Vec2 which initializes the x and y components of this vector
-	 */
-	public Vec4(float x, float y, Vec2 vec){
-		this(x, y, vec.x, vec.y);
+	public Vec3(float x, Vec2 vect){
+		this(x, vect.x, vect.y);
 	}
 	
 	/**
-	 * Constructs a Vec4 object with 2 floats initializing the x and w components of the vector and
-	 * a Vec2 initializing the y and z components 
+	 * Copy constructor for Vec3
 	 * 
-	 * @param x Float for the x component
-	 * @param vec Vec2 which initializes the y and z components of this vector
-	 * @param w Float for the w component
+	 * @param copy Vector to copy from 
 	 */
-	public Vec4(float x, Vec2 vec, float w){
-		this(x, vec.x, vec.y, w);
+	public Vec3(Vec3 copy){
+		this(copy.x, copy.y, copy.z);
 	}
 	
 	/**
-	 * Constructs a Vec4 object with a float and a Vec3 for the last components
+	 * Constructs a Vec3 with a base value which initializes all components of the vector with this value
 	 * 
-	 * @param x Float to initialize the x component of this vector
-	 * @param vec Vec3 to initialize the y, z, and w components of this vector
+	 * @param initializer Value to initialize all components with
 	 */
-	public Vec4(float x, Vec3 vec){
-		this(x, vec.x, vec.y, vec.z);
-	}
-	
-	 /**
-	  * Constructs a Vec4 object with a Vec3 for the first components and a float for the last component
-	  * 
-	  * @param vec Vec3 to initialize the x, y, and z components of this vector
-	  * @param w Float to initialize the w component of this vector
-	  */
-	public Vec4( Vec3 vec, float w){
-		this(vec.x, vec.y, vec.z, w);
+	public Vec3(float initializer){
+		this(initializer, initializer, initializer);
 	}
 	
 	/**
-	 * Copy constructor for Vec4
-	 * 
-	 * @param copy Vector to copy from
-	 */
-	public Vec4(Vec4 copy){
-		this(copy.x, copy.y, copy.z, copy.w);
-	}
-	
-	/**
-	 * Constructs a Vec4 object using a single value to initialize all components
-	 * 
-	 * @param initializer Value to initialize the vector with
-	 */
-	public Vec4(float initializer){
-		this(initializer, initializer, initializer, initializer);
-	}
-	
-	/**
-	 * Constructs a Vec4 with the first 4 components of the array
+	 * Constructs a Vec3 with the first 3 components of the array
 	 * 
 	 * @param init Float array to use in the initialization
 	 */
-	public Vec4(float[] init){
-		if(init.length >= 4){
+	public Vec3(float[] init){
+		if(init.length >= 3){
 			x = init[0];
 			y = init[1];
 			z = init[2];
-			w = init[3];
 		}
+	}
+	
+	/**
+	 * Computes the cross product of this vector with the given vector
+	 * 
+	 * @param vector Vector to compute the cross product with
+	 * @return A vector which is the cross product vector orthogonal to the given vectors
+	 */
+	public Vec3 cross(Vec3 vector){
+		return new Vec3(
+				y*vector.z - z*vector.y,
+				z*vector.x - x*vector.z,
+				x*vector.y - y*vector.x
+				);
 	}
 	
 	@Override
 	public float dot(Vector vector) {
-		if(vector instanceof Vec4){
-			Vec4 vect = (Vec4)vector;
-			return x*vect.x+y*vect.y+z*vect.z+w*vect.w;
+		if(vector instanceof Vec3){
+			Vec3 vect = (Vec3)vector;
+			return x*vect.x+y*vect.y+z*vect.z;
 		}else{
-			System.err.println("Type mismatch in dot product, vector is not of type Vec4");
-			return 0;	
+			System.err.println("Type mismatch in vector dot product, vector is not of type Vec3");
+			return 0;
 		}
 	}
 
 	@Override
 	public float length() {
-		return (float)Math.sqrt(x*x+y*y+z*z+w*w);
+		return (float)Math.sqrt(x*x+y*y+z*z);
 	}
 
 	@Override
 	public float normalize() {
-		float len = (float)Math.sqrt(x*x+y*y+z*z+w*w);
+		float len = (float)Math.sqrt(x*x+y*y+z*z);
 		x /= len;
 		y /= len;
 		z /= len;
-		w /= len;
 		return len;
 	}
 
 	@Override
-	public Vec4 add(Vector vector) {
-		if(vector instanceof Vec4){
-			Vec4 vect = (Vec4)vector;
+	public Vec3 add(Vector vector) {
+		if(vector instanceof Vec3){
+			Vec3 vect = (Vec3)vector;
 			x += vect.x;
 			y += vect.y;
 			z += vect.z;
-			w += vect.w;
 		}else{
 			System.err.println("Type mismatch in vector addition, vector is not of type Vec3");
 		}
 		return this;
 	}
 	
-	public Vec4 add(float x, float y, float z, float w) {
+	public Vec3 add(float x, float y, float z) {
 		this.x += x;
 		this.y += y;
 		this.z += z;
-		this.w += w;
 		return this;
 	}
 
 	@Override
-	public Vec4 subtract(Vector vector) {
-		if(vector instanceof Vec4){
-			Vec4 vect = (Vec4)vector;
+	public Vec3 subtract(Vector vector) {
+		if(vector instanceof Vec3){
+			Vec3 vect = (Vec3)vector;
 			x -= vect.x;
 			y -= vect.y;
 			z -= vect.z;
-			w -= vect.w;
 		}else{
 			System.err.println("Type mismatch in vector subtraction, vector is not of type Vec3");
 		}
 		return this;
 	}
 	
-	public Vec4 subtract(float x, float y, float z, float w) {
+	public Vec3 subtract(float x, float y, float z) {
 		this.x -= x;
 		this.y -= y;
 		this.z -= z;
-		this.w -= w;
 		return this;
 	}
 
 	@Override
-	public Vec4 scale(float factor) {
+	public Vec3 scale(float factor) {
 		x *= factor;
 		y *= factor;
 		z *= factor;
-		w *= factor;
 		return this;
 	}
 	
 	@Override
-	public Vec4 set(int index, float value){
+	public Vec3 set(int index, float value){
 		switch(index){
 			case 0:
 				x = value;
@@ -229,9 +193,6 @@ public class Vec4 implements Vector {
 			case 2:
 				z = value;
 				break;
-			case 3:
-				w = value;
-				break;
 			default:
 				System.err.println("Index out of bounds for this vector");
 				break;
@@ -240,21 +201,20 @@ public class Vec4 implements Vector {
 	}
 	
 	@Override
-	public Vec4 set(Vector vec){
-		if(vec instanceof Vec4){
-			Vec4 vector = (Vec4)vec;
+	public Vec3 set(Vector vec){
+		if(vec instanceof Vec3){
+			Vec3 vector = (Vec3)vec;
 			x = vector.x;
 			y = vector.y;
 			z = vector.z;
-			w = vector.w;
 		}else{
-			System.err.println("Vector given is not of type Vec4, failed to set values");
+			System.err.println("Vector given is not of type Vec3, failed to set values");
 		}
 		return this;
 	}
 	
 	@Override
-	public Vec4 set(float... values){
+	public Vec3 set(float... values){
 		switch(values.length){
 			case 1:
 				x = values[0];
@@ -268,44 +228,26 @@ public class Vec4 implements Vector {
 				y = values[1];
 				z = values[2];
 				break;
-			case 4:
-				x = values[0];
-				y = values[1];
-				z = values[2];
-				w = values[3];
-				break;
 			default:
 				break;
 		}
 		return this;
 	}
-
+	
 	@Override
-	public void store(FloatBuffer storage) {
-		try {
-			storage.put(x);
-			storage.put(y);
-			storage.put(z);
-			storage.put(w);
-		}catch (BufferOverflowException e) {
-			System.err.println("Insufficient space in buffer for storing this vector");
-			e.printStackTrace();
-		}
+	public void store(FloatBuffer storage){
+		storage.put(x);
+		storage.put(y);
+		storage.put(z);
 	}
 	
 	@Override
 	public void store(ByteBuffer storage){
-		try {
-			storage.putFloat(x);
-			storage.putFloat(y);
-			storage.putFloat(z);
-			storage.putFloat(w);
-		} catch (BufferOverflowException e) {
-			System.err.println("Insufficient space in buffer for storing this vector");
-			e.printStackTrace();
-		}
+		storage.putFloat(x);
+		storage.putFloat(y);
+		storage.putFloat(z);
 	}
-
+	
 	@Override
 	public Vector swizzle(String type){
 		type = type.trim();
@@ -318,16 +260,12 @@ public class Vec4 implements Vector {
 						return getPosType(type, 2);
 					case 'z':
 						return getPosType(type, 2);
-					case 'w':
-						return getPosType(type, 2);
 						
 					case 'r':
 						return getColorType(type, 2);
 					case 'g':
 						return getColorType(type, 2);
 					case 'b':
-						return getColorType(type, 2);
-					case 'a':
 						return getColorType(type, 2);
 						
 					case 's':
@@ -336,10 +274,8 @@ public class Vec4 implements Vector {
 						return getTextureType(type, 2);
 					case 'p':
 						return getTextureType(type, 2);
-					case 'q':
-						return getTextureType(type, 2);
 					default:
-						System.err.println("Swizzle string must begin with either x, y, z, w, r, g, b, a, s, t, p, or q");
+						System.err.println("Swizzle string must begin with either x, y, z, r, g, b, s, t, or p");
 						return null;
 				}
 			case 3:
@@ -350,16 +286,12 @@ public class Vec4 implements Vector {
 						return getPosType(type, 3);
 					case 'z':
 						return getPosType(type, 3);
-					case 'w':
-						return getPosType(type, 3);
 						
 					case 'r':
 						return getColorType(type, 3);
 					case 'g':
 						return getColorType(type, 3);
 					case 'b':
-						return getColorType(type, 3);
-					case 'a':
 						return getColorType(type, 3);
 						
 					case 's':
@@ -368,10 +300,8 @@ public class Vec4 implements Vector {
 						return getTextureType(type, 3);
 					case 'p':
 						return getTextureType(type, 3);
-					case 'q':
-						return getTextureType(type, 3);
 					default:
-						System.err.println("Swizzle string must begin with either x, y, z, w, r, g, b, a, s, t, p, or q");
+						System.err.println("Swizzle string must begin with either x, y, z, r, g, b, s, t, or p");
 						return null;
 				}
 			case 4:
@@ -382,16 +312,12 @@ public class Vec4 implements Vector {
 						return getPosType(type, 4);
 					case 'z':
 						return getPosType(type, 4);
-					case 'w':
-						return getPosType(type, 4);
 						
 					case 'r':
 						return getColorType(type, 4);
 					case 'g':
 						return getColorType(type, 4);
 					case 'b':
-						return getColorType(type, 4);
-					case 'a':
 						return getColorType(type, 4);
 						
 					case 's':
@@ -400,10 +326,8 @@ public class Vec4 implements Vector {
 						return getTextureType(type, 4);
 					case 'p':
 						return getTextureType(type, 4);
-					case 'q':
-						return getTextureType(type, 4);
 					default:
-						System.err.println("Swizzle string must begin with either x, y, z, w, r, g, b, a, s, t, p, or q");
+						System.err.println("Swizzle string must begin with either x, y, z, r, g, b, s, t, or p");
 						return null;
 				}
 			default:
@@ -438,9 +362,6 @@ public class Vec4 implements Vector {
 					break;
 				case 'z':
 					result.set(index, z);
-					break;
-				case 'w':
-					result.set(index, w);
 					break;
 				default:
 					System.err.println("A given swizzle value is not applicable to this vector");
@@ -477,9 +398,6 @@ public class Vec4 implements Vector {
 				case 'b':
 					result.set(index, z);
 					break;
-				case 'a':
-					result.set(index, w);
-					break;
 				default:
 					System.err.println("A given swizzle value is not applicable to this vector");
 					return null;
@@ -515,9 +433,6 @@ public class Vec4 implements Vector {
 				case 'p':
 					result.set(index, z);
 					break;
-				case 'q':
-					result.set(index, w);
-					break;
 				default:
 					System.err.println("A given swizzle value is not applicable to this vector");
 					return null;
@@ -527,9 +442,9 @@ public class Vec4 implements Vector {
 	}
 	
 	@Override
-	public Vec4 proj(Vector onto){
-		if(onto instanceof Vec4){
-			Vec4 target = new Vec4((Vec4)onto);
+	public Vec3 proj(Vector onto){
+		if(onto instanceof Vec3){
+			Vec3 target = new Vec3((Vec3)onto);
 			return target.scale(dot(target)/target.dot(target));
 		}else{
 			System.err.println("Error in vector projection, incompatible types");
@@ -539,7 +454,7 @@ public class Vec4 implements Vector {
 	
 	@Override
 	public float comp(Vector onto){
-		if(onto instanceof Vec4){
+		if(onto instanceof Vec3){
 			return dot(onto)/onto.length();
 		}else{
 			System.err.println("Error in vector projection, incompatible types");
@@ -549,9 +464,9 @@ public class Vec4 implements Vector {
 	
 	@Override
 	public boolean equals(Object vect){
-		if(vect instanceof Vec4){
-			Vec4 vec = (Vec4)vect;
-			return vec.x == x && vec.y == y && vec.z == z && vec.w == w;
+		if(vect instanceof Vec3){
+			Vec3 vec = (Vec3)vect;
+			return vec.x == x && vec.y == y && vec.z == z;
 		}else{
 			return false;
 		}
@@ -559,19 +474,27 @@ public class Vec4 implements Vector {
 	
 	@Override
 	public int hashCode(){
-		return Arrays.hashCode(new Float[]{x, y, z, w});
+		return Arrays.hashCode(new Float[]{x, y, z});
 	}
-	
+
 	@Override
-	public FloatBuffer asBuffer(){
+	public FloatBuffer asFloatBuffer(){
 		FloatBuffer storage = BufferUtils.createFloatBuffer(SIZE_IN_FLOATS);
 		this.store(storage);
 		return (FloatBuffer)storage.flip();
 	}
 	
 	@Override
+	public ByteBuffer asByteBuffer(){
+		ByteBuffer storage = BufferUtils.createByteBuffer(SIZE_IN_BYTES);
+		this.store(storage);
+		return (ByteBuffer)storage.flip();
+	}
+	
+	@Override
 	public String toString(){
-		return x+" | "+y+" | "+z+" | "+w;
+		return x+" | "+y+" | "+z;
+//		return "x="+x+" | "+"y="+y+" | "+"z="+z;
 	}
 	
 	@Override
@@ -581,12 +504,12 @@ public class Vec4 implements Vector {
 	
 	@Override
 	public boolean isZero(){
-		return x == 0 && y == 0 && z == 0 && w == 0;
+		return x == 0 && y == 0 && z == 0;
 	}
 	
 	@Override
-	public Vec4 inverse(){
-		return (new Vec4(this)).scale(-1);
+	public Vec3 inverse(){
+		return (new Vec3(this)).scale(-1);
 	}
 	
 	@Override
@@ -602,10 +525,6 @@ public class Vec4 implements Vector {
 		if(z < ROUND_VALUE && z > -ROUND_VALUE){
 			z = 0.0f;
 		}
-		
-		if(w < ROUND_VALUE && w > -ROUND_VALUE){
-			w = 0.0f;
-		}
 	}
 
 	@Override
@@ -613,6 +532,5 @@ public class Vec4 implements Vector {
 		stream.writeFloat(this.x);
 		stream.writeFloat(this.y);
 		stream.writeFloat(this.z);
-		stream.writeFloat(this.w);
 	}
 }

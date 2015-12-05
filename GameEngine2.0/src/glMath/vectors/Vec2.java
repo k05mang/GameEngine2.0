@@ -1,4 +1,4 @@
-package glMath;
+package glMath.vectors;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -181,24 +181,14 @@ public class Vec2 implements Vector {
 	
 	@Override
 	public void store(FloatBuffer storage){
-		try {
-			storage.put(x);
-			storage.put(y);
-		} catch (BufferOverflowException e) {
-			System.err.println("Insufficient space in buffer for storing this vector");
-			e.printStackTrace();
-		}
+		storage.put(x);
+		storage.put(y);
 	}
 	
 	@Override
 	public void store(ByteBuffer storage){
-		try {
-			storage.putFloat(x);
-			storage.putFloat(y);
-		} catch (BufferOverflowException e) {
-			System.err.println("Insufficient space in buffer for storing this vector");
-			e.printStackTrace();
-		}
+		storage.putFloat(x);
+		storage.putFloat(y);
 	}
 
 	@Override
@@ -404,10 +394,17 @@ public class Vec2 implements Vector {
 	}
 	
 	@Override
-	public FloatBuffer asBuffer(){
+	public FloatBuffer asFloatBuffer(){
 		FloatBuffer storage = BufferUtils.createFloatBuffer(SIZE_IN_FLOATS);
 		this.store(storage);
 		return (FloatBuffer)storage.flip();
+	}
+	
+	@Override
+	public ByteBuffer asByteBuffer(){
+		ByteBuffer storage = BufferUtils.createByteBuffer(SIZE_IN_BYTES);
+		this.store(storage);
+		return (ByteBuffer)storage.flip();
 	}
 	
 	@Override

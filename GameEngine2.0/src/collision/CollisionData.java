@@ -1,6 +1,6 @@
 package collision;
 
-import glMath.Vec3;
+import glMath.vectors.Vec3;
 
 public class CollisionData {
 	public Vec3 normal, contactA, contactB;

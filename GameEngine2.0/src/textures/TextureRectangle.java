@@ -14,8 +14,8 @@ public class TextureRectangle extends Texture implements BasicTexture {
 	private int width, height;
 	
 	/**
-	 * Constructs a rectangular texture with the given <code>InternalFormat</code>, <code>width</code>, and <code>height</code>.
-	 * Since Rectanle texture types cannot have mipmaps the default level will be 0 and calling <code>genMipMaps</code> does
+	 * Constructs a rectangular texture with the given {@code InternalFormat}, {@code width}, and {@code height}.
+	 * Since Rectanle texture types cannot have mipmaps the default level will be 0 and calling {@code genMipMaps} does
 	 * nothing.
 	 * 
 	 * @param format Internal format for the given texture to store it's pixel data as
@@ -35,10 +35,10 @@ public class TextureRectangle extends Texture implements BasicTexture {
 	}
 	
 	/**
-	 * Buffers the given pixel data to the GPU, <code>format</code> and <code>type</code> specify how the GPU will read the pixel data.
-	 * The pixel data will start at <code>xoffset</code> and <code>yoffset</code> from the lower left corner of the texture, and will 
-	 * cover an area defined by <code>width</code> and <code>height</code> from the offset point. If the texture has a compressed internal 
-	 * format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the GPU, {@code format} and {@code type} specify how the GPU will read the pixel data.
+	 * The pixel data will start at {@code xoffset} and {@code yoffset} from the lower left corner of the texture, and will 
+	 * cover an area defined by {@code width} and {@code height} from the offset point. If the texture has a compressed internal 
+	 * format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to be sent to the GPU
 	 * @param format Format of the pixel data being sent

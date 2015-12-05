@@ -5,9 +5,9 @@ import java.nio.Buffer;
 public interface BasicTexture {
 
 	/**
-	 * Buffers pixel data provided with the given <code>format</code> and <code>type</code> for the data to be read by the GPU. The 
-	 * data is applied to the entire texture at the given level. If the texture is of type <code>TextureType.RECTANGLE</code> 
-	 * then the level parameter is ignored. If the texture has a compressed internal format then a <code>ByteBuffer</code> must
+	 * Buffers pixel data provided with the given {@code format} and {@code type} for the data to be read by the GPU. The 
+	 * data is applied to the entire texture at the given level. If the texture is of type {@code TextureType.RECTANGLE} 
+	 * then the level parameter is ignored. If the texture has a compressed internal format then a {@code ByteBuffer} must
 	 * be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU

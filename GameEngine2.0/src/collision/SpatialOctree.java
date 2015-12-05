@@ -3,8 +3,8 @@ package collision;
 import java.util.ArrayList;
 
 import core.GameObject;
-import glMath.Vec3;
 import glMath.VecUtil;
+import glMath.vectors.Vec3;
 
 public class SpatialOctree {
 	//first half of nodes will represent the upper portion of space

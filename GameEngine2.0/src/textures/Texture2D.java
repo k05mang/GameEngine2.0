@@ -14,8 +14,8 @@ public class Texture2D extends Texture implements BasicTexture {
 	private int width, height;
 	
 	/**
-	 * Constructs a two dimensional texture with the given <code>InternalFormat</code>, <code>width</code>,
-	 * <code>height</code>, and mipmap <code>levels</code>.
+	 * Constructs a two dimensional texture with the given {@code InternalFormat}, {@code width},
+	 * {@code height}, and mipmap {@code levels}.
 	 * 
 	 * @param format Internal format of the texture to store pixel data
 	 * @param levels Number of mipmap levels for this texture
@@ -35,10 +35,10 @@ public class Texture2D extends Texture implements BasicTexture {
 	}
 
 	/**
-	 * Buffers the given pixel data to the GPU, <code>format</code> and <code>type</code> specify how the GPU will read the pixel data.
-	 * The pixel data will be applied to the given mipmap <code>level</code> of the texture and will start at <code>xoffset</code> and 
-	 * <code>yoffset</code> from the lower left corner of the texture, and will cover an area defined by <code>width</code> and <code>height</code>
-	 * from the offset point. If the texture has a compressed internal format then a <code>ByteBuffer</code> must be provided, all other buffer 
+	 * Buffers the given pixel data to the GPU, {@code format} and {@code type} specify how the GPU will read the pixel data.
+	 * The pixel data will be applied to the given mipmap {@code level} of the texture and will start at {@code xoffset} and 
+	 * {@code yoffset} from the lower left corner of the texture, and will cover an area defined by {@code width} and {@code height}
+	 * from the offset point. If the texture has a compressed internal format then a {@code ByteBuffer} must be provided, all other buffer 
 	 * types will be ignored.
 	 * 
 	 * @param pixels Pixel data to be sent to the GPU

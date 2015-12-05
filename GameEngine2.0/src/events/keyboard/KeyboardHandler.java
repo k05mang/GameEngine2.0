@@ -1,4 +1,4 @@
-package events;
+package events.keyboard;
 
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWCharModsCallback;

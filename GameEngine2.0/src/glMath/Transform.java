@@ -1,5 +1,11 @@
 package glMath;
 
+import glMath.matrices.Mat3;
+import glMath.matrices.Mat4;
+import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
+
 public class Transform {
 	private Quaternion orientation;
 	private Vec3 position, scale;

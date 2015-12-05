@@ -1,7 +1,7 @@
 package collision;
 import java.util.ArrayList;
 
-import glMath.Vec3;
+import glMath.vectors.Vec3;
 import core.GameObject;
 
 public class BSPTree {

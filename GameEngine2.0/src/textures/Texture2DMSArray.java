@@ -7,8 +7,8 @@ public class Texture2DMSArray extends Texture {
 	private int width, height, length;
 	
 	/**
-	 * Constructs an array of <code>length</code> two dimensional multisample textures with the given <code>InternalFormat</code>, <code>samples</code>,
-	 * <code>width</code> and <code>height</code>, and fixed sampling for each texture in the array.
+	 * Constructs an array of {@code length} two dimensional multisample textures with the given {@code InternalFormat}, {@code samples},
+	 * {@code width} and {@code height}, and fixed sampling for each texture in the array.
 	 *  
 	 * @param format Internal format of the textures in the array
 	 * @param samples Number of samples to used for the textures in the array

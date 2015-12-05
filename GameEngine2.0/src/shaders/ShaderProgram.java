@@ -1,15 +1,17 @@
 package shaders;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL41.*;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import gldata.BufferObject;
-import glMath.Matrix;
-import glMath.Vector;
+import glMath.matrices.Matrix;
+import glMath.vectors.Vector;
 
 public class ShaderProgram {
 	private HashMap<String, Uniform> uniforms;//mapping of uniform names to their uniform handlers
@@ -79,6 +81,7 @@ public class ShaderProgram {
 	 * @return True if the linking was successful, false otherwise
 	 */
 	public boolean link(){
+		glProgramParameteri(programId, GL_PROGRAM_SEPARABLE, GL_TRUE);
 		glLinkProgram(programId);
 		//if we linked successfully add the uniforms to the map and fix any that were unknown while parsing a single shader file
 		if(glGetProgrami(programId, GL_LINK_STATUS) == GL_TRUE){
@@ -136,7 +139,7 @@ public class ShaderProgram {
 	 * @param data Buffer containing the data to set the uniform to
 	 * @return True if the uniform was found and set to the given data
 	 */
-	public boolean setUniform(String uniformName, Buffer data){
+	public boolean setUniform(String uniformName, ByteBuffer data){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
 			return found.set(programId, data);
@@ -190,6 +193,10 @@ public class ShaderProgram {
 			return false;
 		}
 	}
+	
+	public int getId(){
+		return programId;
+	}
 
 	/**
 	 * Sets the uniform specified by the given name, and sets it to the value of variables.
@@ -222,7 +229,7 @@ public class ShaderProgram {
 	 * @param data Data to set the uniform to
 	 * @return True if the uniform was found and set to the given data
 	 */
-	public boolean setUniform(String uniformName, boolean transpose, FloatBuffer data){
+	public boolean setUniform(String uniformName, boolean transpose, ByteBuffer data){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
 			return found.setMat(programId, transpose, data);
@@ -241,7 +248,7 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, Vector value){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			return found.set(programId, value.asBuffer());
+			return found.set(programId, value.asByteBuffer());
 		}else{
 			return false;
 		}
@@ -257,7 +264,7 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, Matrix value){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			return found.setMat(programId, false, value.asBuffer());
+			return found.setMat(programId, false, value.asByteBuffer());
 		}else{
 			return false;
 		}
@@ -274,7 +281,7 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, boolean transpose, Matrix value){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			return found.setMat(programId, transpose, value.asBuffer());
+			return found.setMat(programId, transpose, value.asByteBuffer());
 		}else{
 			return false;
 		}

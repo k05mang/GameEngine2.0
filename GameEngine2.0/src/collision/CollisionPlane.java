@@ -1,10 +1,10 @@
 package collision;
 
-import glMath.Mat3;
-import glMath.Mat4;
 import glMath.MatrixUtil;
-import glMath.Vec3;
 import glMath.Quaternion;
+import glMath.matrices.Mat3;
+import glMath.matrices.Mat4;
+import glMath.vectors.Vec3;
 
 public class CollisionPlane implements CollisionMesh{
 	

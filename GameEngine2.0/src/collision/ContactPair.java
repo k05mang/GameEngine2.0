@@ -1,10 +1,10 @@
 package collision;
 
-import glMath.Mat3;
 import glMath.MatrixUtil;
 import glMath.Quaternion;
-import glMath.Vec3;
 import glMath.VecUtil;
+import glMath.matrices.Mat3;
+import glMath.vectors.Vec3;
 import core.GameObject;
 
 import java.util.ArrayList;

@@ -1,10 +1,12 @@
-package primitives;
+package primitives.geometry;
 
 import java.util.HashMap;
 
-import glMath.Vec2;
-import glMath.Vec3;
+import primitives.Face;
+import primitives.Vertex;
 import glMath.VecUtil;
+import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;

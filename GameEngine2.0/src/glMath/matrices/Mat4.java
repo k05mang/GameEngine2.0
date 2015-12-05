@@ -1,6 +1,11 @@
-package glMath;
+package glMath.matrices;
+
+import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
+import glMath.vectors.Vector;
 
 import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -371,15 +376,18 @@ public class Mat4 implements Matrix {
 
 	@Override
 	public void store(FloatBuffer storage) {
-		try {
-			matrix[0].store(storage);
-			matrix[1].store(storage);
-			matrix[2].store(storage);
-			matrix[3].store(storage);
-		} catch (BufferOverflowException e) {
-			System.err.println("Insufficient space in buffer to store matrix");
-			e.printStackTrace();
-		}
+		matrix[0].store(storage);
+		matrix[1].store(storage);
+		matrix[2].store(storage);
+		matrix[3].store(storage);
+	}
+	
+	@Override
+	public void store(ByteBuffer storage) {
+		matrix[0].store(storage);
+		matrix[1].store(storage);
+		matrix[2].store(storage);
+		matrix[3].store(storage);
 	}
 
 	@Override
@@ -393,10 +401,17 @@ public class Mat4 implements Matrix {
 	}
 	
 	@Override
-	public FloatBuffer asBuffer(){
+	public FloatBuffer asFloatBuffer(){
 		FloatBuffer storage = BufferUtils.createFloatBuffer(SIZE_IN_FLOATS);
 		this.store(storage);
 		return (FloatBuffer)storage.flip();
+	}
+	
+	@Override
+	public ByteBuffer asByteBuffer(){
+		ByteBuffer storage = BufferUtils.createByteBuffer(SIZE_IN_BYTES);
+		this.store(storage);
+		return (ByteBuffer)storage.flip();
 	}
 	
 	@Override

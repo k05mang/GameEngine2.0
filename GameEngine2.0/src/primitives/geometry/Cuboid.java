@@ -1,6 +1,8 @@
-package primitives;
+package primitives.geometry;
 
-import glMath.Vec3;
+import primitives.Face;
+import primitives.Vertex;
+import glMath.vectors.Vec3;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;

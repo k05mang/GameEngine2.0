@@ -3,8 +3,8 @@ package collision;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import glMath.Vec3;
 import glMath.VecUtil;
+import glMath.vectors.Vec3;
 
 /**
  * 

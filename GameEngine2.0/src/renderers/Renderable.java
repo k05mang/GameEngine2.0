@@ -3,8 +3,8 @@ package renderers;
 import java.util.ArrayList;
 
 import primitives.Mesh;
-import glMath.Mat4;
 import glMath.Transform;
+import glMath.matrices.Mat4;
 import gldata.VertexArray;
 import gldata.BufferObject;
 import gldata.IndexBuffer;

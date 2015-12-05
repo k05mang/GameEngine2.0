@@ -1,5 +1,7 @@
-package primitives;
+package primitives.geometry;
 
+import primitives.Face;
+import primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;

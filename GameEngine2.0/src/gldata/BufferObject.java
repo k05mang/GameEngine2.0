@@ -8,14 +8,12 @@ import org.lwjgl.BufferUtils;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL45.*;
-
-import glMath.Vec2;
-import glMath.Vec3;
-import glMath.Vec4;
-
-import glMath.Mat2;
-import glMath.Mat3;
-import glMath.Mat4;
+import glMath.matrices.Mat2;
+import glMath.matrices.Mat3;
+import glMath.matrices.Mat4;
+import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
 
 public class BufferObject {
 	private int bufferId, size;

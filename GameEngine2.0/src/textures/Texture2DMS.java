@@ -7,8 +7,8 @@ public class Texture2DMS extends Texture{
 	private int width, height;
 	
 	/**
-	 * Constructs a two dimensional multisample texture with the given <code>InternalFormat</code>, <code>samples</code>,
-	 * <code>width</code> and <code>height</code>, and fixed sampling.
+	 * Constructs a two dimensional multisample texture with the given {@code InternalFormat}, {@code samples},
+	 * {@code width} and {@code height}, and fixed sampling.
 	 * 
 	 * @param format Internal format of the texture
 	 * @param samples Number of samples used in filtering the texture

@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 import primitives.Face;
 import primitives.Vertex;
-import glMath.Mat4;
 import glMath.MatrixUtil;
 import glMath.Quaternion;
-import glMath.Vec3;
+import glMath.matrices.Mat4;
+import glMath.vectors.Vec3;
 
 public class ConvexHull implements CollisionMesh {
 	private ArrayList<Vec3> verts;

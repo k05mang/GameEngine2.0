@@ -1,4 +1,4 @@
-package events;
+package events.keyboard;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ public enum ModKey {
 		value = type;
 	}
 	
-	protected static ModKey[] getMods(int type){
+	public static ModKey[] getMods(int type){
 		ArrayList<ModKey> mods = new ArrayList<ModKey>();
 		/*since the value of the mod variable created from the callback methods is a single int
 		with the different types bitwise OR together this means that the bit related to that particular 

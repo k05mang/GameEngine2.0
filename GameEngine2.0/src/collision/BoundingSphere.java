@@ -1,6 +1,8 @@
 package collision;
 
 import glMath.*;
+import glMath.matrices.Mat4;
+import glMath.vectors.Vec3;
 
 public class BoundingSphere implements CollisionMesh{
 

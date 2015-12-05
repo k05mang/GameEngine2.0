@@ -14,8 +14,8 @@ public class Texture2DArray extends Texture implements ArrayTexture {
 	private int width, height, length;
 	
 	/**
-	 * Constructs a texture array of <code>length</code> two dimensional textures each with the given 
-	 * <code>InternalFormat</code>, mipmap <code>levels</code>, <code>width</code> and <code>height</code>.
+	 * Constructs a texture array of {@code length} two dimensional textures each with the given 
+	 * {@code InternalFormat}, mipmap {@code levels}, {@code width} and {@code height}.
 	 * 
 	 * @param format Internal format of the textures in the texture array
 	 * @param levels Mipmap levels for each of the textures in the array
@@ -47,11 +47,11 @@ public class Texture2DArray extends Texture implements ArrayTexture {
 	}
 	
 	/**
-	 * Buffers the given pixel data to the GPU, <code>format</code> and <code>type</code> specify how the GPU will read the pixel data.
-	 * The pixel data will be applied to the given mipmap <code>level</code> of all textures in the texture array and will start 
-	 * at <code>xoffset</code> and <code>yoffset</code> from the lower left corner of the texture, and will cover an area defined by 
-	 * <code>width</code> and <code>height</code> from the offset point. If the texture has a compressed internal format then a 
-	 * <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the GPU, {@code format} and {@code type} specify how the GPU will read the pixel data.
+	 * The pixel data will be applied to the given mipmap {@code level} of all textures in the texture array and will start 
+	 * at {@code xoffset} and {@code yoffset} from the lower left corner of the texture, and will cover an area defined by 
+	 * {@code width} and {@code height} from the offset point. If the texture has a compressed internal format then a 
+	 * {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Buffer containing the image data to send to the GPU
 	 * @param format Format of the pixel data being sent
@@ -67,11 +67,11 @@ public class Texture2DArray extends Texture implements ArrayTexture {
 	}
 	
 	/**
-	 * Buffers the given pixel data to the GPU, <code>format</code> and <code>type</code> specify how the GPU will read the pixel data.
-	 * The pixel data will be applied to the given mipmap <code>level</code> of the texture at <code>index</code> of the texture array 
-	 * and will start at <code>xoffset</code> and <code>yoffset</code> from the lower left corner of the texture, and will cover an area 
-	 * defined by <code>width</code> and <code>height</code> from the offset point. If the texture has a compressed internal format then a 
-	 * <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the GPU, {@code format} and {@code type} specify how the GPU will read the pixel data.
+	 * The pixel data will be applied to the given mipmap {@code level} of the texture at {@code index} of the texture array 
+	 * and will start at {@code xoffset} and {@code yoffset} from the lower left corner of the texture, and will cover an area 
+	 * defined by {@code width} and {@code height} from the offset point. If the texture has a compressed internal format then a 
+	 * {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Buffer containing the image data to send to the GPU
 	 * @param format Format of the pixel data being sent
@@ -93,17 +93,17 @@ public class Texture2DArray extends Texture implements ArrayTexture {
 	}
 	
 	/**
-	 * Buffers the given pixel data to the GPU, <code>format</code> and <code>type</code> specify how the GPU will read the pixel data.
-	 * The pixel data will be applied to the given mipmap <code>level</code> at <code>baseIndex</code> through <code>baseIndex+count</code> 
-	 * of the texture array and will start at <code>xoffset</code> and <code>yoffset</code> from the lower left corner of the texture, and 
-	 * will cover an area defined by <code>width</code> and <code>height</code> from the offset point. If the texture has a compressed internal 
-	 * format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the GPU, {@code format} and {@code type} specify how the GPU will read the pixel data.
+	 * The pixel data will be applied to the given mipmap {@code level} at {@code baseIndex} through {@code baseIndex+count} 
+	 * of the texture array and will start at {@code xoffset} and {@code yoffset} from the lower left corner of the texture, and 
+	 * will cover an area defined by {@code width} and {@code height} from the offset point. If the texture has a compressed internal 
+	 * format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Buffer containing the image data to send to the GPU
 	 * @param format Format of the pixel data being sent
 	 * @param type Type of the pixel data being sent
 	 * @param baseIndex Index to start modify textures in the array
-	 * @param count Number of textures from <code>baseIndex</code> to start modifying
+	 * @param count Number of textures from {@code baseIndex} to start modifying
 	 * @param level Mipmap level of the texture at the given index in the array to modify
 	 * @param xoffset X offset from the lower left corner of the texture to start modifying
 	 * @param yoffset Y offset from the lower left corner of the texture to start modifying

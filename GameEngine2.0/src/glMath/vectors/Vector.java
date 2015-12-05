@@ -1,4 +1,4 @@
-package glMath;
+package glMath.vectors;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -125,13 +125,20 @@ public interface Vector {
 	 * @return Float value representing the scalar projection of this onto the given vector
 	 */
 	public float comp(Vector onto);
-	
+
 	/**
 	 * Gets this vector as a float buffer
 	 * 
 	 * @return This vector as a float buffer
 	 */
-	public FloatBuffer asBuffer();
+	public FloatBuffer asFloatBuffer();
+
+	/**
+	 * Gets this vector as a byte buffer
+	 * 
+	 * @return This vector as a byte buffer
+	 */
+	public ByteBuffer asByteBuffer();
 	
 	/**
 	 * Prints this vector to the terminal window

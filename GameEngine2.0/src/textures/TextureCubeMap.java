@@ -14,8 +14,8 @@ public class TextureCubeMap extends Texture implements BasicTexture {
 	private int dimension;//since the texture needs to be square only use a single dimension field
 	
 	/**
-	 * Constructs a cube map texture width the given <code>InternalFormat</code>, mipmap <code>levels</code>, and
-	 * <code>dimension</code>, which determines the overall dimensions of the cube.
+	 * Constructs a cube map texture width the given {@code InternalFormat}, mipmap {@code levels}, and
+	 * {@code dimension}, which determines the overall dimensions of the cube.
 	 * 
 	 * @param format Internal format the texture is stored
 	 * @param levels Mipmap levels for the texture
@@ -33,8 +33,8 @@ public class TextureCubeMap extends Texture implements BasicTexture {
 	}
 	
 	/**
-	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code>
-	 * of the entire <code>face</code> of the cube map. If the texture has a compressed internal format then a <code>ByteBuffer</code> must
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level}
+	 * of the entire {@code face} of the cube map. If the texture has a compressed internal format then a {@code ByteBuffer} must
 	 * be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to send to the GPU
@@ -48,10 +48,10 @@ public class TextureCubeMap extends Texture implements BasicTexture {
 	}
 	
 	/**
-	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code>
-	 * to all the faces of the cube map defined from <code>start</code> to <code>end</code> inclusive. <code>start</code> 
-	 * must be a cube map face whose layer index is less than <code>end</code>'s. If the texture has a compressed 
-	 * internal format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level}
+	 * to all the faces of the cube map defined from {@code start} to {@code end} inclusive. {@code start} 
+	 * must be a cube map face whose layer index is less than {@code end}'s. If the texture has a compressed 
+	 * internal format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to send to the GPU
 	 * @param format Format of the pixel data
@@ -65,10 +65,10 @@ public class TextureCubeMap extends Texture implements BasicTexture {
 	}
 
 	/**
-	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code>
-	 * to all the faces of the cube map. <code>xoffset</code> and <code>yoffset</code> define a beginning offset point to start modifying 
-	 * each cube map face, and <code>width</code> and <code>height</code> define the area of the face to modify. If the texture has a compressed 
-	 * internal format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level}
+	 * to all the faces of the cube map. {@code xoffset} and {@code yoffset} define a beginning offset point to start modifying 
+	 * each cube map face, and {@code width} and {@code height} define the area of the face to modify. If the texture has a compressed 
+	 * internal format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to send to the GPU
 	 * @param format Format of the pixel data
@@ -84,10 +84,10 @@ public class TextureCubeMap extends Texture implements BasicTexture {
 	}
 
 	/**
-	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code>
-	 * to the given <code>face</code> of the cube map. <code>xoffset</code> and <code>yoffset</code> define a beginning offset point to start modifying 
-	 * the cube map face, and <code>width</code> and <code>height</code> define the area of the face to modify. If the texture has a compressed 
-	 * internal format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level}
+	 * to the given {@code face} of the cube map. {@code xoffset} and {@code yoffset} define a beginning offset point to start modifying 
+	 * the cube map face, and {@code width} and {@code height} define the area of the face to modify. If the texture has a compressed 
+	 * internal format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to send to the GPU
 	 * @param format Format of the pixel data
@@ -104,10 +104,10 @@ public class TextureCubeMap extends Texture implements BasicTexture {
 	}
 
 	/**
-	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code> to all the faces of the cube map 
-	 * defined from <code>start</code> to <code>end</code> inclusive. <code>start</code> must be a cube map face whose layer index is less than <code>end</code>'s. 
-	 * <code>xoffset</code> and <code>yoffset</code> define a beginning offset point to start modifying the cube map faces, and <code>width</code> and 
-	 * <code>height</code> define the area of the face to modify. If the texture has a compressed internal format then a <code>ByteBuffer</code> must be provided, 
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level} to all the faces of the cube map 
+	 * defined from {@code start} to {@code end} inclusive. {@code start} must be a cube map face whose layer index is less than {@code end}'s. 
+	 * {@code xoffset} and {@code yoffset} define a beginning offset point to start modifying the cube map faces, and {@code width} and 
+	 * {@code height} define the area of the face to modify. If the texture has a compressed internal format then a {@code ByteBuffer} must be provided, 
 	 * all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to send to the GPU

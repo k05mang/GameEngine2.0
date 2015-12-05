@@ -14,8 +14,8 @@ public class TextureCubeMapArray extends Texture implements ArrayTexture {
 	private int dimension, length, numTextures;
 	
 	/**
-	 * Constructs a texture array of <code>length</code> cube map textures each with the given <code>InternalFormat</code>, and
-	 * mipmap <code>levels</code>. <code>dimension</code> defines the width, height, and depth of each cube map texture in the array.
+	 * Constructs a texture array of {@code length} cube map textures each with the given {@code InternalFormat}, and
+	 * mipmap {@code levels}. {@code dimension} defines the width, height, and depth of each cube map texture in the array.
 	 * 
 	 * @param format Internal format of the cube map texture to store pixel data
 	 * @param levels Mipmap levels for the cube map textures
@@ -46,18 +46,18 @@ public class TextureCubeMapArray extends Texture implements ArrayTexture {
 	}
 
 	/**
-	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code>
-	 * of all the faces of the cube map at <code>index</code> defined from <code>start</code> to <code>end</code> inclusive. <code>start</code> 
-	 * must be a cube map face whose layer index is less than <code>end</code>'s. If the texture has a compressed internal format then a 
-	 * <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level}
+	 * of all the faces of the cube map at {@code index} defined from {@code start} to {@code end} inclusive. {@code start} 
+	 * must be a cube map face whose layer index is less than {@code end}'s. If the texture has a compressed internal format then a 
+	 * {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to send to the GPU
 	 * @param format Format of the pixel data
 	 * @param type Type of the pixel data
 	 * @param index Index of the texture in the texture array to modify
-	 * @param level Mipmap level to modify of the texture at <code>index</code>
-	 * @param start Starting cube map face to modify of the texture at the specified <code>index</code>
-	 * @param end Last cube map face to modify of the texture at the specified <code>index</code>
+	 * @param level Mipmap level to modify of the texture at {@code index}
+	 * @param start Starting cube map face to modify of the texture at the specified {@code index}
+	 * @param end Last cube map face to modify of the texture at the specified {@code index}
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int index, int level, CubeMapFace start, CubeMapFace end) throws IndexOutOfBoundsException {
@@ -65,19 +65,19 @@ public class TextureCubeMapArray extends Texture implements ArrayTexture {
 	}
 	
 	/**
-	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code>
-	 * of all the faces of the cube map at <code>index</code> defined from <code>start</code> to <code>end</code> inclusive. <code>start</code> 
-	 * must be a cube map face whose layer index is less than <code>end</code>'s. <code>xoffset</code> and <code>yoffset</code> define a 
-	 * beginning offset point to start modifying each cube map face, and <code>width</code> and <code>height</code> define the area of the 
-	 * face to modify. If the texture has a compressed internal format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level}
+	 * of all the faces of the cube map at {@code index} defined from {@code start} to {@code end} inclusive. {@code start} 
+	 * must be a cube map face whose layer index is less than {@code end}'s. {@code xoffset} and {@code yoffset} define a 
+	 * beginning offset point to start modifying each cube map face, and {@code width} and {@code height} define the area of the 
+	 * face to modify. If the texture has a compressed internal format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to send to the GPU
 	 * @param format Format of the pixel data
 	 * @param type Type of the pixel data
 	 * @param index Index of the texture in the texture array to modify
-	 * @param level Mipmap level to modify of the texture at <code>index</code>
-	 * @param start Starting cube map face to modify of the texture at the specified <code>index</code>
-	 * @param end Last cube map face to modify of the texture at the specified <code>index</code>
+	 * @param level Mipmap level to modify of the texture at {@code index}
+	 * @param start Starting cube map face to modify of the texture at the specified {@code index}
+	 * @param end Last cube map face to modify of the texture at the specified {@code index}
 	 * @param xoffset X offset to start modifying each face of the cube map from
 	 * @param yoffset Y offset to start modifying each face of the cube map from
 	 * @param width Width of the area of each cube map face to modify
@@ -108,16 +108,16 @@ public class TextureCubeMapArray extends Texture implements ArrayTexture {
 	}
 	
 	/**
-	 * Buffers pixel data with the given <code>format</code> and <code>type</code> to the given mipmap <code>level</code> of all the faces of the cube maps from 
-	 * <code>baseIndex</code> through <code>baseIndex+count</code>. <code>xoffset</code> and <code>yoffset</code> define a beginning offset point to start modifying 
-	 * each cube map face, and <code>width</code> and <code>height</code> define the area of the face to modify. If the texture has a compressed internal format then a 
-	 * <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level} of all the faces of the cube maps from 
+	 * {@code baseIndex} through {@code baseIndex+count}. {@code xoffset} and {@code yoffset} define a beginning offset point to start modifying 
+	 * each cube map face, and {@code width} and {@code height} define the area of the face to modify. If the texture has a compressed internal format then a 
+	 * {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to send to the GPU
 	 * @param format Format of the pixel data
 	 * @param type Type of the pixel data
 	 * @param index Index of the texture in the texture array to modify
-	 * @param level Mipmap level to modify of the texture at <code>index</code>
+	 * @param level Mipmap level to modify of the texture at {@code index}
 	 * @param xoffset X offset to start modifying each face of the cube map from
 	 * @param yoffset Y offset to start modifying each face of the cube map from
 	 * @param width Width of the area of each cube map face to modify

@@ -5,9 +5,9 @@ import java.nio.Buffer;
 public interface ArrayTexture {
 	
 	/**
-	 * Buffers the given pixel data to the entire area of all textures in the array at the given mipmap <code>level</code>. The 
-	 * <code>format</code> and <code>type</code> tell the GPU how to read the pixel data.If the texture has a compressed internal format 
-	 * then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the entire area of all textures in the array at the given mipmap {@code level}. The 
+	 * {@code format} and {@code type} tell the GPU how to read the pixel data.If the texture has a compressed internal format 
+	 * then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU
 	 * @param format Format of the pixel data being passed to GPU
@@ -18,30 +18,30 @@ public interface ArrayTexture {
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int level) throws IndexOutOfBoundsException;
 	
 	/**
-	 * Buffers the given pixel data to the entire texture at the given <code>index</code> and mipmap <code>level</code> of the texture array. 
-	 * The <code>format</code> and <code>type</code> tell the GPU how to read the pixel data.If the texture has a compressed internal format 
-	 * then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the entire texture at the given {@code index} and mipmap {@code level} of the texture array. 
+	 * The {@code format} and {@code type} tell the GPU how to read the pixel data.If the texture has a compressed internal format 
+	 * then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU
 	 * @param format Format of the pixel data being passed to GPU
 	 * @param type Type of the pixel data being passed to the GPU
 	 * @param index Index of the texture in the array to buffer the pixel data to
-	 * @param level Mipmap level of the texture at the given <code>index</code> to buffer the data to
+	 * @param level Mipmap level of the texture at the given {@code index} to buffer the data to
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int index, int level) throws IndexOutOfBoundsException;
 	
 	/**
-	 * Buffers the given pixel data to the entire area of all textures from <code>baseIndex</code> through <code>baseIndex+count</code> textures.
-	 * The <code>format</code> and <code>type</code> tell the GPU how to read the pixel data.If the texture has a compressed internal format 
-	 * then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the entire area of all textures from {@code baseIndex} through {@code baseIndex+count} textures.
+	 * The {@code format} and {@code type} tell the GPU how to read the pixel data.If the texture has a compressed internal format 
+	 * then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Raw pixel data to be passed to the GPU
 	 * @param format Format of the pixel data being passed to GPU
 	 * @param type Type of the pixel data being passed to the GPU
 	 * @param baseIndex Starting index of the first texture in the array to start modifying
-	 * @param count Number of textures to modify starting from <code>baseIndex</code>
-	 * @param level Mipmap level of the textures from <code>baseIndex</code> through <code>count</code> textures to modify
+	 * @param count Number of textures to modify starting from {@code baseIndex}
+	 * @param level Mipmap level of the textures from {@code baseIndex} through {@code count} textures to modify
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int baseIndex, int count, int level) throws IndexOutOfBoundsException;

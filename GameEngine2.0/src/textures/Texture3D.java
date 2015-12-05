@@ -14,8 +14,8 @@ public class Texture3D extends Texture implements BasicTexture {
 	private int width, height, depth;
 	
 	/**
-	 * Constructs a three dimensional texture with the given <code>InternalFormat</code>, mipmap <code>levels</code>,
-	 * <code>width</code>, <code>height</code>, and <code>depth</code>.
+	 * Constructs a three dimensional texture with the given {@code InternalFormat}, mipmap {@code levels},
+	 * {@code width}, {@code height}, and {@code depth}.
 	 * 
 	 * @param format Internal format of the texture
 	 * @param levels Mipmap levels of the texture
@@ -37,11 +37,11 @@ public class Texture3D extends Texture implements BasicTexture {
 	}
 	
 	/**
-	 * Buffers the given pixel data to the GPU, <code>format</code> and <code>type</code> specify how the GPU will read the pixel data.
-	 * The pixel data will be applied to the given mipmap <code>level</code> of the texture and will start at <code>xoffset</code> and 
-	 * <code>yoffset</code> from the lower left corner of the texture, and <code>zoffset</code> from the back of the texture. The data 
-	 * will be applied to an area defined by <code>width</code>, <code>height</code>, <code>depth</code> from the offset point. If the 
-	 * texture has a compressed internal format then a <code>ByteBuffer</code> must be provided, all other buffer types will be ignored.
+	 * Buffers the given pixel data to the GPU, {@code format} and {@code type} specify how the GPU will read the pixel data.
+	 * The pixel data will be applied to the given mipmap {@code level} of the texture and will start at {@code xoffset} and 
+	 * {@code yoffset} from the lower left corner of the texture, and {@code zoffset} from the back of the texture. The data 
+	 * will be applied to an area defined by {@code width}, {@code height}, {@code depth} from the offset point. If the 
+	 * texture has a compressed internal format then a {@code ByteBuffer} must be provided, all other buffer types will be ignored.
 	 * 
 	 * @param pixels Pixel data to be sent to the GPU
 	 * @param format Format of the pixel data being sent
@@ -50,9 +50,9 @@ public class Texture3D extends Texture implements BasicTexture {
 	 * @param xoffset X offset to start modifying the texture from
 	 * @param yoffset Y offset to start modifying the texture from 
 	 * @param zoffset Z offset to start modifying the texture from
-	 * @param width Width from <code>xoffset</code> to start modifying
-	 * @param height Height from <code>Yoffset</code> to start modifying
-	 * @param depth Depth from <code>Zoffset</code> to start modifying
+	 * @param width Width from {@code xoffset} to start modifying
+	 * @param height Height from {@code Yoffset} to start modifying
+	 * @param depth Depth from {@code Zoffset} to start modifying
 	 */
 	public void subImage(Buffer pixels, BaseFormat format, TexDataType type, int level, int xoffset, int yoffset, int zoffset, int width, int height, int depth){
 		if(!iformat.isCompressedFormat()){

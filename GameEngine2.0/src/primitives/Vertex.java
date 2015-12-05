@@ -3,6 +3,8 @@ package primitives;
 import java.util.Arrays;
 
 import glMath.*;
+import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
 import gldata.VertexArray;
 import gldata.BufferObject;
 

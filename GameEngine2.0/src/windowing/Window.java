@@ -11,6 +11,12 @@ import org.lwjgl.opengl.GL;
 
 import core.Scene;
 import events.*;
+import events.keyboard.KeyEvent;
+import events.keyboard.KeyboardHandler;
+import events.mouse.MouseEvent;
+import events.mouse.MouseHandler;
+import events.window.WindowEvent;
+import events.window.WindowHandler;
 
 /**
  * TODO expand to multi monitor support
@@ -62,8 +68,8 @@ public class Window {
         
         // Get the resolution of the primary monitor
         GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        width = isFullscreen ? vidmode.getWidth() : width;
-        height = isFullscreen ? vidmode.getHeight() : height;
+        width = isFullscreen ? vidmode.width() : width;
+        height = isFullscreen ? vidmode.height() : height;
         window = glfwCreateWindow(width, height, title, isFullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
         //check to make sure it was created
         if ( window == NULL ){
@@ -75,8 +81,8 @@ public class Window {
             // Center the window
             glfwSetWindowPos(
                 window,
-                (vidmode.getWidth() - width) / 2,
-                (vidmode.getHeight() - height) / 2
+                (vidmode.width() - width) / 2,
+                (vidmode.height() - height) / 2
             );
         }
  
