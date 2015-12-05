@@ -1,5 +1,7 @@
 package textures;
 
+import textures.enums.InternalFormat;
+import textures.enums.TextureType;
 import gldata.BufferObject;
 import static org.lwjgl.opengl.GL45.*;
 

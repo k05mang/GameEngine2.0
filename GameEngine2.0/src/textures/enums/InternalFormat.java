@@ -1,4 +1,4 @@
-package textures;
+package textures.enums;
 
 import static org.lwjgl.opengl.GL11.GL_R3_G3_B2;
 import static org.lwjgl.opengl.GL11.GL_RGB10;

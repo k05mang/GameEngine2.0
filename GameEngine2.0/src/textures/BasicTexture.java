@@ -2,6 +2,9 @@ package textures;
 
 import java.nio.Buffer;
 
+import textures.enums.BaseFormat;
+import textures.enums.TexDataType;
+
 public interface BasicTexture {
 
 	/**

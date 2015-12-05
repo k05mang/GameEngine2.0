@@ -3,7 +3,7 @@ package shaders;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class ShaderStruct{
+class ShaderStruct{
 	public ArrayList<String> fields;//contains the names of the members of the struct
 	public ArrayList<String> types;//contains the types for each of the structs members
 	

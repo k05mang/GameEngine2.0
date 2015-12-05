@@ -9,6 +9,11 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.Buffer;
 
+import textures.enums.BaseFormat;
+import textures.enums.InternalFormat;
+import textures.enums.TexDataType;
+import textures.enums.TextureType;
+
 public class TextureCubeMapArray extends Texture implements ArrayTexture {
 
 	private int dimension, length, numTextures;

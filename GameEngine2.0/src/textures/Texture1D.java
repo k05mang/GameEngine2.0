@@ -7,6 +7,10 @@ import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.Buffer;
 
+import textures.enums.BaseFormat;
+import textures.enums.InternalFormat;
+import textures.enums.TexDataType;
+import textures.enums.TextureType;
 import static org.lwjgl.opengl.GL45.*;
 
 public class Texture1D extends Texture implements BasicTexture{

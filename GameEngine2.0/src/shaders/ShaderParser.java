@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import java.io.File;
 import java.io.IOException;
 
-public class ShaderParser {
+class ShaderParser {
 	private HashMap<String, ShaderStruct> structures;
 	private ArrayList<Uniform> uniforms;
 	private StringBuilder source;

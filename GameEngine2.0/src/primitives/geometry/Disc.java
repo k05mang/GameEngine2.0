@@ -47,10 +47,13 @@ public final class Disc extends Renderable {
 		for(int segment = 0; segment < maxSegment; segment++){
 			double theta = 2*PI*(segment/(double)maxSegment);
 			
-			float x = this.radius*(float)(cos(theta));
-			float z = this.radius*(float)(sin(theta));
+			
+			float u = (float)(cos(theta));
+			float v = (float)(sin(theta));
+			float x = this.radius*u;
+			float z = this.radius*v;
 
-			Vertex curVert = new Vertex(x, 0, z,  0,1,0, 0,0);
+			Vertex curVert = new Vertex(x, 0, z,  0,1,0, u/2+.5f, -v/2+.5f);
 
 			mesh.add(curVert);
 			

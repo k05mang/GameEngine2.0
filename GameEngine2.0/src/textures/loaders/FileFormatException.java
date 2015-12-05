@@ -1,0 +1,25 @@
+package textures.loaders;
+
+public class FileFormatException extends Exception {
+
+	public FileFormatException() {
+	}
+
+	public FileFormatException(String arg0) {
+		super(arg0);
+	}
+
+	public FileFormatException(Throwable arg0) {
+		super(arg0);
+	}
+
+	public FileFormatException(String arg0, Throwable arg1) {
+		super(arg0, arg1);
+	}
+
+	public FileFormatException(String arg0, Throwable arg1, boolean arg2,
+			boolean arg3) {
+		super(arg0, arg1, arg2, arg3);
+	}
+
+}

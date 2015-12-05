@@ -11,6 +11,11 @@ import java.nio.ShortBuffer;
 
 import org.lwjgl.BufferUtils;
 
+import textures.enums.InternalFormat;
+import textures.enums.TexParam;
+import textures.enums.TexParamEnum;
+import textures.enums.TextureType;
+
 //import static org.lwjgl.opengl.GL11.*;
 //import static org.lwjgl.opengl.GL12.*;
 //import static org.lwjgl.opengl.GL13.*;

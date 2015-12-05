@@ -1,6 +1,8 @@
 package textures;
 
 import static org.lwjgl.opengl.GL45.*;
+import textures.enums.InternalFormat;
+import textures.enums.TextureType;
 
 public class Texture2DMSArray extends Texture {
 
