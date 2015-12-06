@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.lwjgl.BufferUtils;
+
 import textures.enums.BaseFormat;
 import textures.enums.TexDataType;
 
@@ -34,25 +36,32 @@ abstract class PNGParser {
 		byte compression = imageFile.readByte();
 		byte filter = imageFile.readByte();
 		byte interlace = imageFile.readByte();
+		int bytesPerPixel = 0;
 		
+		//determine the format and type of the pixel data
 		BaseFormat format;
 		TexDataType type;
 		
 		switch(colorType){
-			case 0:
+			case 0://greyscale
 				format = BaseFormat.RED;
+				bytesPerPixel = 1;
 				break;
-			case 2:
+			case 2://truecolor
 				format = BaseFormat.RGB;
+				bytesPerPixel = 3;
 				break;
-			case 3:
+			case 3://indexed
 				format = BaseFormat.RGB;
+				bytesPerPixel = 3;
 				break;
-			case 4:
+			case 4://greyscale with alpha
 				format = BaseFormat.RG;
+				bytesPerPixel = 1;
 				break;
-			case 6:
+			case 6://truecolor with alpha
 				format = BaseFormat.RGBA;
+				bytesPerPixel = 4;
 				break;
 		}
 		
@@ -62,10 +71,20 @@ abstract class PNGParser {
 			type = TexDataType.USHORT;
 		}
 		
+		ByteBuffer image = BufferUtils.createByteBuffer(width*height*bytesPerPixel);
+		
+		while(imageFile.){
+			
+		}
+		
 		return null;
 	}
 	
 	private static void parseChunk(DataInputStream input, ByteBuffer imageStore){
+		
+	}
+	
+	private static void parseIDAT(DataInputStream input, ByteBuffer imageStore){
 		
 	}
 }
