@@ -38,62 +38,65 @@ public final class Torus extends Renderable {
 		int maxRing = Math.max(3, rings);
 		int maxRingSeg = Math.max(3, ringSegs);
 		
-		int lastIndex = maxRingSeg*maxRing-1;
-		IndexBuffer.IndexType dataType = null;
-		
-		//determine what data type the index buffer should be
-		if(lastIndex < Byte.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.BYTE;
-		}else if(lastIndex < Short.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.SHORT;
-		}else if(lastIndex < Integer.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.INT;
-		}else{
-			//TODO handle when the number of vertices and indices would exceed the max value
-		}
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
 		//loop controlling what ring is being calculated
-		for(int curRing = 0; curRing < maxRing; curRing++){
+		for(int curRing = 0; curRing < maxRing+1; curRing++){
 			//loop controlling what segment of the current ring is being calculated
-			for(int ringSeg = 0; ringSeg < maxRingSeg; ringSeg++){
-				double phi = 2*PI*(ringSeg/(double)maxRingSeg);
-				double theta = 2*PI*(curRing/(double)maxRing);
+			for(int ringSeg = 0; ringSeg < maxRingSeg+1; ringSeg++){
 				
-				float x = (float)( (radius + tubeRadius*cos(phi))*cos(theta) );
+				float u = curRing/(float)maxRing;
+				float v = ringSeg/(float)maxRingSeg;
+
+				double theta = 2*PI*u;//major circle
+				double phi = 2*PI*v;//minor circle
+				
+				
+				float x = (float)( (-radius + tubeRadius*cos(phi))*cos(theta) );
 				float y = (float)(tubeRadius*sin(phi));
-				float z = (float)( (radius + tubeRadius*cos(phi))*sin(theta) );
+				float z = (float)( (-radius + tubeRadius*cos(phi))*sin(theta) );
 				
-				float normX = x-radius*(float)cos(theta);
-				float normZ = z-radius*(float)sin(theta);
+				float normX = x+radius*(float)cos(theta);
+				float normZ = z+radius*(float)sin(theta);
 				
-				Vertex vert = new Vertex(x, y, z,  normX, y, normZ,  0, 0);
+				Vertex vert = new Vertex(x, y, z,  normX, y, normZ, u, v);
 				vert.addTo(vbo);
 				mesh.add(vert);
-				
-				int ringSegCycle = (ringSeg+1)%maxRingSeg;//controls the cycle connecting the last segment of the
-				//current ring to the first segment
-				
-				int ringCyle = maxRing*( (curRing+1)%maxRing );//controls the cycle connecting the last ring to the
-				//first ring
-				
-				mesh.add(new Face(
-						ringSeg+maxRing*curRing,//current vertex (current segment of current rings)
-						ringSegCycle+ringCyle,//next segment of next ring
-						ringSeg+ringCyle//next segment of current ring
-						));
-				
-				mesh.add(new Face(
-						ringSeg+maxRing*curRing,//current vertex (current segment of current rings)
-						ringSegCycle+maxRing*curRing,//current segment of next ring
-						ringSegCycle+ringCyle//next segment of next ring
-						));
+
+				//prevent generating faces on the last loop since the faces need for the end of the
+				//torus has already been generated
+				if(curRing < maxRing || ringSeg < maxRingSeg){
+					mesh.add(new Face(
+							ringSeg+maxRingSeg*curRing,//current vertex (current segment of current rings)
+							(ringSeg+1)+maxRingSeg*(curRing+1),//next segment of next ring
+							(ringSeg+1)+maxRingSeg*curRing//next segment of current ring
+							));
+					
+					mesh.add(new Face(
+							ringSeg+maxRingSeg*curRing,//current vertex (current segment of current rings)
+							ringSeg+maxRingSeg*(curRing+1),//current segment of next ring
+							(ringSeg+1)+maxRingSeg*(curRing+1)//next segment of next ring
+							));
+				}
 			}
 		}
 
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
+		
+		IndexBuffer.IndexType dataType = null;
+		
+		//determine what data type the index buffer should be
+		if(mesh.getNumVertices() < Byte.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.BYTE;
+		}else if(mesh.getNumVertices() < Short.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.SHORT;
+		}else if(mesh.getNumVertices() < Integer.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.INT;
+		}else{
+			//TODO handle when the number of vertices and indices would exceed the max value
+		}
 		
 		IndexBuffer indices = new IndexBuffer(dataType);
 		ibos.add(indices);

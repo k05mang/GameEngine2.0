@@ -47,9 +47,9 @@ public final class Disc extends Renderable {
 		for(int segment = 0; segment < maxSegment; segment++){
 			double theta = 2*PI*(segment/(double)maxSegment);
 			
-			
 			float u = (float)(cos(theta));
 			float v = (float)(sin(theta));
+			
 			float x = this.radius*u;
 			float z = this.radius*v;
 

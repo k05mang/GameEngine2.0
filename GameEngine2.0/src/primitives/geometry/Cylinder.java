@@ -51,18 +51,22 @@ public final class Cylinder extends Renderable{
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		for(int segment = 0; segment < maxSegment; segment++){
-			double theta = 2*PI*(segment/(double)maxSegment);
+		for(int segment = 0; segment < maxSegment+1; segment++){
+			float u = (segment/(float)maxSegment);
+			double theta = 2*PI*u;
 			
-			float x = this.radius*(float)(cos(theta));
+			float capu = (float)cos(theta);
+			float capv = (float)sin(theta);
+			
+			float x = this.radius*capu;
 			float y = this.length/2.0f;
-			float z = this.radius*(float)(sin(theta));
+			float z = this.radius*capv;
 
-			Vertex capTop = new Vertex(x, y, z,  0,1,0, 0,0);
-			Vertex sideTop = new Vertex(x, y, z,  x, 0, z, 0,0);
+			Vertex capTop = new Vertex(x, y, z,  0,1,0, capu/2+.5f, -capv/2+.5f);
+			Vertex sideTop = new Vertex(x, y, z,  x, 0, z, 1-u, 1);
 			
-			Vertex sideBottom = new Vertex(x, -y, z,  x, 0, z, 0,0);
-			Vertex capBottom = new Vertex(x, -y, z,  0,-1,0, 0,0);
+			Vertex sideBottom = new Vertex(x, -y, z,  x, 0, z, 1-u,0);
+			Vertex capBottom = new Vertex(x, -y, z,  0,-1,0, capu/2+.5f, -capv/2+.5f);
 
 			mesh.add(capTop);
 			mesh.add(sideTop);
@@ -75,19 +79,21 @@ public final class Cylinder extends Renderable{
 			capBottom.addTo(vbo);
 			
 			int nextSeg = (segment+1)%maxSegment;//due to constantly computing this value cache it for reuse
-			//left side face
-			mesh.add(new Face(
-					segment*4+1,//current segment top left
-					nextSeg*4+2,//next segment bottom right
-					segment*4+2//current segment bottom left
-					));
-			
-			//right side face
-			mesh.add(new Face(
-					segment*4+1,//current segment top left
-					nextSeg*4+1,//next segment top right
-					nextSeg*4+2//next segment bottom right
-					));
+			if(segment < maxSegment){
+				//left side face
+				mesh.add(new Face(
+						segment*4+1,//current segment top left
+						(segment+1)*4+2,//next segment bottom right
+						segment*4+2//current segment bottom left
+						));
+				
+				//right side face
+				mesh.add(new Face(
+						segment*4+1,//current segment top left
+						(segment+1)*4+1,//next segment top right
+						(segment+1)*4+2//next segment bottom right
+						));
+			}
 			
 			//only compute the cap indices if we are 3 or more segments from the end
 			//since the caps are generated with indices two segments ahead of the current one
@@ -97,13 +103,13 @@ public final class Cylinder extends Renderable{
 				mesh.add(new Face(
 						0,//base top cap vert which is 0
 						((segment+2)%maxSegment)*4,//vert that is the second next segment
-						(nextSeg)*4//vert that is the next segment
+						nextSeg*4//vert that is the next segment
 						));
 				
 				//bottom cap face
 				mesh.add(new Face(
 						3,//base bottom cap vert which is 3
-						(nextSeg)*4+3,//vert that is the next segment
+						nextSeg*4+3,//vert that is the next segment
 						((segment+2)%maxSegment)*4+3//vert that is the second next segment
 						));
 			}

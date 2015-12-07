@@ -84,45 +84,54 @@ public final class Cone extends Renderable {
 				mesh.add(bottom);
 			}
 		}
-//		float tipY = centered ? this.length/2.0f : 0;
-//		for(int segment = 0; segment < subdiv; segment++){
-//			double theta = 2*PI*(segment/(double)subdiv);
-//			double thetaTop = 2*PI*((segment+.5)/(double)subdiv);
+//		for(int segment = 0; segment < subdiv+1; segment++){
 //			
-//			float x = this.radius*(float)(cos(theta));
-//			float z = this.radius*(float)(sin(theta));
+//			float bottomu = segment/(float)subdiv;
+//			double theta = 2*PI*bottomu;
 //			
-//			float xTop = this.radius*(float)(cos(thetaTop));
-//			float zTop = this.radius*(float)(sin(thetaTop));
+//			float capu = (float)cos(theta);
+//			float capv =(float)sin(theta);
 //			
-//			Vertex top = new Vertex(0, tipY, 0,  xTop, this.length, zTop, 0,0);
-//			mesh.add(top);
-//			top.addTo(vbo);
+//			float x = this.radius*capu;
+//			float z = this.radius*capv;
 //			
-//			Vertex side = new Vertex(x, -vertOffset, z,  x, this.length, z, 0,0);
-//			mesh.add(side);
-//			side.addTo(vbo);
+//			if(segment < subdiv){
+//				float topu = (segment+.5f)/(float)subdiv;
+//				float topx = this.radius*(float)cos(2*PI*topu);
+//				float topz = this.radius*(float)sin(2*PI*topu);
+//				Vertex top = new Vertex(0, vertOffset, 0,  x, this.radius/this.length, z, topu,1);
+//				mesh.add(top);
+//				top.addTo(vbo);
+//			}
 //			
+//			Vertex bottomVert = new Vertex(x, -vertOffset, z,  x, this.radius/this.length, z, bottomu,0);
+//			mesh.add(bottomVert);
+//			bottomVert.addTo(vbo);
 //			
-//			Vertex bottom = new Vertex(x, -vertOffset, z,  0, -1, 0, 0,0);
-//			mesh.add(bottom);
-//			bottom.addTo(vbo);
+//			//vertex for the cap of the cone 
+//			Vertex cap = new Vertex(x, -vertOffset, z,  0,-1,0, capu/2+.5f, -capv/2+.5f);
+//			mesh.add(cap);
+//			cap.addTo(vbo);
 //			
-//			//make the side face
-//			mesh.add(new Face(
-//					segment*3,//tip vert
-//					((segment+1)%subdiv)*3+1,//bottom right vert
-//					segment*3+1//bottom left vert
-//					));
-//			
-//			//make the bottom face
-//			//condition to prevent extra faces from being added due to how the bottom indices are formed
-//			if(segment < subdiv-2){
+//			int nextSeg = (segment+1)%(subdiv+1);//due to constantly computing this value cache it for reuse
+//			if(segment < subdiv){
+//				//side face
 //				mesh.add(new Face(
-//						2,//first bottom vert will act as the base vertex for the bottom faces triangles
-//						(segment+1)*3+2,//second segment bottom vert
-//						(segment+2)*3+2//third segment bottom vert
-//						
+//						segment*3,//current segment top
+//						(segment+1)*3+1,//next segment bottom right
+//						segment*3+1//current segment bottom left
+//						));
+//			}
+//			
+//			//only compute the cap indices if we are 3 or more segments from the end
+//			//since the cap is generated with indices two segments ahead of the current one
+//			//this will prevent redundant face generation at the end
+//			if(segment < subdiv-2){
+//				//top cap face
+//				mesh.add(new Face(
+//						2,//base bottom cap vert which is 2 (3rd index)
+//						nextSeg*3+2,//vert that is the next segment
+//						((segment+2)%(subdiv+1))*3+2//vert that is the second next segment
 //						));
 //			}
 //		}

@@ -24,7 +24,7 @@ public class ShaderPipeline {
 	}
 
 	public void attachProgram(ShaderProgram program){
-		glUseProgramStages(id, program.getStage().getUseBit(), program.getId());
+		glUseProgramStages(id, program.getShaderStages(), program.getId());
 	}
 	
 	public void disableStage(ShaderStage stage){

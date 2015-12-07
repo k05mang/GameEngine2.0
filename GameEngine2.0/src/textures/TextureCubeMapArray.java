@@ -49,6 +49,23 @@ public class TextureCubeMapArray extends Texture implements ArrayTexture {
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int baseIndex, int count, int level) throws IndexOutOfBoundsException {
 		subImage(pixels, format, type, baseIndex, 6*count, level, 0, 0, dimension, dimension);
 	}
+	
+	/**
+	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level}
+	 * of the {@code face} of the cube map at {@code index}. If the texture has a compressed internal format then a 
+	 * {@code ByteBuffer} must be provided, all other buffer types will be ignored.
+	 * 
+	 * @param pixels Pixel data to send to the GPU
+	 * @param format Format of the pixel data
+	 * @param type Type of the pixel data
+	 * @param index Index of the texture in the texture array to modify
+	 * @param level Mipmap level to modify of the texture at {@code index}
+	 * @param face Cube map face to modify at the given {@code index}
+	 * @throws IndexOutOfBoundsException
+	 */
+	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int index, int level, CubeMapFace face) throws IndexOutOfBoundsException {
+		subImage(pixels, format, type, index, level, face, face, 0, 0, dimension, dimension);
+	}
 
 	/**
 	 * Buffers pixel data with the given {@code format} and {@code type} to the given mipmap {@code level}

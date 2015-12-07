@@ -64,6 +64,15 @@ public class Shader {
 	}
 	
 	/**
+	 * Gets the shader stage this shader is compiled for
+	 * 
+	 * @return {@code ShaderStage} indicating the pipeline stage this shader functions in
+	 */
+	public ShaderStage getShaderStage(){
+		return type;
+	}
+	
+	/**
 	 * Gets the info log for this shader, in the event that the shader log has nothing in it
 	 * this function will return an empty string
 	 * 

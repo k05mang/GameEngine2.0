@@ -38,17 +38,17 @@ public class Texture2DArray extends Texture implements ArrayTexture {
 
 	@Override
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int level){
-		subImage(pixels, format, type, level, 0, length, 0, 0, width, height);
+		subImage(pixels, format, type, 0, length, level, 0, 0, width, height);
 	}
 	
 	@Override
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int index, int level) throws IndexOutOfBoundsException {
-		subImage(pixels, format, type, level, index, 1, 0, 0, width, height);
+		subImage(pixels, format, type, index, 1, level, 0, 0, width, height);
 	}
 	
 	@Override
 	public void bufferData(Buffer pixels, BaseFormat format, TexDataType type, int baseIndex, int count, int level) throws IndexOutOfBoundsException {
-		subImage(pixels, format, type, level, baseIndex, count, 0, 0, width, height);
+		subImage(pixels, format, type, baseIndex, count, level, 0, 0, width, height);
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public class Texture2DArray extends Texture implements ArrayTexture {
 	 * @param height Height of the subimage to modify
 	 */
 	public void subImage(Buffer pixels, BaseFormat format, TexDataType type, int level, int xoffset, int yoffset, int width, int height){
-		subImage(pixels, format, type, level, 0, length, xoffset, yoffset, width, height);
+		subImage(pixels, format, type, 0, length, level, xoffset, yoffset, width, height);
 	}
 	
 	/**

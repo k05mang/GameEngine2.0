@@ -39,91 +39,70 @@ public final class Sphere extends Renderable{
 		int maxStack = Math.max(1, stacks);
 		this.radius = radius;
 		
-		int lastIndex = maxStack*maxSlice+1;//value of the last index
-
-		IndexBuffer.IndexType dataType = null;
-		//determine what data type the index buffer should be
-		if(lastIndex < Byte.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.BYTE;
-		}else if(lastIndex < Short.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.SHORT;
-		}else if(lastIndex < Integer.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.INT;
-		}else{
-			//TODO handle when the number of vertices and indices would exceed the max value
-		}
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		int upperStack = maxStack+1;
-		//add the top vertex
-		//TODO calculate UV
-		Vertex top = new Vertex(0,this.radius,0, 0,1,0, 0,0);
-		mesh.add(top);
-		top.addTo(vbo);//add vertex to the vertex array
-		for(int curStack = 1; curStack < upperStack; curStack++){
-			for(int curSlice = 0; curSlice < maxSlice; curSlice++){
+		for(int curStack = 0; curStack < maxStack+1; curStack++){
+			for(int curSlice = 0; curSlice < maxSlice+1; curSlice++){
+				
+				float u = curSlice/(float)maxSlice;
+				float v = curStack/(float)maxStack;
 				//pre-calculate the angles for the trig functions
-				double phi = PI*(curStack/(double)upperStack);
-				double theta = 2*PI*(curSlice/(double)maxSlice);
+				double phi = PI*v;
+				double theta = 2*PI*u;
 				
 				float x = (float)( this.radius*cos(theta)*sin(phi) );
 				float y = (float)( this.radius*cos(phi) );//since y is the up axis have it use the conventional z calculation
 				float z = (float)( this.radius*sin(theta)*sin(phi) );
-				//TODO calculate UV
-				Vertex vert = new Vertex(x,y,z, x,y,z, 0,0);
+				
+				Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
 				mesh.add(vert);
 				vert.addTo(vbo);//add vertex to vertex array
 				
-				int cycleControl = (curSlice+1)%maxSlice;//controls the offset from the start of a stack, when the first slice is reached
-				//this will loop back to 0 to specify using the start index
-				
 				//calculate indices
-				//check if we are generating for either caps of the sphere or if we are generating middle values
-				if(curStack == 1){
-					mesh.add(new Face(
-							0,
-							cycleControl+1,
-							curSlice+1
+				//restrict face calculation to within the sphere boundaries, since the bottom will result in erratic behavior
+				//when at the end of the a loop
+				if(curStack < maxStack && curSlice < maxSlice){
+					int curIndex = curStack*(maxSlice+1)+curSlice;//current index
+					int nextStackIndex = (curStack+1)*(maxSlice+1)+curSlice;//same slice next stack
+					
+					//don't have the left face indexing generate faces for the bottom cap, only the top cap
+					//the left triangle of the quad, or top cap if at the start of stack loop
+					if(curStack != maxStack-1){
+						mesh.add(new Face(
+							curIndex,//current vertex index
+							nextStackIndex+1,//next slice of the next stack 
+							nextStackIndex//current slice of the next stack
 							));
-				}else{
-					//two triangles need to be made per face
-					int curIndexStart = (curStack-1)*maxSlice+1;
-					int prevIndexStart = (curStack-2)*maxSlice+1;
-					//the left triangle of the quad
-					mesh.add(new Face(
-							prevIndexStart+curSlice,//previous index at the same slice
-							prevIndexStart+cycleControl,//next index of the previous stack 
-							curIndexStart+curSlice//current index
+					}
+					//don't have the right face indexing generate faces for the top cap, only the bottom cap
+					//and the right triangle of the quad, or bottom cap if at the end of stack loop
+					if(curStack != 0){
+						mesh.add(new Face(
+							curIndex,//current vertex index
+							curIndex+1,//next index of current stack
+							nextStackIndex+1//next stack next slice
 							));
-					//and the right triangle of the quad
-					mesh.add(new Face(
-							prevIndexStart+cycleControl,//next index of the previous stack 
-							curIndexStart+cycleControl,//next index of current stack
-							curIndexStart+curSlice//current index
-							));
-				}
-				
-				if(curStack == upperStack-1){
-					//index choice will modes[0]tain winding
-					int lastRingStart = lastIndex-maxSlice;
-					mesh.add(new Face(
-							lastIndex,
-							lastRingStart+curSlice,//current index
-							lastRingStart+cycleControl//next index
-							));
+					}
 				}
 			}
 		}
-		//add the end vertex
-		//TODO calculate UV
-		Vertex bottom = new Vertex(0,-this.radius,0, 0,-1,0, 0,0);
-		mesh.add(bottom);
-		bottom.addTo(vbo);//add vertex to vertex array
 		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
+		IndexBuffer.IndexType dataType = null;
+		//determine what data type the index buffer should be
+		
+		if(mesh.getNumVertices() < Byte.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.BYTE;
+		}else if(mesh.getNumVertices() < Short.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.SHORT;
+		}else if(mesh.getNumVertices() < Integer.MAX_VALUE){
+			dataType = IndexBuffer.IndexType.INT;
+		}else{
+			//TODO handle when the number of vertices and indices would exceed the max value
+		}
 		IndexBuffer indices = new IndexBuffer(dataType);
 		ibos.add(indices);
 		indices.flush(BufferUsage.STATIC_DRAW);
