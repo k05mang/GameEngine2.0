@@ -1,29 +1,9 @@
 package textures.loaders;
 
-import java.awt.Dimension;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
-//import magick.ImageInfo;
-//import magick.MagickException;
-//import magick.MagickImage;
-//import magick.MagickLoader;
-
-
-
-
-
-
 import java.util.ArrayList;
-
-import org.lwjgl.BufferUtils;
-
-import core.Scene;
-import de.matthiasmann.twl.utils.PNGDecoder;
-import de.matthiasmann.twl.utils.PNGDecoder.Format;
 import textures.CubeMapFace;
 import textures.Texture;
 import textures.Texture1D;
@@ -42,18 +22,17 @@ import textures.enums.TextureType;
 public abstract class ImageLoader {
 
 	public static Texture load(InternalFormat iformat, TextureType type,  String file){
-		return load(new File(file), iformat, type);
+		return load(iformat, type, new File(file));
 	}
 	
-	public static Texture load(File file, InternalFormat iformat, TextureType type){
+	public static Texture load(InternalFormat iformat, TextureType type, File file){
 		Texture result = null;
 		try {
 			//check to make sure the file has the png extension
 			if(file.getName().toLowerCase().contains(".png")){
-	//			loadImage(file, iformat);
 				result = loadPNG(file, iformat, type);
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			//if we failed to load the image use a default texture
 			result = loadDefault(iformat, type);
@@ -68,7 +47,7 @@ public abstract class ImageLoader {
 		}
 		try {
 			return loadPNG(iformat, type, passThrough);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return loadDefault(iformat, type);
 		}
@@ -81,31 +60,37 @@ public abstract class ImageLoader {
 		}
 		try {
 			return loadPNG(iformat, type, passThrough);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return loadDefault(iformat, type);
 		}
 	}
 	
-	public static Texture loadPNG(InternalFormat iformat, TextureType type, ArrayList<File> files) throws IOException{
+	public static Texture load(InternalFormat iformat, TextureType type, ArrayList<File> files){
+		try {
+			return loadPNG(iformat, type, files);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return loadDefault(iformat, type);
+		}
+	}
+	
+	public static Texture loadPNG(InternalFormat iformat, TextureType type, ArrayList<File> files) throws Exception{
 		Texture result = null;
 		if(files.isEmpty()){
 			return loadDefault(iformat, type);
 		}else{
-			ArrayList<PNGDecoder> decoders = new ArrayList<PNGDecoder>();
-			FileInputStream imageFile = new FileInputStream(files.get(0));
-			PNGDecoder decoder = new PNGDecoder(imageFile);
+			ArrayList<PNG> decoders = new ArrayList<PNG>();
+			PNG decoder = new PNG(files.get(0));
 			decoders.add(decoder);
 			int width = decoder.getWidth();
 			int height = decoder.getHeight();
 			
 			//while reading in the files determine if they are all the same dimensions and if not handle it
 			for(int curFile = 1; curFile < files.size(); curFile++){
-				FileInputStream image = new FileInputStream(files.get(curFile));
-				PNGDecoder parser = new PNGDecoder(image);
+				PNG parser = new PNG(files.get(curFile));
 				//check if they have the same dimension
 				if(width != parser.getWidth() || height != parser.getHeight()){
-					image.close();
 					System.err.println("Failed to load image array in ImageLoader, failed on load of file: "+files.get(0).getName());
 					return loadDefault(iformat, type);
 				}else{//else add it to the array of decoders
@@ -130,60 +115,28 @@ public abstract class ImageLoader {
 			
 			//loop through the decoders and upload the data to the texture
 			for(int curDecoder = 0; curDecoder < decoders.size(); curDecoder++){
-				PNGDecoder decode = decoders.get(curDecoder);
-				BaseFormat texFormat;
-				Format format;
-				int pixelElements = 0;
-				
-				if(decode.isRGB()){
-					if(decode.hasAlpha()){//RGBA
-						format = Format.RGBA;
-						texFormat = BaseFormat.RGBA;
-						pixelElements = 4;
-					}else{//RGB
-						format = Format.RGB;
-						texFormat = BaseFormat.RGB;
-						pixelElements = 3;
-					}
-				}else{
-					if(decode.hasAlpha()){//RG
-						format = Format.LUMINANCE_ALPHA;
-						texFormat = BaseFormat.RG;
-						pixelElements = 2;
-					}else{//Red
-						format = Format.LUMINANCE;
-						texFormat = BaseFormat.RED;
-						pixelElements = 1;
-					}
-				}
-				
-				ByteBuffer pixels = BufferUtils.createByteBuffer(width*height*pixelElements);
-				
-				decode.decodeFlipped(pixels, pixelElements*width, format);
-				
-				pixels.flip();
-				
+				PNG decode = decoders.get(curDecoder);
 				switch(type){
 					case CUBE_MAP:
 						//determine which face of the cube map we are on
 						switch(curDecoder){
 							case 0:
-								((TextureCubeMap)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0, CubeMapFace.POS_X);
+								((TextureCubeMap)result).bufferData(decode.parse(), decode.format, decode.getType(), 0, CubeMapFace.POS_X);
 								break;
 							case 1:
-								((TextureCubeMap)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0, CubeMapFace.NEG_X);
+								((TextureCubeMap)result).bufferData(decode.parse(), decode.format, decode.getType(), 0, CubeMapFace.NEG_X);
 								break;
 							case 2:
-								((TextureCubeMap)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0, CubeMapFace.POS_Y);
+								((TextureCubeMap)result).bufferData(decode.parse(), decode.format, decode.getType(), 0, CubeMapFace.POS_Y);
 								break;
 							case 3:
-								((TextureCubeMap)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0, CubeMapFace.NEG_Y);
+								((TextureCubeMap)result).bufferData(decode.parse(), decode.format, decode.getType(), 0, CubeMapFace.NEG_Y);
 								break;
 							case 4:
-								((TextureCubeMap)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0, CubeMapFace.POS_Z);
+								((TextureCubeMap)result).bufferData(decode.parse(), decode.format, decode.getType(), 0, CubeMapFace.POS_Z);
 								break;
 							case 5:
-								((TextureCubeMap)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0, CubeMapFace.NEG_Z);
+								((TextureCubeMap)result).bufferData(decode.parse(), decode.format, decode.getType(), 0, CubeMapFace.NEG_Z);
 								break;
 						}
 						break;
@@ -191,30 +144,30 @@ public abstract class ImageLoader {
 						//determine which face of the cube map we are on
 						switch(curDecoder%6){
 							case 0:
-								((TextureCubeMapArray)result).bufferData(pixels, texFormat, TexDataType.UBYTE, curDecoder%6, 0, CubeMapFace.POS_X);
+								((TextureCubeMapArray)result).bufferData(decode.parse(), decode.format, decode.getType(), curDecoder%6, 0, CubeMapFace.POS_X);
 								break;
 							case 1:
-								((TextureCubeMapArray)result).bufferData(pixels, texFormat, TexDataType.UBYTE, curDecoder%6, 0, CubeMapFace.NEG_X);
+								((TextureCubeMapArray)result).bufferData(decode.parse(), decode.format, decode.getType(), curDecoder%6, 0, CubeMapFace.NEG_X);
 								break;
 							case 2:
-								((TextureCubeMapArray)result).bufferData(pixels, texFormat, TexDataType.UBYTE, curDecoder%6, 0, CubeMapFace.POS_Y);
+								((TextureCubeMapArray)result).bufferData(decode.parse(), decode.format, decode.getType(), curDecoder%6, 0, CubeMapFace.POS_Y);
 								break;
 							case 3:
-								((TextureCubeMapArray)result).bufferData(pixels, texFormat, TexDataType.UBYTE, curDecoder%6, 0, CubeMapFace.NEG_Y);
+								((TextureCubeMapArray)result).bufferData(decode.parse(), decode.format, decode.getType(), curDecoder%6, 0, CubeMapFace.NEG_Y);
 								break;
 							case 4:
-								((TextureCubeMapArray)result).bufferData(pixels, texFormat, TexDataType.UBYTE, curDecoder%6, 0, CubeMapFace.POS_Z);
+								((TextureCubeMapArray)result).bufferData(decode.parse(), decode.format, decode.getType(), curDecoder%6, 0, CubeMapFace.POS_Z);
 								break;
 							case 5:
-								((TextureCubeMapArray)result).bufferData(pixels, texFormat, TexDataType.UBYTE, curDecoder%6, 0, CubeMapFace.NEG_Z);
+								((TextureCubeMapArray)result).bufferData(decode.parse(), decode.format, decode.getType(), curDecoder%6, 0, CubeMapFace.NEG_Z);
 								break;
 						}
 						break;
 					case _2D_ARRAY:
-						((Texture2DArray)result).bufferData(pixels, texFormat, TexDataType.UBYTE, curDecoder, 0);
+						((Texture2DArray)result).bufferData(decode.parse(), decode.format, decode.getType(), curDecoder, 0);
 						break;
 					case _3D:
-						((Texture3D)result).subImage(pixels, texFormat, TexDataType.UBYTE, 0, 0, 0, curDecoder, width, height, curDecoder+1);
+						((Texture3D)result).subImage(decode.parse(), decode.format, decode.getType(), 0, 0, 0, curDecoder, width, height, curDecoder+1);
 						break;
 				}
 			}
@@ -222,103 +175,55 @@ public abstract class ImageLoader {
 		return result;
 	}
 	
-//	private static void loadImage(String file, InternalFormat iformat){
+//	private static Texture loadImage(File file, InternalFormat iformat){
 //		try {
-//			MagickLoader loader = new MagickLoader();
-//			ImageInfo imageData = new ImageInfo(file);
-//			MagickImage image = new MagickImage(imageData);
-//			Dimension imageDim = image.getDimension();
-//			System.out.println("width: "+imageDim.getWidth()+" Height: "+imageDim.getHeight());
-//		} catch (MagickException e) {
-//			// TODO Auto-generated catch block
+//			PNG image = new PNG(file);
+//			Texture result = new Texture2D(iformat, 1, image.getWidth(), image.getHeight());
+//			((Texture2D)result).bufferData(image.parse(), image.getFormat(), TexDataType.UBYTE, 0);
+//			return result;
+////			System.out.println(image.parse().remaining());
+//		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
+//		return null;
 //	}
 	
-	private static Texture loadPNG(File file, InternalFormat iformat, TextureType type) throws IOException{
-		FileInputStream imageFile = new FileInputStream(file);
-		PNGDecoder decoder = new PNGDecoder(imageFile);
+	private static Texture loadPNG(File file, InternalFormat iformat, TextureType type) throws Exception{
+		PNG decoder = new PNG(file);
 		
 		int width = decoder.getWidth();
 		int height = decoder.getHeight();
-		
-		BaseFormat texFormat;
-		Format format;
-		int pixelElements = 0;
-		
-		if(decoder.isRGB()){
-			if(decoder.hasAlpha()){//RGBA
-				format = Format.RGBA;
-				texFormat = BaseFormat.RGBA;
-				pixelElements = 4;
-			}else{//RGB
-				format = Format.RGB;
-				texFormat = BaseFormat.RGB;
-				pixelElements = 3;
-			}
-		}else{
-			if(decoder.hasAlpha()){//RG
-				format = Format.LUMINANCE_ALPHA;
-				texFormat = BaseFormat.RG;
-				pixelElements = 2;
-			}else{//Red
-				format = Format.LUMINANCE;
-				texFormat = BaseFormat.RED;
-				pixelElements = 1;
-			}
-		}
-		
-		ByteBuffer pixels = BufferUtils.createByteBuffer(width*height*pixelElements);
-		
-		decoder.decodeFlipped(pixels, pixelElements*width, format);
-		
-		pixels.flip();
 		Texture result = null;
 		
 		switch(type){
 			case RECTANGLE:
 				result = new TextureRectangle(iformat, width, height);
-				((TextureRectangle)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0);
+				((TextureRectangle)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0);
 				break;
 			case _1D:
 				result = new Texture1D(iformat, 1, width*height);
-				((Texture1D)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0);
+				((Texture1D)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0);
 				break;
 			case _1D_ARRAY:
 				result = new Texture1DArray(iformat, 1, width, height);
-				((Texture1DArray)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0, height, 0);
+				((Texture1DArray)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0, height, 0);
 				break;
 			case _2D:
 				result = new Texture2D(iformat, 1, width, height);
-				((Texture2D)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0);
+				((Texture2D)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0);
 				break;
 			default:
 				result = new Texture2D(iformat, 1, width, height);
-				((Texture2D)result).bufferData(pixels, texFormat, TexDataType.UBYTE, 0);
+				((Texture2D)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0);
 				break;
 		}
-		imageFile.close();
 		return result;
 	}
 	
 	public static Texture loadDefault(InternalFormat iformat, TextureType type){
 		Texture result = null;
 		int defaultWidth = 8, defaultHeight = 8;
-		int cubeMapFactor = type == TextureType.CUBE_MAP || type == TextureType.CUBE_MAP_ARRAY ? 6 : 1;
-		ByteBuffer pixels = BufferUtils.createByteBuffer(defaultWidth*defaultHeight*4*cubeMapFactor);
-		
-		
-		for(int curRow = 0; curRow < defaultHeight*cubeMapFactor; curRow++){
-			for(int curCol = 0; curCol < defaultWidth*cubeMapFactor; curCol++){
-				int colorMod = (curRow+curCol)%2;
-				//use an alternating checkerboard pattern
-				pixels.put((byte)(colorMod*127));
-				pixels.put((byte)(colorMod*127));
-				pixels.put((byte)(colorMod*127));
-				pixels.put((byte)1);
-			}
-		}
-		pixels.flip();
+		ByteBuffer pixels = ImageParser.getDefault(defaultWidth, defaultHeight, type == TextureType.CUBE_MAP || type == TextureType.CUBE_MAP_ARRAY);
 
 		switch(type){
 			case RECTANGLE:
