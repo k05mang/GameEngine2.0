@@ -15,7 +15,7 @@ import textures.enums.BaseFormat;
 import textures.enums.TexDataType;
 
 class PNG extends ImageParser{
-	private int samplesPerPixel;
+	private int samplesPerPixel, bufferStride;
 	private final int PALETTE_LENGTH = 256;
 	private byte bitDepth, colorType, compression, filter, interlace;
 	private byte[] palette;
@@ -54,22 +54,27 @@ class PNG extends ImageParser{
 			case 0://greyscale
 				format = BaseFormat.RGB;
 				samplesPerPixel = 1;
+				bufferStride = width*3;
 				break;
 			case 2://truecolor
 				format = BaseFormat.RGB;
 				samplesPerPixel = 3;
+				bufferStride = width*3;
 				break;
 			case 3://indexed
 				format = BaseFormat.RGB;
 				samplesPerPixel = 1;
+				bufferStride = width*3;
 				break;
 			case 4://greyscale with alpha
 				format = BaseFormat.RGBA;
 				samplesPerPixel = 2;
+				bufferStride = width*4;
 				break;
 			case 6://truecolor with alpha
 				format = BaseFormat.RGBA;
 				samplesPerPixel = 4;
+				bufferStride = width*4;
 				break;
 		}
 		
@@ -77,6 +82,7 @@ class PNG extends ImageParser{
 			type = TexDataType.UBYTE;
 		}else{
 			type = TexDataType.USHORT;
+			bufferStride <<= 1;
 		}
 
 		//skip CRC
@@ -89,7 +95,7 @@ class PNG extends ImageParser{
 		
 		//segment in parenthesis is the factor to determine the number of bytes in the array
 		//anything with a bitdepth of 16 will use shorts which is 2 bytes long and anything less will be converted to bytes of type RGB
-		ByteBuffer image = BufferUtils.createByteBuffer(width*height*((format == BaseFormat.RGB ? 3 : 4)*Math.max(1, bitDepth/8)));
+		ByteBuffer image = BufferUtils.createByteBuffer(height*bufferStride);
 		ArrayList<Byte> idatBuffer = new ArrayList<Byte>();
 		String chunkType;
 		try{
@@ -123,6 +129,10 @@ class PNG extends ImageParser{
 			}
 			//decompress the data
 			byte[] imageData = decompress(rawData);
+			//check to make sure that an indexed type has a palette to work with
+			if(colorType == 3 && palette == null){
+				return getDefault(width, height, false);
+			}
 			//process the data
 			process(image, imageData);
 		}catch(Exception e){//if we fail, load a default image
@@ -164,14 +174,186 @@ class PNG extends ImageParser{
 				byte curPrevLine = prevScanline[curByte-1];//byte of the same index on the previous line
 				byte prevPrevLine = previousIndex < 0 ? 0 : prevScanline[previousIndex];//byte of the same index on the previous pixel of the previous line
 				
-				//unfilter then add the unfiltered value to the scanline buffer
+				//unfilter then add the unfiltered value to the scanline buffer, bitwise & required to preserve unsigned byte values
 				byte newValue = unfilter(filterType, (short)(0xff & current), (short)(0xff & prevCurLine), (short)(0xff & curPrevLine), (short)(0xff & prevPrevLine));
 				currentScanline[curByte-1] = newValue;
-				image.put(((height-1)-curScanline)*scanlineSize+curByte-1, newValue);
+//				image.put(((height-1)-curScanline)*scanlineSize+curByte-1, newValue);
+//				System.out.println(((height-1)-curScanline)*scanlineSize+curByte-1);
 			}
+			//process the current scanline unfiltered to expand values with small bit depths and get indexed values from the palette if needed
+			processScanline(image, currentScanline, curScanline);
 			//update previous scanline with the current scanline for the next iteration
 			prevScanline = currentScanline;
 		}
+	}
+	
+	private void processScanline(ByteBuffer image, byte[] scanline, int scanlineIndex){
+		int offset = ((height-1)-scanlineIndex)*bufferStride;//current scanline to start buffering to in the image buffer
+		switch(colorType){
+			case 0://greyscale - bit range 1-16
+				//if the bit depth is less than a byte then values need to be expanded
+				if(bitDepth < 8){
+					//decide the bitmask to use when getting the bits from the byte below
+					//this makes sure that the left bits don't get copied when a shift occurs on middle bit values
+					byte bitmask = 0;
+					switch(bitDepth){
+						case 1:
+							bitmask = 0b0000_0001;
+							break;
+						case 2:
+							bitmask = 0b0000_0011;
+							break;
+						case 4:
+							bitmask = 0b0000_1111;
+							break;
+					}
+					int numBytes = (int)Math.ceil(width*(bitDepth/8.0f));//number of bytes to iterate through
+					int curPixel = 0;
+					for(int curByte = 0; curByte < numBytes; curByte++){
+						int bitGroups = 8/bitDepth;//number of groups of bits we need to shift and copy on the current byte
+						for(int bitGroup = 0; bitGroup < bitGroups; bitGroup++){
+							//check if we processed all pixel bits and what remains is padding
+							if(curPixel == width){
+								break;
+							}
+							//bitGroups-bitGroup  will give us the bit group that is to the left and the loop will move down from there
+							//0010 1100
+							//^^^^ ^^^^
+							//|||| bitGroup
+							//bitGroups-bitGroup-1
+							//when bitGroup is 0 for the above
+							byte value = (byte)(bitmask & (scanline[curByte] >> (bitDepth*(bitGroups-bitGroup-1))));
+							expandGrey(image, offset+3*curPixel, value);
+							curPixel++;
+						}
+					}
+				}else{//otheriwse we can just extend the data to 3 element values and buffer it
+					int bytes = bitDepth/8;
+					//duplicate the greyscale to make it compatible with RGB
+					for(int curByte = 0; curByte < scanline.length; curByte+=bytes){
+						//check if we need to buffer two bytes or 1 
+						if(bytes == 1){
+							byte greyVal = scanline[curByte];
+							//get the offset for what pixel we are buffering to 
+							//4 bytes to buffer per pixel
+							int pixelOffset = curByte*(3*bytes);//(curByte/bytes)*(3*bytes)
+							//RGB
+							expandGrey(image, offset+pixelOffset, greyVal);
+						}else{
+							//grey value is a short so get the next 2 bytes
+							byte greyVal1 = scanline[curByte];
+							byte greyVal2 = scanline[curByte+1];
+							//get the offset for what pixel we are buffering to 
+							//8 bytes to buffer per pixel
+							int pixelOffset = (curByte >> 1)*(3*bytes);//(curByte/bytes)*(3*bytes)
+							//RGB
+							expandGrey(image, offset+pixelOffset, greyVal1, greyVal2);
+						}
+					}
+				}
+				break;
+			case 2://truecolor - bit range 8-16
+				image.position(offset);
+				image.put(scanline, 0, scanline.length);
+				break;
+			case 3://indexed - bit range 1-8
+				//decide the bitmask to use when getting the bits from the byte below
+				//this makes sure that the left bits don't get copied when a shift occurs on middle bit values
+				byte bitmask = 0;
+				switch(bitDepth){
+					case 1:
+						bitmask = 0b0000_0001;
+						break;
+					case 2:
+						bitmask = 0b0000_0011;
+						break;
+					case 4:
+						bitmask = 0b0000_1111;
+						break;
+				}
+				int numBytes = (int)Math.ceil(width*(bitDepth/8.0f));//number of bytes to iterate through
+				int curPixel = 0;
+				for(int curByte = 0; curByte < numBytes; curByte++){
+					int bitGroups = 8/bitDepth;//number of groups of bits we need to shift and copy on the current byte
+					for(int bitGroup = 0; bitGroup < bitGroups; bitGroup++){
+						//check if we processed all pixel bits and what remains is padding
+						if(curPixel == width){
+							break;
+						}
+						//bitGroups-bitGroup  will give us the bit group that is to the left and the loop will move down from there
+						//0010 1100
+						//^^^^ ^^^^
+						//|||| bitGroup
+						//bitGroups-bitGroup-1
+						//when bitGroup is 0 for the above
+						byte index = (byte)(bitmask & (scanline[curByte] >> (bitDepth*(bitGroups-bitGroup-1))));
+						image.put(offset+3*curPixel, palette[3*index]);
+						image.put(offset+3*curPixel+1, palette[3*index+1]);
+						image.put(offset+3*curPixel+2, palette[3*index+2]);
+						curPixel++;
+					}
+				}
+				break;
+			case 4://greyscale with alpha - bit range 8-16
+				int bytes = bitDepth/8;
+				//duplicate the greyscale to make it compatible with RGBA
+				int stride = 2*bytes;//factor in the two for the two samples per pixel
+				for(int curByte = 0; curByte < scanline.length; curByte+=stride){
+					//check if we need to buffer two bytes or 1 
+					if(bytes == 1){
+						byte greyVal = scanline[curByte];
+						byte alpha = scanline[curByte+1];
+						//get the offset for what pixel we are buffering to 
+						//4 bytes to buffer per pixel
+						int pixelOffset = (curByte >> 1) << 2;//(curByte/stride)*(4*bytes)
+						//RGB
+						expandGrey(image, offset+pixelOffset, greyVal);
+						//A
+						image.put(offset+pixelOffset+3, alpha);
+					}else{
+						//grey value is a short so get the next 2 bytes
+						byte greyVal1 = scanline[curByte];
+						byte greyVal2 = scanline[curByte+1];
+						//alpha value is a short so get the next 2 bytes
+						byte alpha1 = scanline[curByte+2];
+						byte alpha2 = scanline[curByte+3];
+						//get the offset for what pixel we are buffering to 
+						//8 bytes to buffer per pixel
+						int pixelOffset = (curByte >> 2) << 3;//(curByte/stride)*(4*bytes)
+						//RGB
+						expandGrey(image, offset+pixelOffset, greyVal1, greyVal2);
+						//A
+						image.put(offset+pixelOffset+6, alpha1);
+						image.put(offset+pixelOffset+7, alpha2);
+					}
+				}
+				break;
+			case 6://truecolor with alpha - bit range 8-16
+				image.position(offset);
+				image.put(scanline, 0, scanline.length);
+				break;
+		}
+	}
+	
+	private void expandGrey(ByteBuffer image, int offset, byte value){
+		//R
+		image.put(offset, value);
+		//G
+		image.put(offset+1, value);
+		//B
+		image.put(offset+2, value);
+	}
+
+	private void expandGrey(ByteBuffer image, int offset, byte value1, byte value2){
+		//R
+		image.putShort(offset, value1);
+		image.putShort(offset+1, value2);
+		//G
+		image.putShort(offset+2, value1);
+		image.putShort(offset+3, value2);
+		//B
+		image.putShort(offset+4, value1);
+		image.putShort(offset+5, value2);
 	}
 	
 	/**
