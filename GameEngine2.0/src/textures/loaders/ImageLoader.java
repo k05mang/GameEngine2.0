@@ -223,7 +223,7 @@ public abstract class ImageLoader {
 	public static Texture loadDefault(InternalFormat iformat, TextureType type){
 		Texture result = null;
 		int defaultWidth = 8, defaultHeight = 8;
-		ByteBuffer pixels = ImageParser.getDefault(defaultWidth, defaultHeight, type == TextureType.CUBE_MAP || type == TextureType.CUBE_MAP_ARRAY);
+		ByteBuffer pixels = ImageParser.getDefault(defaultWidth, defaultHeight, type == TextureType.CUBE_MAP || type == TextureType.CUBE_MAP_ARRAY, true);
 
 		switch(type){
 			case RECTANGLE:

@@ -90,8 +90,10 @@ class PNG extends ImageParser{
 		//segment in parenthesis is the factor to determine the number of bytes in the array
 		//anything with a bitdepth of 16 will use shorts which is 2 bytes long and anything less will be converted to bytes of type RGB
 		ByteBuffer image = BufferUtils.createByteBuffer(height*bufferStride);
-		ArrayList<Byte> idatBuffer = new ArrayList<Byte>();
 		String chunkType;
+		boolean firstIdatFound = false;//indicates whether we found the first idat chunk, this is to decide where to mark the stream
+		int compressedSize = 0;//total size of the compressed data stream
+		ArrayList<Integer> idatSizes = new ArrayList<Integer>();//stores the various sizes of the idat chunks found while parsing 
 		try{
 			do{
 				//get chunk length
@@ -103,9 +105,17 @@ class PNG extends ImageParser{
 				
 				switch(chunkType){
 					case "IDAT":
-						//buffer the image data
-						for(int curByte = 0; curByte < chunkLength; curByte++){
-							idatBuffer.add(imageStream.readByte());
+						//if we have found the first idat chunk then add this chunks data and skip the bytes for later
+						if(firstIdatFound){
+							compressedSize += chunkLength;
+							imageStream.skipBytes(chunkLength);
+							idatSizes.add(chunkLength);
+						}else{//otherwise do the same tihng as above except mark the stream for reset 
+							firstIdatFound = true;
+							imageStream.mark(image.capacity());
+							compressedSize += chunkLength;
+							imageStream.skipBytes(chunkLength);
+							idatSizes.add(chunkLength);
 						}
 						break;
 					case "PLTE":
@@ -116,17 +126,31 @@ class PNG extends ImageParser{
 				}
 				imageStream.skipBytes(4);//for now skip the CRC
 			} while(!chunkType.equals("IEND"));
-			//transfer the data from the arraylist into a primitive buffer
-			byte[] rawData = new byte[idatBuffer.size()];
-			for(int curData = 0; curData < idatBuffer.size(); curData++){
-				rawData[curData] = idatBuffer.get(curData);
-			}
-			//decompress the data
-			byte[] imageData = decompress(rawData);
 			//check to make sure that an indexed type has a palette to work with
 			if(colorType == 3 && palette == null){
-				return getDefault(width, height, false);
+				try{
+					imageStream.close();//we can close the stream now that we are done with it
+				}catch(IOException io){
+					io.printStackTrace();
+				}
+				return getDefault(width, height, false, format == BaseFormat.RGBA);
 			}
+			//reset the input stream for re-reading
+			imageStream.reset();
+			byte[] imageData = new byte[compressedSize];//allocate the buffer for storing the compressed image data
+			int offset = 0;//offset from the beginning of the compressed storage to buffer the next chunk into
+			//for each chunk read that many bytes from the image stream and store them
+			for(Integer curSize : idatSizes){
+				//for each byte in the current chunk read them and store them
+				for(int curByte = 0; curByte < curSize; curByte++){
+					imageData[offset+curByte] = imageStream.readByte();
+				}
+				//update the offset
+				offset += curSize;
+				imageStream.skipBytes(12);//skip the crc, chunk length, and chunk type
+			}
+			//decompress the data
+			imageData = decompress(imageData);
 			//process the data
 			process(image, imageData);
 		}catch(Exception e){//if we fail, load a default image
@@ -136,7 +160,7 @@ class PNG extends ImageParser{
 			}catch(IOException io){
 				io.printStackTrace();
 			}
-			return getDefault(width, height, false);
+			return getDefault(width, height, false, format == BaseFormat.RGBA);
 		}
 		image.flip();//flip the buffer
 		//attempt to close the stream
@@ -152,10 +176,10 @@ class PNG extends ImageParser{
 		//size of an unfiltered scanline
 		int scanlineSize = (int)Math.ceil(width*samplesPerPixel*(bitDepth/8.0f));
 		byte[] prevScanline = new byte[scanlineSize];
+		byte[] currentScanline = new byte[scanlineSize];
 		//loop through the height of the image for each scanline
 		for(int curScanline = 0; curScanline < height; curScanline++){
 			byte filterType = imageData[curScanline*(scanlineSize+1)];
-			byte[] currentScanline = new byte[scanlineSize];
 			//shift the scanline parsing 1 byte to allow the reading of the first byte which indicates filter type
 			for(int curByte = 1; curByte < scanlineSize+1; curByte++){
 				//pre compute indices for filtered byte data
@@ -175,7 +199,9 @@ class PNG extends ImageParser{
 			//process the current scanline unfiltered to expand values with small bit depths and get indexed values from the palette if needed
 			processScanline(image, currentScanline, curScanline);//TODO make this operate on single byte values above to reduce the need to loop through the scanline again
 			//update previous scanline with the current scanline for the next iteration
+			byte[] temp = prevScanline;
 			prevScanline = currentScanline;
+			currentScanline = temp;
 		}
 	}
 	
@@ -295,36 +321,31 @@ class PNG extends ImageParser{
 				}
 				break;
 			case 4://greyscale with alpha - bit range 8-16
-				int bytes = bitDepth/8;
-				//duplicate the greyscale to make it compatible with RGBA
-				int stride = 2*bytes;//factor in the two for the two samples per pixel
-				for(int curByte = 0; curByte < scanline.length; curByte+=stride){
-					//check if we need to buffer two bytes or 1 
-					if(bytes == 1){
+				//duplicate the greyscale to make it compatible with RGB
+				//check if we need to buffer two bytes or 1 
+				if(bitDepth/8 == 1){
+					for(int curByte = 0; curByte < scanline.length; curByte+=2){
 						byte greyVal = scanline[curByte];
 						byte alpha = scanline[curByte+1];
-						//get the offset for what pixel we are buffering to 
-						//4 bytes to buffer per pixel
-						int pixelOffset = (curByte >> 1) << 2;//(curByte/stride)*(4*bytes)
 						//RGB
-						expandGrey(image, offset+pixelOffset, greyVal);
-						//A
-						image.put(offset+pixelOffset+3, alpha);
-					}else{
-						//grey value is a short so get the next 2 bytes
-						byte greyVal1 = scanline[curByte];
-						byte greyVal2 = scanline[curByte+1];
-						//alpha value is a short so get the next 2 bytes
-						byte alpha1 = scanline[curByte+2];
-						byte alpha2 = scanline[curByte+3];
-						//get the offset for what pixel we are buffering to 
-						//8 bytes to buffer per pixel
-						int pixelOffset = (curByte >> 2) << 3;//(curByte/stride)*(4*bytes)
+						expandGrey(image, offset+4*(curByte >> 1), greyVal);
+					}
+				}else{
+					for(int curByte = 0; curByte < scanline.length; curByte+=4){
+						int value = (int)(0xff & scanline[curByte]);
+						value <<= 8;
+						value += (int)(0xff & scanline[curByte+1]);
+						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
 						//RGB
-						expandGrey(image, offset+pixelOffset, greyVal1, greyVal2);
-						//A
-						image.put(offset+pixelOffset+6, alpha1);
-						image.put(offset+pixelOffset+7, alpha2);
+						expandGrey(image, offset+curByte, (byte)value);
+						
+						//do that same transformation for the alpha
+						value = (int)(0xff & scanline[curByte+2]);
+						value <<= 8;
+						value += (int)(0xff & scanline[curByte+3]);
+						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
+						
+						image.put(offset+curByte+3, (byte)value);
 					}
 				}
 				break;
@@ -345,6 +366,13 @@ class PNG extends ImageParser{
 		}
 	}
 	
+	/**
+	 * Expands the given greyscale value of the png file to fit into RGB values
+	 * 
+	 * @param image ByteBuffer where the processed image data is being stored
+	 * @param offset Offset into the ByteBuffer to store the greyscale value
+	 * @param value Greyscale value to store into the ByteBuffer
+	 */
 	private void expandGrey(ByteBuffer image, int offset, byte value){
 		//R
 		image.put(offset, value);
@@ -352,27 +380,6 @@ class PNG extends ImageParser{
 		image.put(offset+1, value);
 		//B
 		image.put(offset+2, value);
-	}
-
-	private void expandGrey(ByteBuffer image, int offset, byte value1, byte value2){
-		//R
-		image.put(offset, value1);
-		image.put(offset+1, value2);
-		//G
-		image.put(offset+2, value1);
-		image.put(offset+3, value2);
-		//B
-		image.put(offset+4, value1);
-		image.put(offset+5, value2);
-	}
-
-	private void expandGrey(ByteBuffer image, int offset, short value){
-		//R
-		image.putShort(offset, value);
-		//G
-		image.putShort(offset+2, value);
-		//B
-		image.putShort(offset+4, value);
 	}
 	
 	/**
@@ -440,10 +447,9 @@ class PNG extends ImageParser{
 	}
 	
 	/**
-	 * Parses the palette chunk of the png and returns it as a byte array
+	 * Parses the palette chunk of the png and stores it in the palette array of this PNG object
 	 * 
 	 * @param chunkLength Length of the chunk
-	 * @return Palette as a byte array
 	 */
 	private void parsePLTE(int chunkLength) throws DataFormatException, IOException{
 		//check if the palette is divisible by 3 if not throw an exception
