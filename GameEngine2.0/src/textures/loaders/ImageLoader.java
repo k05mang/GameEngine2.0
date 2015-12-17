@@ -2,8 +2,8 @@ package textures.loaders;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-
 import java.util.ArrayList;
+
 import textures.CubeMapFace;
 import textures.Texture;
 import textures.Texture1D;
@@ -17,6 +17,8 @@ import textures.TextureRectangle;
 import textures.enums.BaseFormat;
 import textures.enums.InternalFormat;
 import textures.enums.TexDataType;
+import textures.enums.TexParam;
+import textures.enums.TexParamEnum;
 import textures.enums.TextureType;
 
 public abstract class ImageLoader {
@@ -198,73 +200,80 @@ public abstract class ImageLoader {
 		switch(type){
 			case RECTANGLE:
 				result = new TextureRectangle(iformat, width, height);
-				((TextureRectangle)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0);
+				((TextureRectangle)result).bufferData(decoder.parse(), decoder.getFormat(), decoder.getType(), 0);
 				break;
 			case _1D:
 				result = new Texture1D(iformat, 1, width*height);
-				((Texture1D)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0);
+				((Texture1D)result).bufferData(decoder.parse(), decoder.getFormat(), decoder.getType(), 0);
 				break;
 			case _1D_ARRAY:
 				result = new Texture1DArray(iformat, 1, width, height);
-				((Texture1DArray)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0, height, 0);
+				((Texture1DArray)result).bufferData(decoder.parse(), decoder.getFormat(), decoder.getType(), 0, height, 0);
 				break;
 			case _2D:
 				result = new Texture2D(iformat, 1, width, height);
-				((Texture2D)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0);
+				((Texture2D)result).bufferData(decoder.parse(), decoder.getFormat(), decoder.getType(), 0);
 				break;
 			default:
 				result = new Texture2D(iformat, 1, width, height);
-				((Texture2D)result).bufferData(decoder.parse(), decoder.format, decoder.getType(), 0);
+				((Texture2D)result).bufferData(decoder.parse(), decoder.getFormat(), decoder.getType(), 0);
 				break;
 		}
 		return result;
 	}
 	
 	public static Texture loadDefault(InternalFormat iformat, TextureType type){
+		return loadDefault(iformat, type, 8, 8);
+	}
+	
+	public static Texture loadDefault(InternalFormat iformat, TextureType type, int width, int height){
 		Texture result = null;
-		int defaultWidth = 8, defaultHeight = 8;
-		ByteBuffer pixels = ImageParser.getDefault(defaultWidth, defaultHeight, type == TextureType.CUBE_MAP || type == TextureType.CUBE_MAP_ARRAY, true);
+		ByteBuffer pixels = ImageParser.getDefault(width, height, type == TextureType.CUBE_MAP || type == TextureType.CUBE_MAP_ARRAY, false);
 
 		switch(type){
 			case RECTANGLE:
-				result = new TextureRectangle(iformat, defaultWidth, defaultHeight);
-				((TextureRectangle)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0);
+				result = new TextureRectangle(iformat, width, height);
+				((TextureRectangle)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0);
 				break;
 			case _1D:
-				result = new Texture1D(iformat, 1, defaultWidth*defaultHeight);
-				((Texture1D)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0);
+				result = new Texture1D(iformat, 1, width*height);
+				((Texture1D)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0);
 				break;
 			case _1D_ARRAY:
-				result = new Texture1DArray(iformat, 1, defaultWidth, defaultHeight);
-				((Texture1DArray)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0, defaultHeight, 0);
+				result = new Texture1DArray(iformat, 1, width, height);
+				((Texture1DArray)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0, height, 0);
 				break;
 			case _2D:
-				result = new Texture2D(iformat, 1, defaultWidth, defaultHeight);
-				((Texture2D)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0);
+				result = new Texture2D(iformat, 1, width, height);
+				((Texture2D)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0);
 				break;
 //			case BUFFER:
 //				break;
 			case CUBE_MAP:
-				result = new TextureCubeMap(iformat, 1, defaultWidth);
-				((TextureCubeMap)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0);
+				result = new TextureCubeMap(iformat, 1, width);
+				((TextureCubeMap)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0);
 				break;
 			case CUBE_MAP_ARRAY:
-				result = new TextureCubeMapArray(iformat, 1, defaultWidth, 1);
-				((TextureCubeMapArray)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0);
+				result = new TextureCubeMapArray(iformat, 1, width, 1);
+				((TextureCubeMapArray)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0);
 				break;
 			case _2D_ARRAY:
-				result = new Texture2DArray(iformat, 1, defaultWidth, defaultHeight, 1);
-				((Texture2DArray)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0);
+				result = new Texture2DArray(iformat, 1, width, height, 1);
+				((Texture2DArray)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0);
 				break;
 			case _3D:
-				result = new Texture3D(iformat, 1, defaultWidth, defaultHeight, 1);
-				((Texture3D)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0);
+				result = new Texture3D(iformat, 1, width, height, 1);
+				((Texture3D)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0);
 				break;
 			default:
-				result = new Texture2D(iformat, 1, defaultWidth, defaultHeight);
-				((Texture2D)result).bufferData(pixels, BaseFormat.RGBA, TexDataType.BYTE, 0);
+				result = new Texture2D(iformat, 1, width, height);
+				((Texture2D)result).bufferData(pixels, BaseFormat.RGB, TexDataType.UBYTE, 0);
 				break;
 		}
+		result.setParam(TexParam.MIN_FILTER, TexParamEnum.NEAREST);
+		result.setParam(TexParam.MAG_FILTER, TexParamEnum.NEAREST);
+		result.setParam(TexParam.WRAP_S, TexParamEnum.CLAMP_TO_EDGE);
+		result.setParam(TexParam.WRAP_T, TexParamEnum.CLAMP_TO_EDGE);
 		return result;
 	}
 }
