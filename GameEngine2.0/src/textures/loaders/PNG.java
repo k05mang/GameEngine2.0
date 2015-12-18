@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
@@ -20,9 +21,21 @@ class PNG extends ImageParser{
 	private byte bitDepth, colorType, compression, filter, interlace;
 	private byte[] palette;
 	//TODO adam 7 interlacing, and ancilliary chunks
+	private int 
+	LEFT_OFFSET,
+	HORIZ_STRIDE,
+	TOP_OFFSET,
+	VERT_STRIDE;
+	
 	
 	PNG(File image) throws IOException, FileFormatException{
 		super(image);
+		
+		LEFT_OFFSET = 0;
+		HORIZ_STRIDE = 1;
+		TOP_OFFSET = 0;
+		VERT_STRIDE = 1;
+		
 		palette = null;//default it to null this way we can check if it's an indexed type that failed to provide a palette
 		long pngSignature = 0L;
 		pngSignature |= imageStream.readByte();
@@ -160,10 +173,10 @@ class PNG extends ImageParser{
 		//decompress the data
 		imageData = decompress(imageData);
 		//process the data
-		if(filter == 0){
+		if(interlace == 0){
 			process(image, imageData);
 		}else{
-			
+			processAdam7(image, imageData);
 		}
 
 		image.flip();//flip the buffer
@@ -212,84 +225,14 @@ class PNG extends ImageParser{
 	}
 	
 	private void processScanline(ByteBuffer image, byte[] scanline, int scanlineIndex){
-		int offset = ((height-1)-scanlineIndex)*bufferStride;//current scanline to start buffering to in the image buffer
-		switch(colorType){
-			case 0://greyscale - bit range 1-16
-				//if the bit depth is less than a byte then values need to be expanded
-				if(bitDepth < 8){
-					//decide the bitmask to use when getting the bits from the byte below
-					//this makes sure that the left bits don't get copied when a shift occurs on middle bit values
-					byte bitmask = 0;
-					switch(bitDepth){
-						case 1:
-							bitmask = 0b0000_0001;
-							break;
-						case 2:
-							bitmask = 0b0000_0011;
-							break;
-						case 4:
-							bitmask = 0b0000_1111;
-							break;
-					}
-					int curPixel = 0;
-					int bitGroups = 8/bitDepth;//number of groups of bits we need to shift and copy on the current byte
-					for(int curByte = 0; curByte < scanline.length; curByte++){
-						for(int bitGroup = 0; bitGroup < bitGroups; bitGroup++){
-							//check if we processed all pixel bits and what remains is padding
-							if(curPixel == width){
-								break;
-							}
-							//bitGroups-bitGroup  will give us the bit group that is to the left and the loop will move down from there
-							//0010 1100
-							//^^^^ ^^^^
-							//|||| bitGroup
-							//bitGroups-bitGroup-1
-							//when bitGroup is 0 for the above
-							int value = (int)(bitmask & (scanline[curByte] >>> (bitDepth*(bitGroups-bitGroup-1))));
-							value = (int)(255*(value/(float)bitmask));
-							expandGrey(image, offset+3*curPixel, (byte)value);
-							curPixel++;
-						}
-					}
-				}else{//otheriwse we can just extend the data to 3 element values and buffer it
-					//duplicate the greyscale to make it compatible with RGB
-					//check if we need to buffer two bytes or 1 
-					if(bitDepth == 8){
-						for(int curByte = 0; curByte < scanline.length; curByte++){
-							byte greyVal = scanline[curByte];
-							//RGB
-							expandGrey(image, offset+3*curByte, greyVal);
-						}
-					}else{
-						for(int curByte = 0; curByte < scanline.length; curByte+=2){
-							int value = (int)(0xff & scanline[curByte]);
-							value <<= 8;
-							value += (int)(0xff & scanline[curByte+1]);
-							value = (int)Math.floor((255*(value/65535.0))+ 0.5);
-							//RGB
-							expandGrey(image, offset+3*(curByte >> 1), (byte)value);
-						}
-					}
-				}
-				break;
-			case 2://truecolor - bit range 8-16
-				if(bitDepth == 8){
-					image.position(offset);
-					image.put(scanline, 0, scanline.length);
-				}else{
-					for(int curByte = 0; curByte < scanline.length; curByte+=2){
-						int value = (int)(0xff & scanline[curByte]);
-						value <<= 8;
-						value += (int)(0xff & scanline[curByte+1]);
-						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
-						image.put(offset+(curByte >> 1), (byte)value);
-					}
-				}
-				break;
-			case 3://indexed - bit range 1-8
+		int offset = ((height-1-TOP_OFFSET)-scanlineIndex*VERT_STRIDE)*bufferStride;//current scanline to start buffering to in the image buffer
+		int curPixel = LEFT_OFFSET;
+		if(colorType == 0 || colorType == 4){//greyscale
+			//if the bit depth is less than a byte then values need to be expanded
+			if(bitDepth < 8){
 				//decide the bitmask to use when getting the bits from the byte below
 				//this makes sure that the left bits don't get copied when a shift occurs on middle bit values
-				int bitmask = 0;
+				byte bitmask = 0;
 				switch(bitDepth){
 					case 1:
 						bitmask = 0b0000_0001;
@@ -300,16 +243,12 @@ class PNG extends ImageParser{
 					case 4:
 						bitmask = 0b0000_1111;
 						break;
-					case 8:
-						bitmask = 0b1111_1111;
-						break;
 				}
-				int curPixel = 0;
 				int bitGroups = 8/bitDepth;//number of groups of bits we need to shift and copy on the current byte
 				for(int curByte = 0; curByte < scanline.length; curByte++){
 					for(int bitGroup = 0; bitGroup < bitGroups; bitGroup++){
 						//check if we processed all pixel bits and what remains is padding
-						if(curPixel == width){
+						if(curPixel >= width){
 							break;
 						}
 						//bitGroups-bitGroup  will give us the bit group that is to the left and the loop will move down from there
@@ -318,79 +257,148 @@ class PNG extends ImageParser{
 						//|||| bitGroup
 						//bitGroups-bitGroup-1
 						//when bitGroup is 0 for the above
-						int index = bitmask & (scanline[curByte] >>> (bitDepth*(bitGroups-bitGroup-1)));
-						image.put(offset+3*curPixel, palette[3*index]);
-						image.put(offset+3*curPixel+1, palette[3*index+1]);
-						image.put(offset+3*curPixel+2, palette[3*index+2]);
-						curPixel++;
+						int value = (int)(bitmask & (scanline[curByte] >>> (bitDepth*(bitGroups-bitGroup-1))));
+						value = (int)(255*(value/(float)bitmask));
+						expandGrey(image, offset+3*curPixel, (byte)value);
+						curPixel += HORIZ_STRIDE;
 					}
 				}
-				break;
-			case 4://greyscale with alpha - bit range 8-16
+			}else{//otheriwse we can just extend the data to 3 element values and buffer it
 				//duplicate the greyscale to make it compatible with RGB
 				//check if we need to buffer two bytes or 1 
+				//values for calculating how the data is being read and stored
+				boolean isAlpha = colorType == 4;
+				int pixelStride = isAlpha ? 2 : 1;
+				int bufferedPixels = isAlpha ? 4 : 3;
+				
 				if(bitDepth == 8){
-					for(int curByte = 0; curByte < scanline.length; curByte+=2){
-						byte greyVal = scanline[curByte];
-						byte alpha = scanline[curByte+1];
+					for(int curByte = 0; curByte < scanline.length; curByte += pixelStride){
 						//RGB
-						expandGrey(image, offset+4*(curByte >> 1), greyVal);
+						expandGrey(image, offset+bufferedPixels*curPixel, scanline[curByte]);
 						
-						//add alpha
-						image.put(offset+4*(curByte >> 1)+3, alpha);
+						if(isAlpha){
+							expandGrey(image, offset+bufferedPixels*curPixel+1, scanline[curByte+1]);
+						}
+						curPixel += HORIZ_STRIDE;
 					}
 				}else{
-					for(int curByte = 0; curByte < scanline.length; curByte+=4){
+					for(int curByte = 0; curByte < scanline.length; curByte += 2*pixelStride){
 						int value = (int)(0xff & scanline[curByte]);
 						value <<= 8;
 						value += (int)(0xff & scanline[curByte+1]);
 						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
 						//RGB
-						expandGrey(image, offset+curByte, (byte)value);
+						expandGrey(image, offset+bufferedPixels*curPixel, (byte)value);
 						
-						//do that same transformation for the alpha
-						value = (int)(0xff & scanline[curByte+2]);
-						value <<= 8;
-						value += (int)(0xff & scanline[curByte+3]);
-						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
-						
-						image.put(offset+curByte+3, (byte)value);
+						if(isAlpha){
+							value = (int)(0xff & scanline[curByte+2]);
+							value <<= 8;
+							value += (int)(0xff & scanline[curByte+3]);
+							value = (int)Math.floor((255*(value/65535.0))+ 0.5);
+							//alpha
+							image.put(offset+bufferedPixels*curPixel+3, (byte)value);
+						}
+						curPixel += HORIZ_STRIDE;
 					}
 				}
-				break;
-			case 6://truecolor with alpha - bit range 8-16
-				if(bitDepth == 8){
-					image.position(offset);
-					image.put(scanline, 0, scanline.length);
-				}else{
-					for(int curByte = 0; curByte < scanline.length; curByte+=2){
-						int value = (int)(0xff & scanline[curByte]);
-						value <<= 8;
-						value += (int)(0xff & scanline[curByte+1]);
-						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
-						image.put(offset+(curByte >> 1), (byte)value);
+			}
+		}else if(colorType == 2 || colorType == 6){//truecolor
+			//values for calculating how the data is being read and stored
+			boolean isAlpha = colorType == 6;
+			int pixelStride = isAlpha ? 4 : 3;
+			if(bitDepth == 8){
+				for(int curByte = 0; curByte < scanline.length; curByte += pixelStride){
+					int pixelIndex = offset+pixelStride*curPixel;
+					//loop through the values and add them
+					for(int curRGBA = 0; curRGBA < pixelStride; curRGBA++){
+						byte value = scanline[curByte+curRGBA];
+						image.put(pixelIndex+curRGBA, (byte)value);
 					}
+					curPixel += HORIZ_STRIDE;
 				}
-				break;
+			}else{
+				for(int curByte = 0; curByte < scanline.length; curByte += 2*pixelStride){
+					int pixelIndex = offset+pixelStride*curPixel;
+					//loop through the values and add them
+					for(int curRGBA = 0; curRGBA < 2*pixelStride; curRGBA+=2){
+						int value = (int)(0xff & scanline[curByte+curRGBA]);
+						value <<= 8;
+						value += (int)(0xff & scanline[curByte+curRGBA+1]);
+						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
+						image.put(pixelIndex+(curRGBA >> 1), (byte)value);
+					}
+					curPixel += HORIZ_STRIDE;
+				}
+			}
+		}else{//indexed
+			//decide the bitmask to use when getting the bits from the byte below
+			//this makes sure that the left bits don't get copied when a shift occurs on middle bit values
+			int bitmask = 0;
+			switch(bitDepth){
+				case 1:
+					bitmask = 0b0000_0001;
+					break;
+				case 2:
+					bitmask = 0b0000_0011;
+					break;
+				case 4:
+					bitmask = 0b0000_1111;
+					break;
+				case 8:
+					bitmask = 0b1111_1111;
+					break;
+			}
+			int bitGroups = 8/bitDepth;//number of groups of bits we need to shift and copy on the current byte
+			for(int curByte = 0; curByte < scanline.length; curByte++){
+				for(int bitGroup = 0; bitGroup < bitGroups; bitGroup++){
+					//check if we processed all pixel bits and what remains is padding
+					if(curPixel >= width){
+						break;
+					}
+					//bitGroups-bitGroup  will give us the bit group that is to the left and the loop will move down from there
+					//0010 1100
+					//^^^^ ^^^^
+					//|||| bitGroup
+					//bitGroups-bitGroup-1
+					//when bitGroup is 0 for the above
+					int index = bitmask & (scanline[curByte] >>> (bitDepth*(bitGroups-bitGroup-1)));
+//					System.out.println(index);
+					image.put(offset+3*curPixel, palette[3*index]);
+					image.put(offset+3*curPixel+1, palette[3*index+1]);
+					image.put(offset+3*curPixel+2, palette[3*index+2]);
+					curPixel += HORIZ_STRIDE;
+				}
+			}
 		}
 	}
 	
 	private void processAdam7(ByteBuffer image, byte[] imageData){
-		//calculate the width and height of the subsection of the image contained in each pixel set of the interlacing
-		int pixelsWide = (int)Math.ceil(width/8.0f);
-		int pixelsHigh = (int)Math.ceil(height/8.0f);
-		int[] offsetBuffer = new int[4];
 		//perform the seven passes of the adam 7 algorithm
+		int subImageOffset = 0;
 		for(int curPass = 0; curPass < 7; curPass++){
-			//size of an unfiltered scanline
-			int scanlineSize = (int)Math.ceil(pixelsWide*samplesPerPixel*(bitDepth/8.0f));//TODO correct this value this is incorrect
+			adam7Offsets(curPass);
+			//calculate the width and height of the current pass subimage
+			int pixelsWide = (int)Math.ceil(width/(float)HORIZ_STRIDE);
+			int pixelsHigh = (int)Math.ceil(height/(float)VERT_STRIDE);
+			//determine if the starting offset will eliminate the ending pixel of the scanline, since it would end up out of bounds for the image dimensions
+
+//			if(pixelsWide*HORIZ_STRIDE+LEFT_OFFSET > width){
+//				pixelsWide--;
+//			}
+//			if(pixelsHigh*VERT_STRIDE+TOP_OFFSET > height){
+//				pixelsHigh--;
+//			}
+			System.out.println("Pixelsdimensions: "+pixelsWide+", "+pixelsHigh);
+			//size of an unfiltered scanline, no difference to a filtered scanlines size
+			int scanlineSize = (int)Math.ceil(pixelsWide*samplesPerPixel*(bitDepth/8.0f));
 			byte[] prevScanline = new byte[scanlineSize];
 			byte[] currentScanline = new byte[scanlineSize];
 			int prevIndexOffset = Math.max(1, samplesPerPixel*(bitDepth/8));//used to determine how far to offset the arrays for values on the previous pixel
 			//loop through the height of the image for each scanline
-			for(int curScanline = 0; curScanline < height; curScanline++){
-				int scanlineOffset = curScanline*(scanlineSize+1);
+			for(int curScanline = 0; curScanline < pixelsHigh; curScanline++){
+				int scanlineOffset = subImageOffset+curScanline*(scanlineSize+1);
 				byte filterType = imageData[scanlineOffset];
+				System.out.println(filterType);
 				//shift the scanline parsing 1 byte to allow the reading of the first byte which indicates filter type
 				for(int curByte = 1; curByte < scanlineSize+1; curByte++){
 					//pre compute indices for filtered byte data
@@ -413,73 +421,60 @@ class PNG extends ImageParser{
 				prevScanline = currentScanline;
 				currentScanline = temp;
 			}
+//			System.out.println("pass: "+curPass+" complete");
+			subImageOffset += pixelsHigh*(scanlineSize+1);//plus one to account for the filter byte
+//			System.out.println(subImageOffset);
 		}
 	}
 	
-	private void adam7Offsets(int pass, int[] offsetStorage){
+	private void adam7Offsets(int pass){
 		switch(pass){
 		//values meaning from top to bottom
-		//offset from left side of the original image
-		//horizontal offset between each pixel group
+		//offset from left side of the original image (stride)
+		//horizontal offset between each pixel at the given pass
 		//offset from the top of the original image
-		//vertical between each pixel group
-		//pass width
-		//pass height
+		//vertical between each pixel at the given pass
 			case 0:
-				offsetStorage[0] = 0;
-				offsetStorage[1] = 8;
-				offsetStorage[2] = 0;
-				offsetStorage[3] = 8;
-				offsetStorage[4] = 4;
-				offsetStorage[5] = 4;
+				LEFT_OFFSET = 0;
+				HORIZ_STRIDE = 8;
+				TOP_OFFSET = 0;
+				VERT_STRIDE = 8;
 				break;
 			case 1:
-				offsetStorage[0] = 0;
-				offsetStorage[1] = 8;
-				offsetStorage[2] = 0;
-				offsetStorage[3] = 8;
-				offsetStorage[4] = 4;
-				offsetStorage[5] = 4;
+				LEFT_OFFSET = 4;
+				HORIZ_STRIDE = 8;
+				TOP_OFFSET = 0;
+				VERT_STRIDE = 8;
 				break;
 			case 2:
-				offsetStorage[0] = 0;
-				offsetStorage[1] = 8;
-				offsetStorage[2] = 0;
-				offsetStorage[3] = 8;
-				offsetStorage[4] = 4;
-				offsetStorage[5] = 4;
+				LEFT_OFFSET = 0;
+				HORIZ_STRIDE = 4;
+				TOP_OFFSET = 4;
+				VERT_STRIDE = 8;
 				break;
 			case 3:
-				offsetStorage[0] = 0;
-				offsetStorage[1] = 8;
-				offsetStorage[2] = 0;
-				offsetStorage[3] = 8;
-				offsetStorage[4] = 4;
-				offsetStorage[5] = 4;
+				LEFT_OFFSET = 2;
+				HORIZ_STRIDE = 4;
+				TOP_OFFSET = 0;
+				VERT_STRIDE = 4;
 				break;
 			case 4:
-				offsetStorage[0] = 0;
-				offsetStorage[1] = 8;
-				offsetStorage[2] = 0;
-				offsetStorage[3] = 8;
-				offsetStorage[4] = 4;
-				offsetStorage[5] = 4;
+				LEFT_OFFSET = 0;
+				HORIZ_STRIDE = 2;
+				TOP_OFFSET = 2;
+				VERT_STRIDE = 4;
 				break;
 			case 5:
-				offsetStorage[0] = 0;
-				offsetStorage[1] = 8;
-				offsetStorage[2] = 0;
-				offsetStorage[3] = 8;
-				offsetStorage[4] = 4;
-				offsetStorage[5] = 4;
+				LEFT_OFFSET = 1;
+				HORIZ_STRIDE = 2;
+				TOP_OFFSET = 0;
+				VERT_STRIDE = 2;
 				break;
 			case 6:
-				offsetStorage[0] = 0;
-				offsetStorage[1] = 8;
-				offsetStorage[2] = 0;
-				offsetStorage[3] = 8;
-				offsetStorage[4] = 4;
-				offsetStorage[5] = 4;
+				LEFT_OFFSET = 0;
+				HORIZ_STRIDE = 1;
+				TOP_OFFSET = 1;
+				VERT_STRIDE = 2;
 				break;
 		}
 	}
@@ -512,11 +507,11 @@ class PNG extends ImageParser{
 		Inflater decompressor = new Inflater();
 		decompressor.setInput(data);
 		//create storage buffer
-		byte[] uncompressed = new byte[height*(int)Math.ceil(width*samplesPerPixel*(bitDepth/8.0f))+height];
+		byte[] uncompressed = new byte[(height*(int)Math.ceil(width*samplesPerPixel*(bitDepth/8.0f))+height) << 1];
 		//decompress and close the decompressor
-		decompressor.inflate(uncompressed);
+		int uncompressedSize = decompressor.inflate(uncompressed);
 		decompressor.end();
-		return uncompressed;
+		return Arrays.copyOfRange(uncompressed, 0, uncompressedSize);
 	}
 	
 	/**
