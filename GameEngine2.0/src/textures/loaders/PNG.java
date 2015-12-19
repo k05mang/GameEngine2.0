@@ -20,7 +20,8 @@ class PNG extends ImageParser{
 	private int samplesPerPixel, bufferStride;
 	private byte bitDepth, colorType, compression, filter, interlace;
 	private byte[] palette;
-	//TODO adam 7 interlacing, and ancilliary chunks
+	private int[] trns;
+	//TODO adam 7 interlacing on NPOT, and ancilliary chunks
 	private int 
 	LEFT_OFFSET,
 	HORIZ_STRIDE,
@@ -37,6 +38,7 @@ class PNG extends ImageParser{
 		VERT_STRIDE = 1;
 		
 		palette = null;//default it to null this way we can check if it's an indexed type that failed to provide a palette
+		trns = null;
 		long pngSignature = 0L;
 		pngSignature |= imageStream.readByte();
 		pngSignature <<= 8;
@@ -111,7 +113,6 @@ class PNG extends ImageParser{
 	}
 	
 	public ByteBuffer parse() throws IOException, DataFormatException{
-		ByteBuffer image = BufferUtils.createByteBuffer(height*bufferStride);
 		String chunkType;
 		boolean firstIdatFound = false;//indicates whether we found the first idat chunk, this is to decide where to mark the stream
 		int compressedSize = 0;//total size of the compressed data stream
@@ -133,7 +134,7 @@ class PNG extends ImageParser{
 						idatSizes.add(chunkLength);
 					}else{//otherwise do the same tihng as above except mark the stream for reset 
 						firstIdatFound = true;
-						imageStream.mark(image.capacity());
+						imageStream.mark(height*bufferStride);
 						compressedSize += chunkLength;
 						imageStream.skipBytes(chunkLength);
 						idatSizes.add(chunkLength);
@@ -141,6 +142,12 @@ class PNG extends ImageParser{
 					break;
 				case "PLTE":
 					parsePLTE(chunkLength);
+					break;
+				case "tRNS":
+					parseTRNS(chunkLength);
+					format = BaseFormat.RGBA;
+					bufferStride = width*4;
+//					System.out.println(chunkType);
 					break;
 				default:
 					imageStream.skipBytes(chunkLength);//until implemented ignore other non critical chunks
@@ -156,6 +163,7 @@ class PNG extends ImageParser{
 			}
 			throw new DataFormatException("Indexed PNG does not have palette for indexed values");
 		}
+		ByteBuffer image = BufferUtils.createByteBuffer(height*bufferStride);
 		//reset the input stream for re-reading
 		imageStream.reset();
 		byte[] imageData = new byte[compressedSize];//allocate the buffer for storing the compressed image data
@@ -172,6 +180,14 @@ class PNG extends ImageParser{
 		}
 		//decompress the data
 		imageData = decompress(imageData);
+//		System.out.println(imageData.length);
+//		System.out.println(width*height*samplesPerPixel);
+		for(int curRow = 0; curRow < imageData.length; curRow++){
+			System.out.print(imageData[curRow]+" ");
+			if(curRow%12 == 0){
+				System.out.println();
+			}
+		}
 		//process the data
 		if(interlace == 0){
 			process(image, imageData);
@@ -227,6 +243,7 @@ class PNG extends ImageParser{
 	private void processScanline(ByteBuffer image, byte[] scanline, int scanlineIndex){
 		int offset = ((height-1-TOP_OFFSET)-scanlineIndex*VERT_STRIDE)*bufferStride;//current scanline to start buffering to in the image buffer
 		int curPixel = LEFT_OFFSET;
+		int valuesPerPixel = format == BaseFormat.RGBA ? 4 : 3;
 		if(colorType == 0 || colorType == 4){//greyscale
 			//if the bit depth is less than a byte then values need to be expanded
 			if(bitDepth < 8){
@@ -258,8 +275,17 @@ class PNG extends ImageParser{
 						//bitGroups-bitGroup-1
 						//when bitGroup is 0 for the above
 						int value = (int)(bitmask & (scanline[curByte] >>> (bitDepth*(bitGroups-bitGroup-1))));
+						//check if there is a trns chunk defined
+						if(trns != null){
+							//check if the value being processed has a value in the trns chunk
+							if(trns[0] == value){
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)0);
+							}else{//if not then there still needs to be a alpha value and this defaults to max opacity
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)255);
+							}
+						}
 						value = (int)(255*(value/(float)bitmask));
-						expandGrey(image, offset+3*curPixel, (byte)value);
+						expandGrey(image, offset+valuesPerPixel*curPixel, (byte)value);
 						curPixel += HORIZ_STRIDE;
 					}
 				}
@@ -269,15 +295,21 @@ class PNG extends ImageParser{
 				//values for calculating how the data is being read and stored
 				boolean isAlpha = colorType == 4;
 				int pixelStride = isAlpha ? 2 : 1;
-				int bufferedPixels = isAlpha ? 4 : 3;
 				
 				if(bitDepth == 8){
 					for(int curByte = 0; curByte < scanline.length; curByte += pixelStride){
 						//RGB
-						expandGrey(image, offset+bufferedPixels*curPixel, scanline[curByte]);
+						expandGrey(image, offset+valuesPerPixel*curPixel, scanline[curByte]);
 						
 						if(isAlpha){
-							expandGrey(image, offset+bufferedPixels*curPixel+1, scanline[curByte+1]);
+							expandGrey(image, offset+valuesPerPixel*curPixel+3, scanline[curByte+1]);
+						}else if(trns != null){
+							//check if the value being processed has a value in the trns chunk
+							if(trns[0] == scanline[curByte]){
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)0);
+							}else{//if not then there still needs to be a alpha value and this defaults to max opacity
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)255);
+							}
 						}
 						curPixel += HORIZ_STRIDE;
 					}
@@ -286,9 +318,18 @@ class PNG extends ImageParser{
 						int value = (int)(0xff & scanline[curByte]);
 						value <<= 8;
 						value += (int)(0xff & scanline[curByte+1]);
+						//check if there is a trns chunk defined
+						if(trns != null){
+							//check if the value being processed has a value in the trns chunk
+							if(trns[0] == value){
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)0);
+							}else{//if not then there still needs to be a alpha value and this defaults to max opacity
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)255);
+							}
+						}
 						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
 						//RGB
-						expandGrey(image, offset+bufferedPixels*curPixel, (byte)value);
+						expandGrey(image, offset+valuesPerPixel*curPixel, (byte)value);
 						
 						if(isAlpha){
 							value = (int)(0xff & scanline[curByte+2]);
@@ -296,7 +337,7 @@ class PNG extends ImageParser{
 							value += (int)(0xff & scanline[curByte+3]);
 							value = (int)Math.floor((255*(value/65535.0))+ 0.5);
 							//alpha
-							image.put(offset+bufferedPixels*curPixel+3, (byte)value);
+							image.put(offset+valuesPerPixel*curPixel+3, (byte)value);
 						}
 						curPixel += HORIZ_STRIDE;
 					}
@@ -308,24 +349,56 @@ class PNG extends ImageParser{
 			int pixelStride = isAlpha ? 4 : 3;
 			if(bitDepth == 8){
 				for(int curByte = 0; curByte < scanline.length; curByte += pixelStride){
-					int pixelIndex = offset+pixelStride*curPixel;
+					int pixelIndex = offset+valuesPerPixel*curPixel;
+					boolean matchTRNS = true;
 					//loop through the values and add them
 					for(int curRGBA = 0; curRGBA < pixelStride; curRGBA++){
 						byte value = scanline[curByte+curRGBA];
 						image.put(pixelIndex+curRGBA, (byte)value);
+						//check if there is a trns chunk defined
+						if(trns != null){
+							if(curRGBA < trns.length){//just in case a truecolor with an alpha writes a trns chunk
+								matchTRNS = matchTRNS && (trns[curRGBA] == (int)(0xff & value));
+							}
+						}
+					}
+					
+					//check if the value being processed has a value in the trns chunk
+					if(trns != null){
+						if(matchTRNS){
+							image.put(offset+valuesPerPixel*curPixel+3, (byte)0);
+						}else{//if not then there still needs to be a alpha value and this defaults to max opacity
+							image.put(offset+valuesPerPixel*curPixel+3, (byte)255);
+						}
 					}
 					curPixel += HORIZ_STRIDE;
 				}
 			}else{
 				for(int curByte = 0; curByte < scanline.length; curByte += 2*pixelStride){
-					int pixelIndex = offset+pixelStride*curPixel;
+					int pixelIndex = offset+valuesPerPixel*curPixel;
+					boolean matchTRNS = true;
 					//loop through the values and add them
 					for(int curRGBA = 0; curRGBA < 2*pixelStride; curRGBA+=2){
 						int value = (int)(0xff & scanline[curByte+curRGBA]);
 						value <<= 8;
 						value += (int)(0xff & scanline[curByte+curRGBA+1]);
+						//check if there is a trns chunk defined
+						if(trns != null){
+							if((curRGBA >> 1) < trns.length){//just in case a truecolor with an alpha writes a trns chunk
+								matchTRNS = matchTRNS && (trns[(curRGBA >> 1)] == value);
+							}
+						}
 						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
 						image.put(pixelIndex+(curRGBA >> 1), (byte)value);
+					}
+					
+					//check if the value being processed has a value in the trns chunk
+					if(trns != null){
+						if(matchTRNS){
+							image.put(offset+valuesPerPixel*curPixel+3, (byte)0);
+						}else{//if not then there still needs to be a alpha value and this defaults to max opacity
+							image.put(offset+valuesPerPixel*curPixel+3, (byte)255);
+						}
 					}
 					curPixel += HORIZ_STRIDE;
 				}
@@ -363,9 +436,18 @@ class PNG extends ImageParser{
 					//when bitGroup is 0 for the above
 					int index = bitmask & (scanline[curByte] >>> (bitDepth*(bitGroups-bitGroup-1)));
 //					System.out.println(index);
-					image.put(offset+3*curPixel, palette[3*index]);
-					image.put(offset+3*curPixel+1, palette[3*index+1]);
-					image.put(offset+3*curPixel+2, palette[3*index+2]);
+					image.put(offset+valuesPerPixel*curPixel, palette[3*index]);
+					image.put(offset+valuesPerPixel*curPixel+1, palette[3*index+1]);
+					image.put(offset+valuesPerPixel*curPixel+2, palette[3*index+2]);
+					
+					//check if there is a transparent chunk that was processed
+					if(trns != null){
+						//if there was then check if the current index has a specified alpha in the trns chunk
+						if(index < trns.length){
+							//if yes then add it
+							image.put(offset+valuesPerPixel*curPixel+3, (byte)trns[index]);
+						}
+					}
 					curPixel += HORIZ_STRIDE;
 				}
 			}
@@ -378,17 +460,8 @@ class PNG extends ImageParser{
 		for(int curPass = 0; curPass < 7; curPass++){
 			adam7Offsets(curPass);
 			//calculate the width and height of the current pass subimage
-			int pixelsWide = (int)Math.ceil(width/(float)HORIZ_STRIDE);
-			int pixelsHigh = (int)Math.ceil(height/(float)VERT_STRIDE);
-			//determine if the starting offset will eliminate the ending pixel of the scanline, since it would end up out of bounds for the image dimensions
-
-//			if(pixelsWide*HORIZ_STRIDE+LEFT_OFFSET > width){
-//				pixelsWide--;
-//			}
-//			if(pixelsHigh*VERT_STRIDE+TOP_OFFSET > height){
-//				pixelsHigh--;
-//			}
-			System.out.println("Pixelsdimensions: "+pixelsWide+", "+pixelsHigh);
+			int pixelsWide = width/HORIZ_STRIDE;
+			int pixelsHigh = height/VERT_STRIDE;
 			//size of an unfiltered scanline, no difference to a filtered scanlines size
 			int scanlineSize = (int)Math.ceil(pixelsWide*samplesPerPixel*(bitDepth/8.0f));
 			byte[] prevScanline = new byte[scanlineSize];
@@ -398,7 +471,6 @@ class PNG extends ImageParser{
 			for(int curScanline = 0; curScanline < pixelsHigh; curScanline++){
 				int scanlineOffset = subImageOffset+curScanline*(scanlineSize+1);
 				byte filterType = imageData[scanlineOffset];
-				System.out.println(filterType);
 				//shift the scanline parsing 1 byte to allow the reading of the first byte which indicates filter type
 				for(int curByte = 1; curByte < scanlineSize+1; curByte++){
 					//pre compute indices for filtered byte data
@@ -421,9 +493,7 @@ class PNG extends ImageParser{
 				prevScanline = currentScanline;
 				currentScanline = temp;
 			}
-//			System.out.println("pass: "+curPass+" complete");
 			subImageOffset += pixelsHigh*(scanlineSize+1);//plus one to account for the filter byte
-//			System.out.println(subImageOffset);
 		}
 	}
 	
@@ -578,4 +648,31 @@ class PNG extends ImageParser{
 		}
 	}
 	
+	private void parseTRNS(int chunkLength) throws IOException{
+		switch(colorType){
+			case 0://greyscale
+				trns = new int[1];
+				trns[0] |= imageStream.readByte();
+				trns[0] = (trns[0] << 8) | imageStream.readByte();
+				break;
+			case 2://truecolor
+				trns = new int[3];
+				//R
+				trns[0] |= imageStream.readByte();
+				trns[0] = (trns[0] << 8) | imageStream.readByte();
+				//G
+				trns[1] |= imageStream.readByte();
+				trns[1] = (trns[1] << 8) | imageStream.readByte();
+				//B
+				trns[2] |= imageStream.readByte();
+				trns[2] = (trns[2] << 8) | imageStream.readByte();
+				break;
+			case 3://indexed
+				trns = new int[chunkLength];
+				for(int curByte = 0; curByte < chunkLength; curByte++){
+					trns[curByte] |= imageStream.readByte();
+				}
+				break;
+		}
+	}
 }
