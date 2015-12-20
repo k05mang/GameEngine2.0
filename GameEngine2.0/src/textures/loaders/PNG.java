@@ -21,14 +21,12 @@ class PNG extends ImageParser{
 	private byte bitDepth, colorType, compression, filter, interlace;
 	private byte[] palette;
 	private int[] trns;
-	//TODO adam 7 interlacing on NPOT, and ancilliary chunks
 	private int 
 	LEFT_OFFSET,
 	HORIZ_STRIDE,
 	TOP_OFFSET,
 	VERT_STRIDE;
-	
-	
+
 	PNG(File image) throws IOException, FileFormatException{
 		super(image);
 		
@@ -73,10 +71,7 @@ class PNG extends ImageParser{
 		compression = imageStream.readByte();
 		filter = imageStream.readByte();
 		interlace = imageStream.readByte();
-
-		System.out.println(colorType);
-		System.out.println(bitDepth);
-		System.out.println(interlace);
+		
 		//determine the format and type of the pixel data
 		switch(colorType){
 			case 0://greyscale
@@ -120,10 +115,8 @@ class PNG extends ImageParser{
 		do{
 			//get chunk length
 			int chunkLength = imageStream.readInt();
-//			System.out.println(chunkLength);
 			//get chunk type
 			chunkType = new String(new byte[]{imageStream.readByte(), imageStream.readByte(), imageStream.readByte(), imageStream.readByte()});
-//			System.out.println(chunkType);
 			
 			switch(chunkType){
 				case "IDAT":
@@ -147,7 +140,6 @@ class PNG extends ImageParser{
 					parseTRNS(chunkLength);
 					format = BaseFormat.RGBA;
 					bufferStride = width*4;
-//					System.out.println(chunkType);
 					break;
 				default:
 					imageStream.skipBytes(chunkLength);//until implemented ignore other non critical chunks
@@ -180,14 +172,6 @@ class PNG extends ImageParser{
 		}
 		//decompress the data
 		imageData = decompress(imageData);
-//		System.out.println(imageData.length);
-//		System.out.println(width*height*samplesPerPixel);
-		for(int curRow = 0; curRow < imageData.length; curRow++){
-			System.out.print(imageData[curRow]+" ");
-			if(curRow%12 == 0){
-				System.out.println();
-			}
-		}
 		//process the data
 		if(interlace == 0){
 			process(image, imageData);
@@ -435,7 +419,6 @@ class PNG extends ImageParser{
 					//bitGroups-bitGroup-1
 					//when bitGroup is 0 for the above
 					int index = bitmask & (scanline[curByte] >>> (bitDepth*(bitGroups-bitGroup-1)));
-//					System.out.println(index);
 					image.put(offset+valuesPerPixel*curPixel, palette[3*index]);
 					image.put(offset+valuesPerPixel*curPixel+1, palette[3*index+1]);
 					image.put(offset+valuesPerPixel*curPixel+2, palette[3*index+2]);
@@ -460,8 +443,15 @@ class PNG extends ImageParser{
 		for(int curPass = 0; curPass < 7; curPass++){
 			adam7Offsets(curPass);
 			//calculate the width and height of the current pass subimage
-			int pixelsWide = width/HORIZ_STRIDE;
-			int pixelsHigh = height/VERT_STRIDE;
+			int pixelsWide = (int)Math.ceil(width/(float)HORIZ_STRIDE);
+			int pixelsHigh = (int)Math.ceil(height/(float)VERT_STRIDE);
+			//check if the last pixel is overhang from the up rounding
+			if((pixelsWide-1)*HORIZ_STRIDE+LEFT_OFFSET >= width){
+				pixelsWide--;
+			}
+			if((pixelsHigh-1)*VERT_STRIDE+TOP_OFFSET >= height){
+				pixelsHigh--;
+			}
 			//size of an unfiltered scanline, no difference to a filtered scanlines size
 			int scanlineSize = (int)Math.ceil(pixelsWide*samplesPerPixel*(bitDepth/8.0f));
 			byte[] prevScanline = new byte[scanlineSize];
@@ -497,6 +487,10 @@ class PNG extends ImageParser{
 		}
 	}
 	
+	/**
+	 * Sets the fields that handle 
+	 * @param pass
+	 */
 	private void adam7Offsets(int pass){
 		switch(pass){
 		//values meaning from top to bottom
@@ -648,6 +642,12 @@ class PNG extends ImageParser{
 		}
 	}
 	
+	/**
+	 * Parses the tRNS chunk and initializes the trns array for use with the image
+	 * 
+	 * @param chunkLength Length of the tRNS chunk
+	 * @throws IOException
+	 */
 	private void parseTRNS(int chunkLength) throws IOException{
 		switch(colorType){
 			case 0://greyscale
