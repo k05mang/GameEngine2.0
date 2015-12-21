@@ -1,8 +1,5 @@
 package textures.loaders;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -13,10 +10,17 @@ import java.util.zip.Inflater;
 import org.lwjgl.BufferUtils;
 
 import textures.enums.BaseFormat;
-import textures.enums.InternalFormat;
 import textures.enums.TexDataType;
 
-class PNG extends ImageParser{
+/**
+ * A subclass of ImageParser that specializes in parsing PNG file and constructing a ByteBuffer from the image data such that
+ * the buffer can be passed to an OpenGL context without worry of image flipping. Additionally information about the image data
+ * resulting from parsing the file is attainable for use with OpenGL contexts.
+ * 
+ * @author Kevin Mango
+ *
+ */
+class PNGDecoder extends ImageParser{
 	private int samplesPerPixel, bufferStride;
 	private byte bitDepth, colorType, compression, filter, interlace;
 	private byte[] palette;
@@ -27,7 +31,14 @@ class PNG extends ImageParser{
 	TOP_OFFSET,
 	VERT_STRIDE;
 
-	PNG(File image) throws IOException, FileFormatException{
+	/**
+	 * Constructs this PNG file decoder with the given file as a target
+	 * 
+	 * @param image File to parse
+	 * @throws IOException
+	 * @throws FileFormatException
+	 */
+	PNGDecoder(File image) throws IOException, FileFormatException{
 		super(image);
 		
 		LEFT_OFFSET = 0;
@@ -190,6 +201,12 @@ class PNG extends ImageParser{
 		return image;
 	}
 	
+	/**
+	 * Processes the decompressed, raw image data and stores it into the given ByteBuffer
+	 * 
+	 * @param image ByteBuffer to store the image data into
+	 * @param imageData Raw image data to process
+	 */
 	private void process(ByteBuffer image, byte[] imageData){
 		//size of an unfiltered scanline
 		int scanlineSize = (int)Math.ceil(width*samplesPerPixel*(bitDepth/8.0f));
@@ -224,6 +241,14 @@ class PNG extends ImageParser{
 		}
 	}
 	
+	/**
+	 * Processes a single scanline of the raw image data and stores it into the given ByteBuffer, in the case of adam7 interlacing the scanlines are
+	 * distributed based on the adam7 pattern allowing for proper image reconstruction.
+	 * 
+	 * @param image ByteBuffer to store the image data
+	 * @param scanline Image scanline data to buffer into the ByteBuffer
+	 * @param scanlineIndex Index of the currently processed scanline
+	 */
 	private void processScanline(ByteBuffer image, byte[] scanline, int scanlineIndex){
 		int offset = ((height-1-TOP_OFFSET)-scanlineIndex*VERT_STRIDE)*bufferStride;//current scanline to start buffering to in the image buffer
 		int curPixel = LEFT_OFFSET;
@@ -429,6 +454,8 @@ class PNG extends ImageParser{
 						if(index < trns.length){
 							//if yes then add it
 							image.put(offset+valuesPerPixel*curPixel+3, (byte)trns[index]);
+						}else{
+							image.put(offset+valuesPerPixel*curPixel+3, (byte)255);
 						}
 					}
 					curPixel += HORIZ_STRIDE;
@@ -437,6 +464,12 @@ class PNG extends ImageParser{
 		}
 	}
 	
+	/**
+	 * Processes the raw decompressed image data for png's with adam7 interlacing
+	 * 
+	 * @param image ByteBuffer to store the image data into
+	 * @param imageData Raw, uncompressed image data to process
+	 */
 	private void processAdam7(ByteBuffer image, byte[] imageData){
 		//perform the seven passes of the adam 7 algorithm
 		int subImageOffset = 0;
@@ -488,8 +521,9 @@ class PNG extends ImageParser{
 	}
 	
 	/**
-	 * Sets the fields that handle 
-	 * @param pass
+	 * Sets the fields that handle offsets and strides for the different passes of the adam7 algorithm
+	 * 
+	 * @param pass Which pass of the adam7 algorithm that is being performed
 	 */
 	private void adam7Offsets(int pass){
 		switch(pass){
