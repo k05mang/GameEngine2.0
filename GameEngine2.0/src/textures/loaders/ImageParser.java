@@ -27,7 +27,7 @@ public abstract class ImageParser {
 	 * @param file File to parse into raw image data for use with OpenGL
 	 * @throws FileNotFoundException
 	 */
-	ImageParser(File file) throws FileNotFoundException{
+	ImageParser(File file) throws IOException{
 		imageStream = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
 		//setup default information
 		format = BaseFormat.RGBA;
