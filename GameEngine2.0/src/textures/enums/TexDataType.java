@@ -2,6 +2,7 @@ package textures.enums;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
+import static org.lwjgl.opengl.GL30.*;
 
 public enum TexDataType {
 	UBYTE(GL_UNSIGNED_BYTE),
@@ -10,6 +11,7 @@ public enum TexDataType {
 	SHORT(GL_SHORT),
 	UINT(GL_UNSIGNED_INT),
 	INT(GL_INT),
+	HALF_FLOAT(GL_HALF_FLOAT),
 	FLOAT(GL_FLOAT),
 	UBYTE_3_3_2(GL_UNSIGNED_BYTE_3_3_2),
 	UBYTE_2_3_3_REV(GL_UNSIGNED_BYTE_2_3_3_REV),
@@ -22,7 +24,11 @@ public enum TexDataType {
 	UINT_8_8_8_8(GL_UNSIGNED_INT_8_8_8_8),
 	UINT_8_8_8_8_REV(GL_UNSIGNED_INT_8_8_8_8_REV),
 	UINT_10_10_10_2(GL_UNSIGNED_INT_10_10_10_2),
-	UINT_2_10_10_10_REV(GL_UNSIGNED_INT_2_10_10_10_REV);
+	UINT_2_10_10_10_REV(GL_UNSIGNED_INT_2_10_10_10_REV),
+	UINT_24_8(GL_UNSIGNED_INT_24_8),
+	UINT_10F_11F_11F_REV(GL_UNSIGNED_INT_10F_11F_11F_REV),
+	UINT_5_9_9_9_REV(GL_UNSIGNED_INT_5_9_9_9_REV),
+	FLOAT_32_UINT_24_8_REV(GL_FLOAT_32_UNSIGNED_INT_24_8_REV);
 
 	public final int value;
 	
