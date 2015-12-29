@@ -258,18 +258,7 @@ class PNGDecoder extends ImageParser{
 			if(bitDepth < 8){
 				//decide the bitmask to use when getting the bits from the byte below
 				//this makes sure that the left bits don't get copied when a shift occurs on middle bit values
-				byte bitmask = 0;
-				switch(bitDepth){
-					case 1:
-						bitmask = 0b0000_0001;
-						break;
-					case 2:
-						bitmask = 0b0000_0011;
-						break;
-					case 4:
-						bitmask = 0b0000_1111;
-						break;
-				}
+				byte bitmask = (byte)(255 >> 8-bitDepth);
 				int bitGroups = 8/bitDepth;//number of groups of bits we need to shift and copy on the current byte
 				for(int curByte = 0; curByte < scanline.length; curByte++){
 					for(int bitGroup = 0; bitGroup < bitGroups; bitGroup++){
@@ -415,21 +404,7 @@ class PNGDecoder extends ImageParser{
 		}else{//indexed
 			//decide the bitmask to use when getting the bits from the byte below
 			//this makes sure that the left bits don't get copied when a shift occurs on middle bit values
-			int bitmask = 0;
-			switch(bitDepth){
-				case 1:
-					bitmask = 0b0000_0001;
-					break;
-				case 2:
-					bitmask = 0b0000_0011;
-					break;
-				case 4:
-					bitmask = 0b0000_1111;
-					break;
-				case 8:
-					bitmask = 0b1111_1111;
-					break;
-			}
+			int bitmask = 255 >> 8-bitDepth;
 			int bitGroups = 8/bitDepth;//number of groups of bits we need to shift and copy on the current byte
 			for(int curByte = 0; curByte < scanline.length; curByte++){
 				for(int bitGroup = 0; bitGroup < bitGroups; bitGroup++){

@@ -34,6 +34,8 @@ public abstract class ImageLoader {
 			//check to make sure the file has the png extension
 			if(file.getName().toLowerCase().contains(".png")){
 				decoder = new PNGDecoder(file);
+			}else if(file.getName().toLowerCase().contains(".tga")){
+				decoder = new TGADecoder(file);
 			}
 			int width = decoder.getWidth();
 			int height = decoder.getHeight();
@@ -100,6 +102,8 @@ public abstract class ImageLoader {
 					String filename = files.get(curFile).getName().toLowerCase();
 					if(filename.contains(".png")){
 						 decoder = new PNGDecoder(files.get(curFile));
+					}else if(filename.contains(".tga")){
+						decoder = new TGADecoder(files.get(curFile));
 					}
 					//check if we are on the first file and initialize the width and height checks
 					if(curFile == 0){
