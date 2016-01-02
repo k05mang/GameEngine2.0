@@ -1,8 +1,6 @@
 package textures.loaders;
 
-import java.awt.Color;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.zip.DataFormatException;
@@ -18,10 +16,15 @@ public class TGADecoder extends ImageParser {
 			COLOR_MAPPED = 1,
 			TRUE_COLOR = 2,
 			GREYSCALE = 3;
-	private int imageType, colorMapStart, colorMapLength, colorMapBitDepth, pixelBitDepth, bufferStride;
+	private int imageType, colorMapStart, colorMapLength, colorMapBitDepth, pixelBitDepth, bufferPixelElements;
 	private boolean isRLE, startTop, startLeft;
 	private byte[] colorMap;
 	
+	/**
+	 * Constructs a decoder for TGA image files
+	 * @param file
+	 * @throws IOException
+	 */
 	public TGADecoder(File file) throws IOException {
 		super(file);
 		//byte ordering is from least to most signif
@@ -61,39 +64,33 @@ public class TGADecoder extends ImageParser {
 		
 		colorMap = null;
 		
-		bufferStride = width;
-		
 		if(hasColorMap){
 			parseColorMap();
 		}
-		
-//		System.out.println(startTop);
-//		System.out.println(startLeft);
-//		System.out.println(pixelBitDepth);
 		
 		if(imageType == COLOR_MAPPED){
 			if(colorMapBitDepth < 32){
 				format = BaseFormat.RGB;
 				type = TexDataType.UBYTE;
-				bufferStride *= 3;
+				bufferPixelElements = 3;
 			}else{
 				format = BaseFormat.RGBA;
 				type = TexDataType.UBYTE;
-				bufferStride <<= 2;
+				bufferPixelElements = 4;
 			}
 		}else if(imageType == TRUE_COLOR){
 			//if the number of bytes per pixel is 3 then it's RGB otherwise RGBA
 			if(pixelBitDepth < 32){
 				format = BaseFormat.BGR;
-				bufferStride *= 3;
+				bufferPixelElements = 3;
 			}else{
 				format = BaseFormat.BGRA;
-				bufferStride <<= 2;
+				bufferPixelElements = 4;
 			}
 			type = TexDataType.UBYTE;
 		}else{
 			format = BaseFormat.RGB;
-			bufferStride *= 3;
+			bufferPixelElements = 3;
 			type = TexDataType.UBYTE;
 		}
 	}
@@ -128,35 +125,15 @@ public class TGADecoder extends ImageParser {
 
 	@Override
 	public ByteBuffer parse() throws IOException, DataFormatException {
-		ByteBuffer image = BufferUtils.createByteBuffer(height*bufferStride);
+		ByteBuffer image = BufferUtils.createByteBuffer(height*width*bufferPixelElements);
 		int bytesPerPixel = (int)Math.ceil(pixelBitDepth/8.0f);
 		byte[] pixelBuffer = new byte[bytesPerPixel];
 		int overflowOffset = 0;//offset in case the RLE line wraps based on allowances from the old specification, this offset is in pixels not bytes
-		int valuesPerFinalPixel = 0;
-		switch(imageType){
-			case COLOR_MAPPED:
-				if(colorMapBitDepth < 32){
-					valuesPerFinalPixel = 3;
-				}else{
-					valuesPerFinalPixel = 4;
-				}
-				break;
-			case TRUE_COLOR:
-				if(pixelBitDepth < 32){
-					valuesPerFinalPixel = 3;
-				}else{
-					valuesPerFinalPixel = 4;
-				}
-				break;
-			case GREYSCALE:
-				valuesPerFinalPixel = 3;
-				break;
-		}
 		int horizOffset, vertOffset, offset;
 		//go through each scanline of the image data
 		for(int curScanline = 0; curScanline < height; curScanline++){
 			//calculate offsets based on the origin of the image
-			vertOffset = (startTop ? height-1-curScanline : curScanline)*bufferStride;
+			vertOffset = (startTop ? height-1-curScanline : curScanline)*width*bufferPixelElements;
 			for(int curPixel = 0; curPixel < width; curPixel++){
 				//determine what type of image we are working with and decide how to handle the data
 				if(isRLE){
@@ -169,7 +146,7 @@ public class TGADecoder extends ImageParser {
 						
 						//buffer count pixels of data
 						for(int curRLE = 0; curRLE < count; curRLE++){
-							horizOffset = (startTop ? width-1-(curRLE+overflowOffset) : curRLE+overflowOffset)*valuesPerFinalPixel;
+							horizOffset = (startLeft ? curRLE+overflowOffset : width-1-(curRLE+overflowOffset))*bufferPixelElements;
 							//buffer the bytes for the pixel
 							for(int curByte = 0; curByte < bytesPerPixel; curByte++){
 								pixelBuffer[curByte] = imageStream.readByte();
@@ -196,7 +173,7 @@ public class TGADecoder extends ImageParser {
 						
 						//buffer count pixels of data
 						for(int curRLE = 0; curRLE < count; curRLE++){
-							horizOffset = (startTop ? width-1-(curRLE+overflowOffset) : curRLE+overflowOffset)*valuesPerFinalPixel;
+							horizOffset = (startLeft ? curRLE+overflowOffset : width-1-(curRLE+overflowOffset))*bufferPixelElements;
 							
 							//calculate the final offset
 							offset = vertOffset+horizOffset;
@@ -212,7 +189,7 @@ public class TGADecoder extends ImageParser {
 					}
 				}else{
 					//calculate the horizontal offset
-					horizOffset = (startTop ? width-1-curPixel : curPixel)*valuesPerFinalPixel;
+					horizOffset = (startLeft ? curPixel : width-1-curPixel)*bufferPixelElements;
 					
 					//calculate the final offset
 					offset = vertOffset+horizOffset;
@@ -225,6 +202,11 @@ public class TGADecoder extends ImageParser {
 			}
 		}
 		image.flip();
+		try {
+			imageStream.close();
+		} catch (Exception e) {
+			return image;
+		}
 		return image;
 	}
 	
