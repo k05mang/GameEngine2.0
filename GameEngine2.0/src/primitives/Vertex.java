@@ -140,6 +140,39 @@ public class Vertex{
 //	}
 	
 	/**
+	 * Sets this vertex to the given vertex. All values from the given vertex are copied into this vertex
+	 * this means that if this vertex did not have any tangent or bitangents defined and the given vertex
+	 * does then this vertex will gain the given vertex's tangent and bitangent.
+	 * 
+	 * @param vert Vertex to set this vertex equivalent to
+	 */
+	public void set(Vertex vert){
+		pos.set(vert.pos);
+		normal.set(vert.normal);
+		textCoords.set(vert.textCoords);
+		
+		//check if the vertex being passed has a bitangent to set this one with
+		if(vert.bitangent != null){
+			//check if we initialized a bitangent or not 
+			if(bitangent == null){
+				bitangent = new Vec3(vert.bitangent);
+			}else{
+				bitangent.set(vert.bitangent);
+			}
+		}
+		
+		//check if the vertex being passed has a tangent to set this one with
+		if(vert.tangent != null){
+			//check if we initialized a tangent or not 
+			if(tangent == null){
+				tangent = new Vec3(vert.tangent);
+			}else{
+				tangent.set(vert.tangent);
+			}
+		}
+	}
+	
+	/**
 	 * Gets the position for this vertex
 	 * 
 	 * @return The position of this vertex as a 3 component vector

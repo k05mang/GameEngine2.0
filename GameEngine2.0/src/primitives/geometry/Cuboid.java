@@ -146,13 +146,19 @@ public final class Cuboid extends Renderable {
 			}
 			vao.setIndexBuffer(modes[0]);
 		}
+
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0, 0);//uv
+		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
+		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
-		//tell the vao the vertex buffer to use
-		vao.setVertexBuffer("default", 0);
+		//register the vbo with the vao
+		vao.registerVBO("default");
+
+		//tell the vao what vbo to use for each attribute
+		vao.setAttribVBO(0, "default");
+		vao.setAttribVBO(1, "default");
+		vao.setAttribVBO(2, "default");
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);

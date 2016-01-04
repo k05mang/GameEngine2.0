@@ -85,18 +85,7 @@ public final class Torus extends Renderable {
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
-		IndexBuffer.IndexType dataType = null;
-		
-		//determine what data type the index buffer should be
-		if(mesh.getNumVertices() < Byte.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.BYTE;
-		}else if(mesh.getNumVertices() < Short.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.SHORT;
-		}else if(mesh.getNumVertices() < Integer.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.INT;
-		}else{
-			//TODO handle when the number of vertices and indices would exceed the max value
-		}
+		IndexBuffer.IndexType dataType = getIndexType(mesh.getNumVertices());
 		
 		IndexBuffer indices = new IndexBuffer(dataType);
 		ibos.add(indices);
@@ -114,12 +103,17 @@ public final class Torus extends Renderable {
 			vao.setIndexBuffer(modes[0]);
 		}
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0, 0);//uv
+		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
+		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
-		//tell the vao the vertex buffer to use
-		vao.setVertexBuffer("default", 0);
+		//register the vbo with the vao
+		vao.registerVBO("default");
+
+		//tell the vao what vbo to use for each attribute
+		vao.setAttribVBO(0, "default");
+		vao.setAttribVBO(1, "default");
+		vao.setAttribVBO(2, "default");
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);

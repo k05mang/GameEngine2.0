@@ -78,6 +78,31 @@ public class Mesh {
 	}
 	
 	/**
+	 * Empties all the data of this mesh and resets it to when it was initialized
+	 */
+	public void empty(){
+		vertices.clear();
+		faces.clear();
+		edgeMap.clear();
+	}
+	
+	/**
+	 * Sets the value of the vertex at {@code index} to the given value {@code vert}
+	 * 
+	 * @param index Index of the vertex to modify
+	 * @param vert Vertex to set the vertex at {@code index} to
+	 * @return True if the value was set, false if the index was out of bounds
+	 */
+	public boolean setVertex(int index, Vertex vert){
+		if(index < 0 || index > vertices.size()-1){
+			return false;
+		}else{
+			vertices.get(index).set(vert);
+			return true;
+		}
+	}
+	
+	/**
 	 * Gets the number of vertices stored in this mesh
 	 * 
 	 * @return Number of vertices in this mesh

@@ -182,6 +182,20 @@ public class Vec3 implements Vector {
 	}
 	
 	@Override
+	public float valueAt(int index) throws IndexOutOfBoundsException{
+		switch(index){
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+			default:
+				throw new IndexOutOfBoundsException("Value at index: "+index+" is out of bounds for a Vec3");
+		}
+	}
+	
+	@Override
 	public Vec3 set(int index, float value){
 		switch(index){
 			case 0:

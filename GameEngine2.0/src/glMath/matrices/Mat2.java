@@ -185,6 +185,30 @@ public class Mat2 implements Matrix {
 	}
 	
 	@Override
+	public float valueAt(int index) throws IndexOutOfBoundsException{
+		//decide what vector to read from
+		switch(index/4){
+			case 0:
+				//decide what value from that vector to get
+				switch(index%4){
+					case 0:
+						return matrix[0].x;
+					case 1:
+						return matrix[0].y;
+				}
+			case 1:
+				switch(index%4){
+					case 0:
+						return matrix[1].x;
+					case 1:
+						return matrix[1].y;
+				}
+			default:
+				throw new IndexOutOfBoundsException("Value at index: "+index+" is out of bounds for a Mat2");
+		}
+	}
+	
+	@Override
 	public void setColumn(int index, Vector column){
 		if(index < matrix.length && column instanceof Vec2){
 			matrix[index].set(column);

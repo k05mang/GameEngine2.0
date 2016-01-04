@@ -1,6 +1,10 @@
 package gldata;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL33.*;
+
+import java.util.ArrayList;
 
 public enum AttribType {
 	BYTE(1, 1, GL_BYTE),
@@ -43,7 +47,11 @@ public enum AttribType {
 
 	DMAT4(16, 128, GL_DOUBLE),
 	DMAT4x2(8, 64, GL_DOUBLE),
-	DMAT4x3(12, 96, GL_DOUBLE);
+	DMAT4x3(12, 96, GL_DOUBLE),
+	
+	INT_2_10_10_10_REV(4, 4, GL_INT_2_10_10_10_REV),
+	UINT_2_10_10_10_REV(4, 4, GL_UNSIGNED_INT_2_10_10_10_REV),
+	UINT_10F_11F_11F_REV(3, 4, GL_UNSIGNED_INT_10F_11F_11F_REV);
 
 	public final int bytes, size, type;
 	
@@ -51,5 +59,180 @@ public enum AttribType {
 		this.size = size;
 		this.bytes = bytes;
 		this.type = type;
+	}
+	
+	/**
+	 * Decomposes this AttribType into smaller AttribTypes if it is necessary, (i.e. Mat4 = 4 Vec4)
+	 * 
+	 * @param attributes ArrayList to add the decomposed attributes to
+	 */
+	public void decompose(ArrayList<AttribType> attributes){
+		//check if the attribute is a matrix or double vector greater than 2 and decompose it into simpler types so that they can be passed to the GPU
+		switch (this) {
+			case DVEC3:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				break;
+			case DVEC4:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case MAT2:
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				break;
+			case MAT2x3:
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				break;
+			case MAT2x4:
+				attributes.add(AttribType.VEC4);
+				attributes.add(AttribType.VEC4);
+				break;
+
+			case MAT3:
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				break;
+			case MAT3x2:
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				break;
+			case MAT3x4:
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				break;
+
+			case MAT4:
+				attributes.add(AttribType.VEC4);
+				attributes.add(AttribType.VEC4);
+				attributes.add(AttribType.VEC4);
+				attributes.add(AttribType.VEC4);
+				break;
+			case MAT4x2:
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				attributes.add(AttribType.VEC2);
+				break;
+			case MAT4x3:
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				attributes.add(AttribType.VEC3);
+				break;
+
+			case DMAT2:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case DMAT2x3:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				break;
+			case DMAT2x4:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+
+			case DMAT3:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				break;
+			case DMAT3x2:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case DMAT3x4:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+
+			case DMAT4:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case DMAT4x2:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DVEC2);
+				break;
+			case DMAT4x3:
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				
+				attributes.add(AttribType.DVEC2);
+				attributes.add(AttribType.DOUBLE);
+				break;
+			default:
+				attributes.add(this);
+				break;
+		}
+	}
+	
+	/**
+	 * Determines whether this AttribType is a double type
+	 * 
+	 * @return True if this AttribType is a double type, false otherwise
+	 */
+	public boolean isDouble(){
+		return this.type == GL_DOUBLE;
+		
+	}
+	
+	/**
+	 * Determines whether this AttribType is a float type
+	 * 
+	 * @return True if this AttribType is a float type, false otherwise
+	 */
+	public boolean isFloat(){
+		return this.type == GL_HALF_FLOAT ||
+				this.type == GL_FLOAT ||
+				this.type == GL_UNSIGNED_INT_10F_11F_11F_REV;
+	}
+	
+	/**
+	 * Determines whether this AttribType is a integer type
+	 * 
+	 * @return True if this AttribType is a integer type, false otherwise
+	 */
+	public boolean isInt(){
+		return !isDouble() && !isFloat();
 	}
 }

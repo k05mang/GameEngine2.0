@@ -111,6 +111,8 @@ public interface Matrix {
 	 */
 	public Vector col(int index);
 	
+	public float valueAt(int index) throws IndexOutOfBoundsException;
+	
 	/**
 	 * Sets the column of this matrix at index to the given Vector
 	 * 

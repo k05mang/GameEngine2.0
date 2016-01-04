@@ -31,6 +31,23 @@ public class Window {
 	public int width, height, xpos, ypos, fbWidth, fbHeight;
 	public double cursorX, cursorY;
 	private HashMap<WindowHint, Integer> windowHints;
+	//keyboard callabcks
+	private GLFWKeyCallback key;
+	private GLFWCharCallback charCall;
+	private GLFWCharModsCallback charMods;
+	//mouse callbacks
+	private GLFWMouseButtonCallback mButton;
+	private GLFWCursorPosCallback cPos;
+	private GLFWCursorEnterCallback cEnter;
+	private GLFWScrollCallback scroll;
+	//window callbacks
+	private GLFWWindowCloseCallback close;
+	private GLFWWindowIconifyCallback icon;
+	private GLFWWindowRefreshCallback refresh;
+	private GLFWWindowPosCallback wPos;
+	private GLFWWindowSizeCallback wSize;
+	private GLFWWindowFocusCallback focus;
+	private GLFWFramebufferSizeCallback fbSize;
 	
 	public Window(int width, int height){
 		window = -1L;
@@ -138,10 +155,14 @@ public class Window {
 	 */
 	public void setKeyboardCallback(KeyEvent callback){
 		keyboard = new KeyboardHandler(callback, this);//create the handler for calling the right methods on the events
+		//cache the callbacks to prevent garbage collection
+		key = GLFWKeyCallback.create(keyboard);
+		charCall = GLFWCharCallback.create(keyboard);
+		charMods = GLFWCharModsCallback.create(keyboard);
 		//bind the callbacks to the window
-		glfwSetCharCallback(window, GLFWCharCallback.create(keyboard));
-		glfwSetCharModsCallback(window, GLFWCharModsCallback.create(keyboard));
-		glfwSetKeyCallback(window, GLFWKeyCallback.create(keyboard));
+		glfwSetCharCallback(window, charCall);
+		glfwSetCharModsCallback(window, charMods);
+		glfwSetKeyCallback(window, key);
 	}
 	
 	/**
@@ -151,11 +172,16 @@ public class Window {
 	 */
 	public void setMouseCallback(MouseEvent callback){
 		mouse = new MouseHandler(callback, this);//create the handler for calling the right methods on the events
+		//cache the callbacks to prevent garbage collection
+		mButton = GLFWMouseButtonCallback.create(mouse);
+		cPos = GLFWCursorPosCallback.create(mouse);
+		cEnter = GLFWCursorEnterCallback.create(mouse);
+		scroll = GLFWScrollCallback.create(mouse.scroll);
 		//bind the callbacks to the window
-		glfwSetMouseButtonCallback(window, GLFWMouseButtonCallback.create(mouse));
-		glfwSetCursorPosCallback(window, GLFWCursorPosCallback.create(mouse));
-		glfwSetCursorEnterCallback(window, GLFWCursorEnterCallback.create(mouse));
-		glfwSetScrollCallback(window, GLFWScrollCallback.create(mouse.scroll));
+		glfwSetMouseButtonCallback(window, mButton);
+		glfwSetCursorPosCallback(window, cPos);
+		glfwSetCursorEnterCallback(window, cEnter);
+		glfwSetScrollCallback(window, scroll);
 	}
 
 	/**
@@ -165,14 +191,22 @@ public class Window {
 	 */
 	public void setWindowCallback(WindowEvent callback){
 		windowHandler = new WindowHandler(callback, this);//create the handler for calling the right methods on the events
+		//cache the callbacks to prevent garbage collection
+		close = GLFWWindowCloseCallback.create(windowHandler.close);
+		icon = GLFWWindowIconifyCallback.create(windowHandler.iconify);
+		refresh = GLFWWindowRefreshCallback.create(windowHandler.refresh);
+		wPos = GLFWWindowPosCallback.create(windowHandler.pos);
+		wSize = GLFWWindowSizeCallback.create(windowHandler.resize);
+		focus = GLFWWindowFocusCallback.create(windowHandler.focus);
+		fbSize = GLFWFramebufferSizeCallback.create(windowHandler.framebuffer);
 		//bind the callbacks to the window
-		glfwSetWindowCloseCallback(window, GLFWWindowCloseCallback.create(windowHandler.close));
-		glfwSetWindowIconifyCallback(window, GLFWWindowIconifyCallback.create(windowHandler.iconify));
-		glfwSetWindowRefreshCallback(window, GLFWWindowRefreshCallback.create(windowHandler.refresh));
-		glfwSetWindowPosCallback(window, GLFWWindowPosCallback.create(windowHandler.pos));
-		glfwSetWindowSizeCallback(window, GLFWWindowSizeCallback.create(windowHandler.resize));
-		glfwSetWindowFocusCallback(window, GLFWWindowFocusCallback.create(windowHandler.focus));
-		glfwSetFramebufferSizeCallback(window, GLFWFramebufferSizeCallback.create(windowHandler.framebuffer));
+		glfwSetWindowCloseCallback(window, close);
+		glfwSetWindowIconifyCallback(window, icon);
+		glfwSetWindowRefreshCallback(window, refresh);
+		glfwSetWindowPosCallback(window, wPos);
+		glfwSetWindowSizeCallback(window, wSize);
+		glfwSetWindowFocusCallback(window, focus);
+		glfwSetFramebufferSizeCallback(window, fbSize);
 	}
 	
 	/**

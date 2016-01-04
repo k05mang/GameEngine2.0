@@ -58,6 +58,8 @@ public interface Vector {
 	 */
 	public Vector scale(float factor);
 	
+	public float valueAt(int index) throws IndexOutOfBoundsException;
+	
 	/**
 	 * Sets the value at the given index to the given value
 	 * 

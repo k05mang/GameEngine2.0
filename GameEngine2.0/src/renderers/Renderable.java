@@ -115,6 +115,9 @@ public abstract class Renderable {
 	 */
 	public abstract void addMode(RenderMode mode);
 	
+	/**
+	 * Deletes all data from the GPU related to this Renderable object
+	 */
 	public void delete(){
 		vao.delete();
 		for(BufferObject buffer : vbos){
@@ -122,6 +125,26 @@ public abstract class Renderable {
 		}
 		for(IndexBuffer buffer : ibos){
 			buffer.delete();
+		}
+	}
+	
+	/**
+	 * Gets the IndexBuffer IndexType based on the given {@code size}, the value returned is to be passed to 
+	 * an IndexBuffer to decide the IndexType of the buffer.
+	 * 
+	 * @param size Max index being passed to an index buffer
+	 * @return IndexType for the given size
+	 */
+	protected IndexBuffer.IndexType getIndexType(int size){
+		//determine what data type the index buffer should be
+		if(size < Byte.MAX_VALUE){
+			return IndexBuffer.IndexType.BYTE;
+		}else if(size < Short.MAX_VALUE){
+			return IndexBuffer.IndexType.SHORT;
+		}else if(size < Integer.MAX_VALUE){
+			return IndexBuffer.IndexType.INT;
+		}else{
+			return null;
 		}
 	}
 }

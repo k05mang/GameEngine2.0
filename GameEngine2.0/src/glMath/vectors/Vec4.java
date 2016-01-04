@@ -218,6 +218,22 @@ public class Vec4 implements Vector {
 	}
 	
 	@Override
+	public float valueAt(int index) throws IndexOutOfBoundsException{
+		switch(index){
+			case 0:
+				return x;
+			case 1:
+				return y;
+			case 2:
+				return z;
+			case 3:
+				return w;
+			default:
+				throw new IndexOutOfBoundsException("Value at index: "+index+" is out of bounds for a Vec4");
+		}
+	}
+	
+	@Override
 	public Vec4 set(int index, float value){
 		switch(index){
 			case 0:

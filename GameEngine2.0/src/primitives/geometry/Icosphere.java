@@ -38,18 +38,7 @@ public final class Icosphere extends Renderable {
 		int clampedOrder = Math.max(0,  order);
 		int lastIndex = 11+((1 << (clampedOrder << 1))-1)*10;//11+(2^(clampedOrder*2)-1)*10
 		
-		IndexBuffer.IndexType dataType = null;
-
-		//determine what data type the index buffer should be
-		if(lastIndex < Byte.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.BYTE;
-		}else if(lastIndex < Short.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.SHORT;
-		}else if(lastIndex < Integer.MAX_VALUE){
-			dataType = IndexBuffer.IndexType.INT;
-		}else{
-			//TODO handle when the number of vertices and indices would exceed the max value
-		}
+		IndexBuffer.IndexType dataType = getIndexType(lastIndex);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
@@ -188,12 +177,17 @@ public final class Icosphere extends Renderable {
 			vao.setIndexBuffer(modes[0]);
 		}
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0, 0);//uv
+		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
+		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
 		
-		//tell the vao the vertex buffer to use
-		vao.setVertexBuffer("default", 0);
+		//register the vbo with the vao
+		vao.registerVBO("default");
+
+		//tell the vao what vbo to use for each attribute
+		vao.setAttribVBO(0, "default");
+		vao.setAttribVBO(1, "default");
+		vao.setAttribVBO(2, "default");
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);

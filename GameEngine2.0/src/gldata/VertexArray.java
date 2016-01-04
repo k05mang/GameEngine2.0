@@ -16,7 +16,8 @@ import renderers.RenderMode;
 
 public class VertexArray {
 
-	private int vaoId, stride;
+	private int vaoId, stride, highestBufferIndex;
+	private HashMap<String, Integer> bufferIndices;
 	private HashMap<String, BufferObject> vbos;
 	private HashMap<RenderMode, IndexBuffer> ibos;
 	private RenderMode ibo;
@@ -33,6 +34,9 @@ public class VertexArray {
 		ibos = new HashMap<RenderMode, IndexBuffer>();
 		ibo = null;
 		stride = 0;
+		
+		bufferIndices = new HashMap<String, Integer>();
+		highestBufferIndex = 0;
 	}
 	
 	/**
@@ -82,6 +86,8 @@ public class VertexArray {
 		//check that the buffer type is a valid type 
 		if(buffer.getType() == BufferType.ARRAY){
 			vbos.put(name, buffer);
+			bufferIndices.put(name, highestBufferIndex);
+			highestBufferIndex++;
 			return true;
 		}else{
 			return false;
@@ -89,16 +95,16 @@ public class VertexArray {
 	}
 	
 	/**
-	 * Sets the VertexBuffer of this VertexArray to the given name of a BufferObject stored in this VertexArray
+	 * Establishes the binding index for the Vertex Buffer Specified by {@code name} in this Vertex Array.
+	 * This function is essential for Vertex buffers to be able to be used with the Vertex array object.
 	 * 
-	 * @param name Name of the BufferObject to use as the vertex buffer for this VertexArray
-	 * @param bindingIndex Index to bind the vertex buffer object to on the gpu
-	 * @return True if the BufferObject with the given name exists in this VertexArray
+	 * @param name Name of the Vertex buffer in this Vertex array to bind to an index in the array
+	 * @return True if the name exists, false otherwise
 	 */
-	public boolean setVertexBuffer(String name, int bindingIndex){
+	public boolean registerVBO(String name){
 		//check to make sure the buffer being set exists
 		if(vbos.get(name) != null){
-			glVertexArrayVertexBuffer(vaoId, bindingIndex, vbos.get(name).getId(), 0, stride);
+			glVertexArrayVertexBuffer(vaoId, bufferIndices.get(name), vbos.get(name).getId(), 0, stride);
 			return true;
 		}else{
 			return false;
@@ -141,154 +147,40 @@ public class VertexArray {
 	 * @param type The glsl attribute type that will define how the attribute will behave
 	 * @param normalize Indicates whether the data being sent to the attribute should be normalized
 	 * @param divisor Attribute divisor that decides the frequency of updating the attribute from the vertex buffer
-	 * @param bufferIndex Index of the vertex buffer binding the attribute will read from
 	 */
-	public void addAttrib(int index, AttribType type, boolean normalize, int divisor, int bufferIndex){
-
+	public void addAttrib(int index, AttribType type, boolean normalize, int divisor){
 		ArrayList<AttribType> attributes = new ArrayList<AttribType>();
-		//check if the attribute is a matrix or double vector greater than 2 and decompose it into simpler types so that they can be passed to the GPU
-		switch (type) {
-			case DVEC3:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-				break;
-			case DVEC4:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				break;
-			case MAT2:
-				attributes.add(AttribType.VEC2);
-				attributes.add(AttribType.VEC2);
-				break;
-			case MAT2x3:
-				attributes.add(AttribType.VEC3);
-				attributes.add(AttribType.VEC3);
-				break;
-			case MAT2x4:
-				attributes.add(AttribType.VEC4);
-				attributes.add(AttribType.VEC4);
-				break;
-
-			case MAT3:
-				attributes.add(AttribType.VEC3);
-				attributes.add(AttribType.VEC3);
-				attributes.add(AttribType.VEC3);
-				break;
-			case MAT3x2:
-				attributes.add(AttribType.VEC2);
-				attributes.add(AttribType.VEC2);
-				attributes.add(AttribType.VEC2);
-				break;
-			case MAT3x4:
-				attributes.add(AttribType.VEC3);
-				attributes.add(AttribType.VEC3);
-				attributes.add(AttribType.VEC3);
-				break;
-
-			case MAT4:
-				attributes.add(AttribType.VEC4);
-				attributes.add(AttribType.VEC4);
-				attributes.add(AttribType.VEC4);
-				attributes.add(AttribType.VEC4);
-				break;
-			case MAT4x2:
-				attributes.add(AttribType.VEC2);
-				attributes.add(AttribType.VEC2);
-				attributes.add(AttribType.VEC2);
-				attributes.add(AttribType.VEC2);
-				break;
-			case MAT4x3:
-				attributes.add(AttribType.VEC3);
-				attributes.add(AttribType.VEC3);
-				attributes.add(AttribType.VEC3);
-				attributes.add(AttribType.VEC3);
-				break;
-
-			case DMAT2:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				break;
-			case DMAT2x3:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-				break;
-			case DMAT2x4:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				break;
-
-			case DMAT3:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-				break;
-			case DMAT3x2:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				break;
-			case DMAT3x4:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				break;
-
-			case DMAT4:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				break;
-			case DMAT4x2:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DVEC2);
-				break;
-			case DMAT4x3:
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-				
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-				
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-				
-				attributes.add(AttribType.DVEC2);
-				attributes.add(AttribType.DOUBLE);
-				break;
-			default:
-				attributes.add(type);
-				break;
-		}
+		type.decompose(attributes);
 		//set the attribute data
 		for(int curIndex = 0; curIndex <  attributes.size(); curIndex++){
 			AttribType curType = attributes.get(curIndex);
-			glVertexArrayAttribBinding(vaoId, index+curIndex, bufferIndex);
-			glVertexArrayAttribFormat(vaoId, index+curIndex, curType.size, curType.type, normalize, stride);
+			//decide what function to call based on the data type
+			if(curType.isDouble()){
+				glVertexArrayAttribLFormat(vaoId, index+curIndex, curType.size, curType.type, stride);
+			}else if(curType.isFloat()){
+				glVertexArrayAttribFormat(vaoId, index+curIndex, curType.size, curType.type, normalize, stride);
+			}else{
+				glVertexArrayAttribIFormat(vaoId, index+curIndex, curType.size, curType.type, stride);
+			}
 			stride += curType.bytes;
+		}
+	}
+	
+	/**
+	 * Sets the Vertex buffer to use with the Attribute index in this array
+	 * 
+	 * @param attrib Index of the generic attribute array to bind
+	 * @param vboName Name of the vbo in this vertex array to bind to the given attribute index
+	 * @return True if the name of the vbo exists and was bound, false otherwise
+	 */
+	public boolean setAttribVBO(int attrib, String vboName){
+		glVertexArrayAttribBinding(vaoId, attrib, bufferIndices.get(vboName));
+		//check to make sure the buffer being set exists
+		if(bufferIndices.get(vboName) != null){
+			glVertexArrayAttribBinding(vaoId, attrib, bufferIndices.get(vboName));
+			return true;
+		}else{
+			return false;
 		}
 	}
 	

@@ -136,6 +136,18 @@ public class Vec2 implements Vector {
 	}
 	
 	@Override
+	public float valueAt(int index) throws IndexOutOfBoundsException{
+		switch(index){
+			case 0:
+				return x;
+			case 1:
+				return y;
+			default:
+				throw new IndexOutOfBoundsException("Value at index: "+index+" is out of bounds for a Vec2");
+		}
+	}
+	
+	@Override
 	public Vec2 set(int index, float value){
 		switch(index){
 			case 0:

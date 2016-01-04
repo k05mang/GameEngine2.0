@@ -334,6 +334,60 @@ public class Mat4 implements Matrix {
 	public Vec4 col(int index) {
 		return index < matrix.length ? matrix[index] : null;
 	}
+	
+	@Override
+	public float valueAt(int index) throws IndexOutOfBoundsException{
+		//decide what vector to read from
+		switch(index/4){
+			case 0:
+				//decide what value from that vector to get
+				switch(index%4){
+					case 0:
+						return matrix[0].x;
+					case 1:
+						return matrix[0].y;
+					case 2:
+						return matrix[0].z;
+					case 3:
+						return matrix[0].w;
+				}
+			case 1:
+				switch(index%4){
+					case 0:
+						return matrix[1].x;
+					case 1:
+						return matrix[1].y;
+					case 2:
+						return matrix[1].z;
+					case 3:
+						return matrix[1].w;
+				}
+			case 2:
+				switch(index%4){
+					case 0:
+						return matrix[2].x;
+					case 1:
+						return matrix[2].y;
+					case 2:
+						return matrix[2].z;
+					case 3:
+						return matrix[2].w;
+				}
+			case 3:
+				switch(index%4){
+					case 0:
+						return matrix[3].x;
+					case 1:
+						return matrix[3].y;
+					case 2:
+						return matrix[3].z;
+					case 3:
+						return matrix[3].w;
+				}
+			default:
+				throw new IndexOutOfBoundsException("Value at index: "+index+" is out of bounds for a Mat4");
+		}
+	}
 
 	@Override
 	public void setColumn(int index, Vector column) {
