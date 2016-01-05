@@ -7,25 +7,49 @@ import glMath.vectors.Vec3;
 public class BezierPath {
 	private ArrayList<Vec3> points;
 	BezierCurve curve;
+	private BezierPath derivative;
 	private final int MIN_SEGMENTS = 50;
+	private final float T_NORMAL_STEP = .001f;
+	private static ArrayList<int[]> binomialLUT = new ArrayList<int[]>();
+	private int n;
+	private boolean isModified;
+
+	/**
+	 * Constructs a Bezier path or curve using the given starting points
+	 * 
+	 * @param initPoints Points used in the initial construction of the curve
+	 */
+	public BezierPath(Vec3... initPoints){
+		derivative = null;
+		points = new ArrayList<Vec3>(initPoints.length);
+		for(Vec3 curPoint : initPoints){
+			points.add(new Vec3(curPoint));
+		}
+		curve = null;
+		n = initPoints.length-1;
+		if(n > binomialLUT.size()){
+			extendLUT();
+		}
+		isModified = false;
+	}
 	
 	/**
 	 * Constructs a Bezier path or curve using the given starting points
 	 * 
-	 * @param p0 Start point of the curve
-	 * @param p1 Mid control point of the curve
-	 * @param p2 End point of the curve
-	 * @param initPoints Additional points to be added to the curve during initial construction
+	 * @param initPoints Points used in the initial construction of the curve
 	 */
-	public BezierPath(Vec3 p0, Vec3 p1, Vec3 p2, Vec3... initPoints){
-		points = new ArrayList<Vec3>(initPoints.length+3);
-		points.add(p0);
-		points.add(p1);
-		points.add(p2);
+	public BezierPath(ArrayList<Vec3> initPoints){
+		derivative = null;
+		points = new ArrayList<Vec3>(initPoints.size());
 		for(Vec3 curPoint : initPoints){
-			points.add(curPoint);
+			points.add(new Vec3(curPoint));
 		}
 		curve = null;
+		n = initPoints.size()-1;
+		if(n > binomialLUT.size()){
+			extendLUT();
+		}
+		isModified = false;
 	}
 	
 	/**
@@ -36,6 +60,14 @@ public class BezierPath {
 	 */
 	public void add(Vec3 point){
 		points.add(point);
+		n++;
+		if(n > binomialLUT.size()){
+			extendLUT();
+		}
+		if(curve != null){
+			curve.updateCurve();
+		}
+		isModified = true;
 	}
 	
 	/**
@@ -47,6 +79,14 @@ public class BezierPath {
 		for(Vec3 point : points){
 			this.points.add(point);
 		}
+		n += points.length;
+		if(n > binomialLUT.size()){
+			extendLUT();
+		}
+		if(curve != null){
+			curve.updateCurve();
+		}
+		isModified = true;
 	}
 	
 	/**
@@ -58,6 +98,14 @@ public class BezierPath {
 		for(Vec3 point : points){
 			this.points.add(point);
 		}
+		n += points.size();
+		if(n > binomialLUT.size()){
+			extendLUT();
+		}
+		if(curve != null){
+			curve.updateCurve();
+		}
+		isModified = true;
 	}
 	
 	/**
@@ -78,6 +126,50 @@ public class BezierPath {
 		}
 	}
 	
+	public Vec3 getTangent(float t){
+//		Vec3 tangent = new Vec3();
+//		float factor = 0;
+//		for(int curPoint = 0; curPoint < points.size()-1; curPoint++){
+//			factor = (float)(binomialLUT.get(n-1)[curPoint]*Math.pow(1-t, n-1-curPoint)*Math.pow(t,curPoint)*n);
+//			tangent.add(
+//					factor*(points.get(curPoint+1).x-points.get(curPoint).x),
+//					factor*(points.get(curPoint+1).y-points.get(curPoint).y),
+//					factor*(points.get(curPoint+1).z-points.get(curPoint).z)
+//					);
+//		}
+//		return tangent;
+		if(isModified || derivative == null){
+			computeDerivative();
+		}
+		return derivative.getBezierPoint(t);
+	}
+	
+	public Vec3 getNormal(float t){
+		if(isModified || derivative == null){
+			computeDerivative();
+		}
+		if(t >= 1){
+			return getBezierPoint(t-T_NORMAL_STEP).cross(getTangent(t));
+		}else{
+			return getBezierPoint(t+T_NORMAL_STEP).cross(getTangent(t));
+		}
+//		if(isModified || derivative == null){
+//			computeDerivative();
+//		}
+//		Vec3 normal = new Vec3();
+//		float factor = 0;
+//		for(int curPoint = 0; curPoint < points.size()-2; curPoint++){
+//			factor = (float)(binomialLUT.get(n-2)[curPoint]*Math.pow(1-t, n-2-curPoint)*Math.pow(t,curPoint)*(n-1));
+//			normal.add(
+//					factor*(points.get(curPoint+1).x-points.get(curPoint).x),
+//					factor*(points.get(curPoint+1).y-points.get(curPoint).y),
+//					factor*(points.get(curPoint+1).z-points.get(curPoint).z)
+//					);
+//		}
+//		return normal;
+//		return derivative.getTangent(t);
+	}
+	
 	/**
 	 * Uses de Casteljau's algorithm to calculate a point on the curve at t using a subdividing recursion
 	 * 
@@ -86,7 +178,9 @@ public class BezierPath {
 	 * @return Final computed point
 	 */
 	private Vec3 getPoint(float t, ArrayList<Vec3> subPoints){
-		if(subPoints.size() == 1){//indicates we have calculated the point on the curve at t
+		if(subPoints.isEmpty()){
+			return new Vec3();
+		}else if(subPoints.size() == 1){//indicates we have calculated the point on the curve at t
 			return subPoints.get(0);
 		}else{
 			//else continue following de Casteljau's algorithm and subdivide
@@ -100,18 +194,85 @@ public class BezierPath {
 		}
 	}
 	
+	private void extendLUT(){
+		//add the inital value to the LUT if it is empty
+		if(binomialLUT.isEmpty()){
+			binomialLUT.add(new int[]{1});
+			binomialLUT.add(new int[]{1,1});
+			binomialLUT.add(new int[]{1,2,1});
+		}
+		int prevLUTSize = 0;
+		//determine how many new LUT we need based on the new order of the curve
+		for(int prevLUT = binomialLUT.size()-1; prevLUT < n; prevLUT++){
+			prevLUTSize = binomialLUT.get(prevLUT).length;
+			int[] newLut = new int[prevLUTSize+1];
+			//the end values will always be 1
+			newLut[0] = 1;
+			newLut[newLut.length-1] = 1;
+			
+			//compute the new values
+			for(int curValue = 1; curValue < prevLUTSize; curValue++){
+				newLut[curValue] = binomialLUT.get(prevLUT)[curValue-1]+binomialLUT.get(prevLUT)[curValue];
+			}
+			//add the new LUT
+			binomialLUT.add(newLut);
+		}
+	}
+	
+	private void computeDerivative(){
+		if(derivative == null){
+			derivative = new BezierPath();
+		}
+		//compute the new points for what we already have stored in the derivative
+		for(int curPoint = 0; curPoint < derivative.numPoints(); curPoint++){
+			derivative.points.set(curPoint, 
+					VecUtil.subtract(points.get(curPoint+1), points.get(curPoint)).scale(n)
+					);
+		}
+		//compute new points for added points to this curve if any were added
+		for(int newPoint = derivative.numPoints(); newPoint < points.size()-1; newPoint++){
+			derivative.points.add(
+					VecUtil.subtract(points.get(newPoint+1), points.get(newPoint)).scale(n)
+					);
+			derivative.n++;
+		}
+		
+		if(derivative.curve != null){
+			derivative.curve.updateCurve();
+		}
+	}
+	
+	public void setpoint(int index, Vec3 value){
+		setPoint(index, value.x, value.y, value.z);
+	}
+	
+	public void setPoint(int index, float x, float y, float z){
+		//check that the index passed is in bounds 
+		if(index > -1 && index < points.size()){
+			points.get(index).set(x,y,z);
+			//if there is a curve to update then update it
+			if(curve != null){
+				curve.updateCurve();
+			}
+			isModified = true;
+		}
+	}
+	
 	/**
 	 * Increases the order of the curve by 1 while preserving the curve
 	 */
 	public void increaseOrder(){
 		ArrayList<Vec3> newPoints = new ArrayList<Vec3>(points.size()+1);
 		newPoints.add(points.get(0));
-		int n = points.size()-1;
 		//loop through the current control points and modify them for the new point
 		for(int curPoint = 0; curPoint < n; curPoint++){
 			float factor = (curPoint+1)/(float)(n+1);
 			newPoints.add(
-					VecUtil.scale(points.get(curPoint), factor).add( VecUtil.scale(points.get(curPoint+1), 1-factor))
+					VecUtil.scale(points.get(curPoint), factor).add( 
+							points.get(curPoint+1).x*(1-factor), 
+							points.get(curPoint+1).y*(1-factor), 
+							points.get(curPoint+1).z*(1-factor)
+							)
 					);
 		}
 		//add original end point
@@ -121,6 +282,9 @@ public class BezierPath {
 		if(curve != null){
 			curve.constructCurve(MIN_SEGMENTS+(n+1)*20);
 		}
+		n++;
+		extendLUT();
+		isModified = true;
 	}
 	
 	/**
@@ -138,8 +302,8 @@ public class BezierPath {
 	 * @param pIndex Index of the control point in this curve to modify
 	 * @param translation Amount to move the control point at {@code pIndex} by
 	 */
-	public void movePoint(int pIndex, Vec3 translation){
-		movePoint(pIndex, translation.x, translation.y, translation.z);
+	public void translatePoint(int pIndex, Vec3 translation){
+		translatePoint(pIndex, translation.x, translation.y, translation.z);
 	}
 	
 	/**
@@ -150,7 +314,7 @@ public class BezierPath {
 	 * @param y Y amount to translate by
 	 * @param z Z amount to translate by
 	 */
-	public void movePoint(int pIndex, float x, float y, float z){
+	public void translatePoint(int pIndex, float x, float y, float z){
 		//do a bounds check
 		if(pIndex < points.size() && pIndex > 0){
 			points.get(pIndex).add(x, y, z);
@@ -158,6 +322,7 @@ public class BezierPath {
 			if(curve != null){
 				curve.updateCurve();
 			}
+			isModified = true;
 		}
 	}
 	
@@ -177,5 +342,9 @@ public class BezierPath {
 	 */
 	public int numPoints(){
 		return points.size();
+	}
+	
+	public int getOrder(){
+		return n;
 	}
 }

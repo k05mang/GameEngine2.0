@@ -100,10 +100,10 @@ public abstract class Renderable {
 	/**
 	 * Sets the RenderMode for this renderable to use
 	 * 
-	 * @param mode Mode this renderable will render as 
+	 * @param mode
 	 * @return True if the renderable can render in the given mode, false if it cannot
 	 */
-	public boolean setRenderMode(RenderMode mode){
+	public boolean setRenderMode(String mode){
 		return vao.setIndexBuffer(mode);
 	}
 	

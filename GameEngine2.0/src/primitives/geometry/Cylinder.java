@@ -116,10 +116,10 @@ public final class Cylinder extends Renderable{
 				IndexBuffer modeBuffer = new IndexBuffer(dataType);
 				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode, modeBuffer);
+				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);
 			}
-			vao.setIndexBuffer(modes[0]);
+			vao.setIndexBuffer(modes[0].toString());
 		}
 
 		//specify the attributes for the vertex array

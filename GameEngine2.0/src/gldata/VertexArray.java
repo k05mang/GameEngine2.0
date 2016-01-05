@@ -19,8 +19,9 @@ public class VertexArray {
 	private int vaoId, stride, highestBufferIndex;
 	private HashMap<String, Integer> bufferIndices;
 	private HashMap<String, BufferObject> vbos;
-	private HashMap<RenderMode, IndexBuffer> ibos;
-	private RenderMode ibo;
+	private HashMap<String, IndexBuffer> ibos;
+	private HashMap<String, RenderMode> renderModes;
+	private String ibo;
 	
 	/**
 	 * Constructs an empty vertex array with an associated handle on the GPU
@@ -31,7 +32,8 @@ public class VertexArray {
 		//vertex buffer mapping to different names
 		vbos = new HashMap<String, BufferObject>();
 		
-		ibos = new HashMap<RenderMode, IndexBuffer>();
+		ibos = new HashMap<String, IndexBuffer>();
+		renderModes = new HashMap<String, RenderMode>();
 		ibo = null;
 		stride = 0;
 		
@@ -53,7 +55,7 @@ public class VertexArray {
 	 * @return RenderMode this vertex array is currently setup for 
 	 */
 	public RenderMode getRenderMode(){
-		return ibo;
+		return renderModes.get(ibo);
 	}
 	
 	/**
@@ -111,28 +113,21 @@ public class VertexArray {
 		}
 	}
 	
-	/**
-	 * Adds a given IndexBuffer to this VertexArray's IndexBuffers
-	 * 
-	 * @param mode The type of RenderMode this IndexBuffer is compatible with, this will override existing IndexBuffers
-	 * in this VertexArray if one already exists with the specified RenderMode
-	 * @param buffer IndexBuffer to add to this VertexArray
-	 */
-	public void addIndexBuffer(RenderMode mode, IndexBuffer buffer){
-		ibos.put(mode, buffer);
+	public void addIndexBuffer(String id, RenderMode mode, IndexBuffer buffer){
+		ibos.put(id, buffer);
+		renderModes.put(id, mode);
 	}
 	
 	/**
 	 * Sets this VertexArray's IndexBuffer to the given value, this will specify the RenderMode used in renderers
 	 * 
-	 * @param mode RenderMode to make active for this VertexArray by binding an IndexBuffer compatible with the given RenderMode
-	 * that was previously added and stored in this VertexArray
+	 * @param id 
 	 * @return True if there exists an IndexBuffer with the given RenderMode in this VertexArray, false otherwise
 	 */
-	public boolean setIndexBuffer(RenderMode mode){
+	public boolean setIndexBuffer(String id){
 		//check to make sure the buffer being set exists
-		if(ibos.get(mode) != null){
-			ibo = mode;
+		if(ibos.get(id) != null){
+			ibo = id;
 			glVertexArrayElementBuffer(vaoId, ibos.get(ibo).getId());
 			return true;
 		}else{
