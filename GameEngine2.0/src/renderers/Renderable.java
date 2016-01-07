@@ -98,22 +98,14 @@ public abstract class Renderable {
 	}
 	
 	/**
-	 * Sets the RenderMode for this renderable to use
+	 * Sets the IndexBuffer for this Renderable to use, this will decide the RenderMode for the Renderable as well
 	 * 
-	 * @param mode
-	 * @return True if the renderable can render in the given mode, false if it cannot
+	 * @param buffer IndexBuffer to use
+	 * @return True if the IndexBuffer exists in this Renderable
 	 */
-	public boolean setRenderMode(String mode){
-		return vao.setIndexBuffer(mode);
+	public boolean setIndexBuffer(String buffer){
+		return vao.setIndexBuffer(buffer);
 	}
-	
-	/**
-	 * Adds a RenderMode to this renderable, after this function is called the Renderable should be able to render
-	 * when passed the specified RenderMode
-	 * 
-	 * @param mode RenderMode to add to this Renderable
-	 */
-	public abstract void addMode(RenderMode mode);
 	
 	/**
 	 * Deletes all data from the GPU related to this Renderable object

@@ -172,10 +172,4 @@ public final class Cylinder extends Renderable{
 	public float getLength(){
 		return length;
 	}
-
-	@Override
-	public void addMode(RenderMode mode) {
-		// TODO Auto-generated method stub
-		
-	}
 }

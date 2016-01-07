@@ -58,6 +58,13 @@ public interface Vector {
 	 */
 	public Vector scale(float factor);
 	
+	/**
+	 * Gets the value at the specified index in the Vector.
+	 * 
+	 * @param index Index of the element to retrieve
+	 * @return Value of the element at the specified index
+	 * @throws IndexOutOfBoundsException
+	 */
 	public float valueAt(int index) throws IndexOutOfBoundsException;
 	
 	/**

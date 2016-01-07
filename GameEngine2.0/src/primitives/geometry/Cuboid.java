@@ -233,11 +233,4 @@ public final class Cuboid extends Renderable {
 	public float getDepth(){
 		return halfDimensions.z*2;
 	}
-
-	@Override
-	public void addMode(RenderMode mode) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

@@ -17,6 +17,7 @@ public class BezierCurve extends Renderable{
 
 	private BezierPath path;
 	private int numSegments;
+	private final int MIN_SEGMENTS = 50;
 	
 	/**
 	 * Constructs a Bezier curve using the given {@code curve} as the source of data for rendering, with the given
@@ -25,22 +26,18 @@ public class BezierCurve extends Renderable{
 	 * @param curve BezierPath object to use as the source of data to render with
 	 * @param segments Number of segments to approximate the curve with
 	 */
-	public BezierCurve(BezierPath curve, int segments){
+	public BezierCurve(BezierPath curve){
 		super();
-		numSegments = segments;
 		path = curve;
 		path.curve = this;
+		numSegments = MIN_SEGMENTS+(path.getOrder())*20;
 		//indices for the curve mesh
-		IndexBuffer curveIbo = new IndexBuffer(getIndexType(segments));
+		IndexBuffer curveIbo = new IndexBuffer(getIndexType(numSegments));
 		ibos.add(curveIbo);
 
 		//indices for the curve mesh
 		IndexBuffer controlIbo = new IndexBuffer(getIndexType(curve.numPoints()));
 		ibos.add(controlIbo);
-		
-		//indices for the tangent mesh
-		IndexBuffer tangentIbo = new IndexBuffer(getIndexType(segments*2));
-		ibos.add(tangentIbo);
 		
 		
 		//vbo for the actual curve
@@ -51,11 +48,7 @@ public class BezierCurve extends Renderable{
 		BufferObject controlVbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(controlVbo);
 		
-		//vbo for the tangent points
-		BufferObject tangentVbo = new BufferObject(BufferType.ARRAY);
-		vbos.add(tangentVbo);
-		
-		constructCurve(segments);
+		constructCurve();
 		
 		//flush and add the curve vbo
 		vao.addVertexBuffer("curve", curveVbo);
@@ -63,18 +56,12 @@ public class BezierCurve extends Renderable{
 		//flush and add the control vbo
 		vao.addVertexBuffer("control", controlVbo);
 		
-		//flush and add the tangent vbo
-		vao.addVertexBuffer("tangent", tangentVbo);
-		
 
 		//add to vao
 		vao.addIndexBuffer("curve", RenderMode.LINE_STRIP, curveIbo);
 		
 		//add to vao
 		vao.addIndexBuffer("control", RenderMode.LINE_STRIP, controlIbo);
-		
-		//add to vao
-		vao.addIndexBuffer("tangent", RenderMode.LINES, tangentIbo);
 		
 		
 		//specify the attributes for the vertex array of the curve vbo
@@ -84,7 +71,6 @@ public class BezierCurve extends Renderable{
 		//bind the vbos to the vao
 		vao.registerVBO("curve");
 		vao.registerVBO("control");
-		vao.registerVBO("tangent");
 		
 		//tell the vao what vbo to read from for each attribute
 		vao.setAttribVBO(0, "curve");
@@ -115,19 +101,11 @@ public class BezierCurve extends Renderable{
 		vao.setAttribVBO(1, "control");
 	}
 	
-	public void renderTangent(){
-		vao.setIndexBuffer("tangent");
-		vao.setAttribVBO(0, "tangent");
-		vao.setAttribVBO(1, "tangent");
-	}
-	
 	/**
 	 * Constructs the curve object from scratch using the initializing curve as the source
-	 * 
-	 * @param segments Number of segments to construct the curve approximation with
 	 */
-	void constructCurve(int segments){
-		
+	void constructCurve(){
+		numSegments = MIN_SEGMENTS+(path.getOrder())*20;
 		mesh.empty();
 		//indices for the curve mesh
 		IndexBuffer curveIbo = ibos.get(0);
@@ -137,10 +115,6 @@ public class BezierCurve extends Renderable{
 		IndexBuffer controlIbo = ibos.get(1);
 		controlIbo.reset(getIndexType(path.numPoints()));
 		
-		//indices for the tangent mesh
-		IndexBuffer tangentIbo = ibos.get(2);
-		tangentIbo.reset(getIndexType(numSegments*2));
-		
 		//vbo for the actual curve
 		BufferObject curveVbo = vbos.get(0);
 		curveVbo.reset();
@@ -149,38 +123,17 @@ public class BezierCurve extends Renderable{
 		BufferObject controlVbo = vbos.get(1);
 		controlVbo.reset();
 		
-		//vbo for the tangent points
-		BufferObject tangentVbo = vbos.get(2);
-		tangentVbo.reset();
-		
 		float incr = 1.0f/numSegments;
 		float t = 0;
 		//generate points
 		for(int curVert = 0; curVert < numSegments; curVert++){
 			//TODO add normals
-			Vertex vert = new Vertex(path.getBezierPoint(t), new Vec3(), new Vec2());
+			Vertex vert = new Vertex(path.getBezierPoint(t), path.getNormal(t), new Vec2());
 			mesh.add(vert);
 			curveVbo.add(vert.getPos());
 			curveVbo.add(vert.getNormal());
-			
-			tangentVbo.add(vert.getPos());
-			tangentVbo.add(0);
-			tangentVbo.add(0);
-			tangentVbo.add(0);
-			
-			Vec3 tangentVec = path.getNormal(t);
-			tangentVec.normalize();
-			tangentVec.scale(2);
-			
-			tangentVbo.add(tangentVec.add(vert.getPos()));
-			tangentVbo.add(0);
-			tangentVbo.add(0);
-			tangentVbo.add(0);
 			t += incr;
 			curveIbo.add(curVert);
-
-			tangentIbo.add(curVert*2);
-			tangentIbo.add(curVert*2+1);
 		}
 		
 		ArrayList<Vec3> points = path.getPoints();
@@ -199,18 +152,12 @@ public class BezierCurve extends Renderable{
 
 		//flush and add the control vbo
 		controlVbo.flush(BufferUsage.STATIC_DRAW);
-		
-		//flush and add the control vbo
-		tangentVbo.flush(BufferUsage.STATIC_DRAW);
 
 		//flush curve ibo and add to vao
 		curveIbo.flush(BufferUsage.STATIC_DRAW);
 
 		//flush control ibo and add to vao
 		controlIbo.flush(BufferUsage.STATIC_DRAW);
-		
-		//flush control ibo and add to vao
-		tangentIbo.flush(BufferUsage.STATIC_DRAW);
 	}
 	
 	/**
@@ -223,37 +170,23 @@ public class BezierCurve extends Renderable{
 		//vbo for the control points
 		BufferObject controlVbo = vbos.get(1);
 		
-		//vbo for the tangent points
-		BufferObject tangentVbo = vbos.get(2);
-		
 		float incr = 1.0f/numSegments;
 		float t = 0;
 		Vec3[] curveBuffer = new Vec3[numSegments*2];//times 2 to account for the normals
-		Vec3[] tangentBuffer = new Vec3[numSegments*4];
 		
 		Vertex vert = new Vertex(0,0,0, 0,0,0, 0,0);
 		//generate points
 		for(int curVert = 0; curVert < numSegments; curVert++){
 			//TODO add normals
 			vert.setPos(path.getBezierPoint(t));
+			vert.setNormal(path.getNormal(t));
 			mesh.setVertex(curVert, vert);
 			//only update the position and normals since UV is just padding
 			curveBuffer[curVert*2] = new Vec3(vert.getPos());
 			curveBuffer[curVert*2+1] = new Vec3(vert.getNormal());
-
-			tangentBuffer[curVert*4] = new Vec3(vert.getPos());
-			tangentBuffer[curVert*4+1] = new Vec3();
-			
-			Vec3 tangentVec = path.getTangent(t);
-			tangentVec.normalize();
-			tangentVec.scale(2);
-			
-			tangentBuffer[curVert*4+2] = tangentVec.add(vert.getPos());
-			tangentBuffer[curVert*4+3] = new Vec3();
 			t += incr;
 		}
 		curveVbo.set(0, curveBuffer);//update the vbo
-		tangentVbo.set(0, tangentBuffer);//update the vbo
 		
 		Vec3[] controlBuffer = new Vec3[path.numPoints()*2];
 		ArrayList<Vec3> points = path.getPoints();
@@ -271,11 +204,5 @@ public class BezierCurve extends Renderable{
 	public void delete(){
 		super.delete();
 		path.curve = null;
-	}
-
-	@Override
-	public void addMode(RenderMode mode) {
-		// TODO Auto-generated method stub
-		
 	}
 }

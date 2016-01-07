@@ -152,10 +152,4 @@ public final class Torus extends Renderable {
 	public float getTubeRadius() {
 		return tubeRadius;
 	}
-
-	@Override
-	public void addMode(RenderMode mode) {
-		// TODO Auto-generated method stub
-		
-	}
 }

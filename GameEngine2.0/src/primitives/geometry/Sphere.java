@@ -161,9 +161,4 @@ public final class Sphere extends Renderable{
 	public float getRadius(){
 		return radius;
 	}
-
-	@Override
-	public void addMode(RenderMode mode) {
-		// TODO Auto-generated method stub
-	}
 }

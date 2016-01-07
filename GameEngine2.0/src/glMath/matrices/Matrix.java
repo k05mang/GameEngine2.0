@@ -110,7 +110,22 @@ public interface Matrix {
 	 * @return The vector representing the column at index in this matrix
 	 */
 	public Vector col(int index);
-	
+
+	/**
+	 * Gets the value at the specified index in the Matrix. Matrix indices are defined such that 0 specifies the 
+	 * element at the top of the first column, from there all values are enumerated moving down a column.
+	 * <p>
+	 * Mat3 example:
+	 * <br>
+	 * 0 3 6
+	 * 1 4 7
+	 * 2 5 8
+	 * </p>
+	 * 
+	 * @param index Index of the element to retrieve
+	 * @return Value of the element at the specified index
+	 * @throws IndexOutOfBoundsException
+	 */
 	public float valueAt(int index) throws IndexOutOfBoundsException;
 	
 	/**

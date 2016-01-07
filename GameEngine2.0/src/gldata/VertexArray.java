@@ -80,8 +80,8 @@ public class VertexArray {
 	 * Adds the given BufferObject to this VertexArray's list of BufferObjects that are usable as
 	 * vertex buffers in this array
 	 * 
-	 * @param name String key naming this BufferObject for easy switching of vertex buffers
-	 * @param buffer Finalized BufferObject compatible with this VertexArray
+	 * @param name String id for the given BufferObject
+	 * @param buffer BufferObject with a BufferType of Array
 	 * @return True if the given BufferObject is a compatible type and was added, false otherwise
 	 */
 	public boolean addVertexBuffer(String name, BufferObject buffer){
@@ -113,16 +113,24 @@ public class VertexArray {
 		}
 	}
 	
+	/**
+	 * Adds a given IndexBuffer to this VertexArray with the given{@code id} and RenderMode {@code mode}
+	 * 
+	 * @param id ID this VertexArray will use to manipulate the given IndexBuffer
+	 * @param mode RenderMode the given IndexBuffer will be mapped to
+	 * @param buffer IndexBuffer being added to the VertexArray
+	 */
 	public void addIndexBuffer(String id, RenderMode mode, IndexBuffer buffer){
 		ibos.put(id, buffer);
 		renderModes.put(id, mode);
 	}
 	
 	/**
-	 * Sets this VertexArray's IndexBuffer to the given value, this will specify the RenderMode used in renderers
+	 * Sets this VertexArray's IndexBuffer to the IndexBuffer with the given {@code id}, this will also specify 
+	 * the current RenderMode for this VertexArray
 	 * 
-	 * @param id 
-	 * @return True if there exists an IndexBuffer with the given RenderMode in this VertexArray, false otherwise
+	 * @param id ID of the IndexBuffer to set as the active IndexBuffer of this VertexArray 
+	 * @return True if there exists an IndexBuffer with the given id in this VertexArray, false otherwise
 	 */
 	public boolean setIndexBuffer(String id){
 		//check to make sure the buffer being set exists

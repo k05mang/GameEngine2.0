@@ -290,4 +290,31 @@ public class Transform {
 				new Vec3(0,0,1)
 				);
 	}
+	
+	/**
+	 * Gets the scalars for this transformation
+	 * 
+	 * @return The x, y, z scalars for this transformation
+	 */
+	public Vec3 getScalars(){
+		return scale;
+	}
+	
+	/**
+	 * Gets the translation of this transformation
+	 * 
+	 * @return The x, y, z translation of this transformation
+	 */
+	public Vec3 getTranslation(){
+		return position;
+	}
+	
+	/**
+	 * Gets the orientation of this transformation
+	 * 
+	 * @return The quaternion representing the orientation of this transformation
+	 */
+	public Quaternion getOrientation(){
+		return orientation;
+	}
 }

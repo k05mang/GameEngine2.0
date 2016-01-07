@@ -128,10 +128,4 @@ public final class Plane extends Renderable{
 	public float getWidth(){
 		return width;
 	}
-
-	@Override
-	public void addMode(RenderMode mode) {
-		// TODO Auto-generated method stub
-		
-	}
 }
