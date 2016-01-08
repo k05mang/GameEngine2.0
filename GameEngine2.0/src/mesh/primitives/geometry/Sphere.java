@@ -1,19 +1,19 @@
-package primitives.geometry;
+package mesh.primitives.geometry;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
 
 
-import primitives.Face;
-import primitives.Vertex;
+import mesh.Renderable;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
-import renderers.Renderable;
 
 public final class Sphere extends Renderable{
 	private float radius;
@@ -56,7 +56,7 @@ public final class Sphere extends Renderable{
 				float z = (float)( this.radius*sin(theta)*sin(phi) );
 				
 				Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
-				mesh.add(vert);
+				geometry.add(vert);
 				vert.addTo(vbo);//add vertex to vertex array
 				
 				//calculate indices
@@ -69,7 +69,7 @@ public final class Sphere extends Renderable{
 					//don't have the left face indexing generate faces for the bottom cap, only the top cap
 					//the left triangle of the quad, or top cap if at the start of stack loop
 					if(curStack != maxStack-1){
-						mesh.add(new Face(
+						geometry.add(new Face(
 							curIndex,//current vertex index
 							nextStackIndex+1,//next slice of the next stack 
 							nextStackIndex//current slice of the next stack
@@ -78,7 +78,7 @@ public final class Sphere extends Renderable{
 					//don't have the right face indexing generate faces for the top cap, only the bottom cap
 					//and the right triangle of the quad, or bottom cap if at the end of stack loop
 					if(curStack != 0){
-						mesh.add(new Face(
+						geometry.add(new Face(
 							curIndex,//current vertex index
 							curIndex+1,//next index of current stack
 							nextStackIndex+1//next stack next slice
@@ -91,7 +91,7 @@ public final class Sphere extends Renderable{
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
-		IndexBuffer.IndexType dataType = getIndexType(mesh.getNumVertices());
+		IndexBuffer.IndexType dataType = getIndexType(geometry.getNumVertices());
 		
 		IndexBuffer indices = new IndexBuffer(dataType);
 		ibos.add(indices);
@@ -101,7 +101,7 @@ public final class Sphere extends Renderable{
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
 				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
 				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);

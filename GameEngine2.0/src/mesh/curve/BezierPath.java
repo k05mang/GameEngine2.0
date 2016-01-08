@@ -1,4 +1,4 @@
-package primitives;
+package mesh.curve;
 import java.util.ArrayList;
 
 import glMath.VecUtil;

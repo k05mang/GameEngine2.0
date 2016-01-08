@@ -1,4 +1,4 @@
-package primitives;
+package mesh.primitives;
 
 import gldata.IndexBuffer;
 import gldata.VertexArray;

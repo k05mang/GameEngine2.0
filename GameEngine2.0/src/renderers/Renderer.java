@@ -1,5 +1,6 @@
 package renderers;
 
+import mesh.Renderable;
 import gldata.VertexArray;
 import static org.lwjgl.opengl.GL11.*;
 

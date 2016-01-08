@@ -1,7 +1,8 @@
-package primitives.geometry;
+package mesh.primitives.geometry;
 
-import primitives.Face;
-import primitives.Vertex;
+import mesh.Renderable;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import glMath.vectors.Vec3;
 import gldata.AttribType;
 import gldata.BufferObject;
@@ -9,7 +10,6 @@ import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
-import renderers.Renderable;
 
 public final class Cuboid extends Renderable {
 	private Vec3 halfDimensions;
@@ -32,101 +32,101 @@ public final class Cuboid extends Renderable {
 		vbos.add(vbo);
 		
 		//-----zpos face------
-		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
 				0, 0, 1,
 				0, 1));
-		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
 				0, 0, 1, 
 				0, 0));
-		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
 				0, 0, 1, 
 				1, 1));
-		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
 				0, 0, 1, 
 				1, 0));
 		//-----zneg face------
-		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
 				0, 0, -1, 
 				0, 1));
-		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
 				0, 0, -1,
 				0, 0));
-		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
 				0, 0, -1, 
 				1, 1));
-		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
 				0, 0, -1, 
 				1, 0));
 		
 		//-----xpos face------
-		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
 				1, 0, 0, 
 				0, 1));
-		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
 				1, 0, 0, 
 				0, 0));
-		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
 				1, 0, 0, 
 				1, 1));
-		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
 				1, 0, 0, 
 				1, 0));
 		//-----xneg face------
-		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
 				-1, 0, 0, 
 				0, 1));
-		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
 				-1, 0, 0, 
 				0, 0));
-		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
 				-1, 0, 0, 
 				1, 1));
-		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
 				-1, 0, 0, 
 				1, 0));
 		
 		//-----ypos face------
-		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
 				0, 1, 0, 
 				0, 1));
-		mesh.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
 				0, 1, 0, 
 				0, 0));
-		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
 				0, 1, 0, 
 				1, 1));
-		mesh.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
 				0, 1, 0, 
 				1, 0));
 		//-----yneg face------
-		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
 				0, -1, 0, 
 				0, 1));
-		mesh.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
 				0, -1, 0, 
 				0, 0));
-		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
 				0, -1, 0, 
 				1, 1));
-		mesh.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
 				0, -1, 0, 
 				1, 0));
 		
 		//generate the face indices
 		for (int face = 0; face < 6; face++) {
-			mesh.add(new Face(
+			geometry.add(new Face(
 					0 + 4 * face,
 					1 + 4 * face,
 					3 + 4 * face
 					));
-			mesh.add(new Face(
+			geometry.add(new Face(
 					0 + 4 * face,
 					3 + 4 * face,
 					2 + 4 * face
 					));
 		}
 
-		mesh.insertVertices(vbo);
+		geometry.insertVertices(vbo);
 		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
@@ -139,7 +139,7 @@ public final class Cuboid extends Renderable {
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
 				IndexBuffer modeBuffer = new IndexBuffer(IndexBuffer.IndexType.BYTE);
-				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
 				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);

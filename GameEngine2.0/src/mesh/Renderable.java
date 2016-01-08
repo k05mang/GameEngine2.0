@@ -1,8 +1,7 @@
-package renderers;
+package mesh;
 
 import java.util.ArrayList;
 
-import primitives.Mesh;
 import glMath.Transform;
 import glMath.matrices.Mat4;
 import gldata.VertexArray;
@@ -11,7 +10,7 @@ import gldata.IndexBuffer;
 
 public abstract class Renderable {
 	protected Transform transforms;
-	protected Mesh mesh;
+	protected Geometry geometry;
 	protected VertexArray vao;
 	protected ArrayList<BufferObject> vbos;
 	protected ArrayList<IndexBuffer> ibos;
@@ -21,7 +20,7 @@ public abstract class Renderable {
 	 */
 	public Renderable(){
 		vao = new VertexArray();
-		mesh = new Mesh();
+		geometry = new Geometry();
 		transforms = new Transform();
 		vbos = new ArrayList<BufferObject>();
 		ibos = new ArrayList<IndexBuffer>();
@@ -39,7 +38,7 @@ public abstract class Renderable {
 	 */
 	public Renderable(Renderable copy){
 		vao = copy.vao;
-		mesh = copy.mesh;
+		geometry = copy.geometry;
 		transforms = new Transform(copy.transforms);
 	}
 	
@@ -75,8 +74,8 @@ public abstract class Renderable {
 	 * 
 	 * @return The mesh used by this Renderable
 	 */
-	public Mesh getMesh(){
-		return mesh;
+	public Geometry getMesh(){
+		return geometry;
 	}
 	
 	/**
@@ -85,7 +84,7 @@ public abstract class Renderable {
 	 * @return Number of vertices in this renderable's mesh
 	 */
 	public int getNumVertices(){
-		return mesh.getNumVertices();
+		return geometry.getNumVertices();
 	}
 
 	/**
@@ -94,7 +93,7 @@ public abstract class Renderable {
 	 * @return Number of faces in this renderable's mesh
 	 */
 	public int getNumFaces(){
-		return mesh.getNumFaces();
+		return geometry.getNumFaces();
 	}
 	
 	/**

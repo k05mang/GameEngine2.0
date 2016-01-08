@@ -1,17 +1,17 @@
-package primitives.geometry;
+package mesh.primitives.geometry;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import primitives.Face;
-import primitives.Vertex;
+import mesh.Renderable;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import gldata.VertexArray;
-import renderers.Renderable;
 import renderers.RenderMode;
 
 public final class Cone extends Renderable {
@@ -46,7 +46,7 @@ public final class Cone extends Renderable {
 		vbos.add(vbo);
 		
 		Vertex tip = new Vertex(0, centered ? this.length/2.0f : 0 ,0, 0,1,0, 0,0);
-		mesh.add(tip);
+		geometry.add(tip);
 		tip.addTo(vbo);
 		for(int segment = 1; segment < subdiv+1; segment++){
 			double theta = 2*PI*(segment/(double)subdiv);
@@ -55,7 +55,7 @@ public final class Cone extends Renderable {
 			float z = this.radius*(float)(sin(theta));
 			
 			Vertex bottomVert = new Vertex(x, -vertOffset, z,  x, -vertOffset, z, 0,0);
-			mesh.add(bottomVert);
+			geometry.add(bottomVert);
 			bottomVert.addTo(vbo);
 			
 			Face side = new Face(
@@ -63,7 +63,7 @@ public final class Cone extends Renderable {
 					(segment+1)%(subdiv+1) == 0 ? 1 : (segment+1)%(subdiv+1),
 					segment
 					);
-			mesh.add(side);
+			geometry.add(side);
 			
 			if(segment < subdiv-1){
 				Face bottom = new Face(
@@ -71,7 +71,7 @@ public final class Cone extends Renderable {
 						segment+1, 	//the vertex that is segment+1 of the bottom ring
 						segment+2   //the vertex that is segment+2 of the bottom ring
 						);
-				mesh.add(bottom);
+				geometry.add(bottom);
 			}
 		}
 //		for(int segment = 0; segment < subdiv+1; segment++){
@@ -137,7 +137,7 @@ public final class Cone extends Renderable {
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
 				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
 				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);

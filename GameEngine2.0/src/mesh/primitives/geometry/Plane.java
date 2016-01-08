@@ -1,13 +1,13 @@
-package primitives.geometry;
+package mesh.primitives.geometry;
 
-import primitives.Face;
-import primitives.Vertex;
+import mesh.Renderable;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
-import renderers.Renderable;
 import renderers.RenderMode;
 
 public final class Plane extends Renderable{
@@ -40,13 +40,13 @@ public final class Plane extends Renderable{
 		topRight.addTo(vbo);
 		bottomRight.addTo(vbo);
 		
-		mesh.add(topLeft);
-		mesh.add(bottomLeft);
-		mesh.add(topRight);
-		mesh.add(bottomRight);
+		geometry.add(topLeft);
+		geometry.add(bottomLeft);
+		geometry.add(topRight);
+		geometry.add(bottomRight);
 		
-		mesh.add(new Face(0,1,2));
-		mesh.add(new Face(2,1,3));
+		geometry.add(new Face(0,1,2));
+		geometry.add(new Face(2,1,3));
 		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
@@ -59,7 +59,7 @@ public final class Plane extends Renderable{
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
 				IndexBuffer modeBuffer = new IndexBuffer(IndexBuffer.IndexType.BYTE);
-				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
 				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);

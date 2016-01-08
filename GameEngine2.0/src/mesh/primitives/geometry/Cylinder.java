@@ -1,11 +1,11 @@
-package primitives.geometry;
+package mesh.primitives.geometry;
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import primitives.Face;
-import primitives.Vertex;
+import mesh.Renderable;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import renderers.RenderMode;
-import renderers.Renderable;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
@@ -57,10 +57,10 @@ public final class Cylinder extends Renderable{
 			Vertex sideBottom = new Vertex(x, -y, z,  x, 0, z, 1-u,0);
 			Vertex capBottom = new Vertex(x, -y, z,  0,-1,0, capu/2+.5f, -capv/2+.5f);
 
-			mesh.add(capTop);
-			mesh.add(sideTop);
-			mesh.add(sideBottom);
-			mesh.add(capBottom);
+			geometry.add(capTop);
+			geometry.add(sideTop);
+			geometry.add(sideBottom);
+			geometry.add(capBottom);
 			
 			capTop.addTo(vbo);
 			sideTop.addTo(vbo);
@@ -70,14 +70,14 @@ public final class Cylinder extends Renderable{
 			int nextSeg = (segment+1)%maxSegment;//due to constantly computing this value cache it for reuse
 			if(segment < maxSegment){
 				//left side face
-				mesh.add(new Face(
+				geometry.add(new Face(
 						segment*4+1,//current segment top left
 						(segment+1)*4+2,//next segment bottom right
 						segment*4+2//current segment bottom left
 						));
 				
 				//right side face
-				mesh.add(new Face(
+				geometry.add(new Face(
 						segment*4+1,//current segment top left
 						(segment+1)*4+1,//next segment top right
 						(segment+1)*4+2//next segment bottom right
@@ -89,14 +89,14 @@ public final class Cylinder extends Renderable{
 			//this will prevent redundant face generation at the end
 			if(segment < maxSegment-2){
 				//top cap face
-				mesh.add(new Face(
+				geometry.add(new Face(
 						0,//base top cap vert which is 0
 						((segment+2)%maxSegment)*4,//vert that is the second next segment
 						nextSeg*4//vert that is the next segment
 						));
 				
 				//bottom cap face
-				mesh.add(new Face(
+				geometry.add(new Face(
 						3,//base bottom cap vert which is 3
 						nextSeg*4+3,//vert that is the next segment
 						((segment+2)%maxSegment)*4+3//vert that is the second next segment
@@ -114,7 +114,7 @@ public final class Cylinder extends Renderable{
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
 				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
 				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);

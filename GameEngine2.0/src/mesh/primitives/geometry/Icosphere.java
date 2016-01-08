@@ -1,9 +1,10 @@
-package primitives.geometry;
+package mesh.primitives.geometry;
 
 import java.util.HashMap;
 
-import primitives.Face;
-import primitives.Vertex;
+import mesh.Renderable;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import glMath.VecUtil;
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
@@ -13,7 +14,6 @@ import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
-import renderers.Renderable;
 
 public final class Icosphere extends Renderable {
 	private float radius;
@@ -60,64 +60,64 @@ public final class Icosphere extends Renderable {
 		HashMap<Vertex, Integer> vertMap = new HashMap<Vertex, Integer>();//map to quickly find the index of a vertex when we know the vertex
 		//yz plane rectangle vertices
 		Vertex point0 = new Vertex(0,one,phi, 0,one,phi, 0,0);//+y,+z
-		mesh.add(point0);
+		geometry.add(point0);
 		point0.addTo(vbo);
 		vertMap.put(point0, 0);
 		
 		Vertex point1 = new Vertex(0,-one,phi, 0,-one,phi, 0,0);//-y,+z
-		mesh.add(point1);
+		geometry.add(point1);
 		point1.addTo(vbo);
 		vertMap.put(point1, 1);
 		
 		Vertex point2 = new Vertex(0,one,-phi, 0,one,-phi, 0,0);//+y,-z
-		mesh.add(point2);
+		geometry.add(point2);
 		point2.addTo(vbo);
 		vertMap.put(point1, 1);
 		
 		Vertex point3 = new Vertex(0,-one,-phi, 0,-one,-phi, 0,0);//-y,-z
-		mesh.add(point3);
+		geometry.add(point3);
 		point3.addTo(vbo);
 		vertMap.put(point3, 3);
 		
 		//xy plane rectangle vertices
 		Vertex point4 = new Vertex(one,phi,0, one,phi,0, 0,0);//+x,+y
-		mesh.add(point4);
+		geometry.add(point4);
 		point4.addTo(vbo);
 		vertMap.put(point4, 4);
 		
 		Vertex point5 = new Vertex(-one,phi,0, -one,phi,0, 0,0);//-x,+y
-		mesh.add(point5);
+		geometry.add(point5);
 		point5.addTo(vbo);
 		vertMap.put(point5, 5);
 		
 		Vertex point6 = new Vertex(one,-phi,0, one,-phi,0, 0,0);//+x,-y
-		mesh.add(point6);
+		geometry.add(point6);
 		point6.addTo(vbo);
 		vertMap.put(point6, 6);
 		
 		Vertex point7 = new Vertex(-one,-phi,0, -one,-phi,0, 0,0);//-x,-y
-		mesh.add(point7);
+		geometry.add(point7);
 		point7.addTo(vbo);
 		vertMap.put(point7, 7);
 		
 		//xz plane rectangle vertices
 		Vertex point8 = new Vertex(phi,0,one, phi,0,one, 0,0);//+z,+x
-		mesh.add(point8);
+		geometry.add(point8);
 		point8.addTo(vbo);
 		vertMap.put(point8, 8);
 		
 		Vertex point9 = new Vertex(phi,0,-one, phi,0,-one, 0,0);//-z,+x
-		mesh.add(point9);
+		geometry.add(point9);
 		point9.addTo(vbo);
 		vertMap.put(point9, 9);
 		
 		Vertex point10 = new Vertex(-phi,0,one, -phi,0,one, 0,0);//+z,-x
-		mesh.add(point10);
+		geometry.add(point10);
 		point10.addTo(vbo);
 		vertMap.put(point10, 10);
 		
 		Vertex point11 = new Vertex(-phi,0,-one, -phi,0,-one, 0,0);//-z,-x
-		mesh.add(point11);
+		geometry.add(point11);
 		point11.addTo(vbo);
 		vertMap.put(point11, 11);
 		
@@ -169,7 +169,7 @@ public final class Icosphere extends Renderable {
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
 				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
 				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);
@@ -206,7 +206,7 @@ public final class Icosphere extends Renderable {
 	private void subdivide(Face base, int order, HashMap<Vertex, Integer> vertMap){
 		//if we are at the lowest order then add the face to the mesh
 		if(order == 0){
-			mesh.add(base);
+			geometry.add(base);
 		}else{//otherwise subdivide it and recurse
 			
 			//keep a general UV value for reuse
@@ -224,20 +224,20 @@ public final class Icosphere extends Renderable {
 			//add the new vertices to the mesh and the vert map if they ahven't been added already
 			if(vertMap.get(edge1) == null){
 				edge1.addTo(vbos.get(0));
-				vertMap.put(edge1, mesh.getNumVertices());
-				mesh.add(edge1);
+				vertMap.put(edge1, geometry.getNumVertices());
+				geometry.add(edge1);
 			}
 			
 			if(vertMap.get(edge2) == null){
 				edge2.addTo(vbos.get(0));
-				vertMap.put(edge2, mesh.getNumVertices());
-				mesh.add(edge2);
+				vertMap.put(edge2, geometry.getNumVertices());
+				geometry.add(edge2);
 			}
 			
 			if(vertMap.get(edge3) == null){
 				edge3.addTo(vbos.get(0));
-				vertMap.put(edge3, mesh.getNumVertices());
-				mesh.add(edge3);
+				vertMap.put(edge3, geometry.getNumVertices());
+				geometry.add(edge3);
 			}
 			
 			//generate the faces
@@ -265,8 +265,8 @@ public final class Icosphere extends Renderable {
 	 */
 	private Vec3 genVert(int start, int end){
 		//compute the new vertex based on the radius and the edge vertices
-		Vec3 startVec = mesh.getVertex(start).getPos();
-		Vec3 endVec = mesh.getVertex(end).getPos();
+		Vec3 startVec = geometry.getVertex(start).getPos();
+		Vec3 endVec = geometry.getVertex(end).getPos();
 		Vec3 halfPoint = VecUtil.add(startVec, endVec);
 		//scale the position to match the radius
 		return halfPoint.scale(radius/halfPoint.length());

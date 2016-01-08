@@ -1,22 +1,28 @@
-package primitives;
+package mesh;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import mesh.primitives.Edge;
+import mesh.primitives.Face;
+import mesh.primitives.HalfEdge;
+import mesh.primitives.Vertex;
 import renderers.RenderMode;
 import gldata.IndexBuffer;
 import gldata.VertexArray;
 import gldata.BufferObject;
 
-public class Mesh {
+public class Geometry {
 	private ArrayList<Vertex> vertices;
+	private HashMap<Vertex, Integer> hashVerts;
 	private ArrayList<Face> faces;
 	private HashMap<Edge, HalfEdge> edgeMap;
 	
 	/**
 	 * Constructs an empty mesh for storing vertices and triangular faces
 	 */
-	public Mesh(){
+	public Geometry(){
 		vertices = new ArrayList<Vertex>();
+		hashVerts = new HashMap<Vertex, Integer>();
 		faces = new ArrayList<Face>();
 		edgeMap = new HashMap<Edge, HalfEdge>();
 	}
@@ -28,6 +34,7 @@ public class Mesh {
 	 */
 	public void add(Vertex vert){
 		vertices.add(vert);
+		hashVerts.put(vert, vertices.size()-1);
 	}
 	
 	/**
@@ -133,6 +140,14 @@ public class Mesh {
 			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Vertex from mesh");
 		}else{
 			return vertices.get(index);
+		}
+	}
+	
+	public int getIndex(Vertex vert){
+		if(hashVerts.get(vert) != null){
+			return hashVerts.get(vert);
+		}else{
+			return -1;
 		}
 	}
 

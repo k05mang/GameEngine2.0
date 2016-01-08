@@ -1,4 +1,4 @@
-package primitives;
+package mesh.primitives;
 
 /**
  * Acts as a node in the half edge data structure used for mesh data traversal.

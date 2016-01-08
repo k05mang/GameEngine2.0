@@ -47,8 +47,8 @@ public class ContactPair {
 					Vec3 rbCrossN = pointB.cross(curContact.normal);
 					
 					//map the inertia tensor to be oriented to the objects current orientation, since it was computed when the object was at rest
-					Mat3 aFinalInertia = (Mat3)MatrixUtil.multiply(contactA.mesh.getOrientation().asRotMatrix(), contactA.invInertiaTensor);
-					Mat3 bFinalInertia = (Mat3)MatrixUtil.multiply(contactB.mesh.getOrientation().asRotMatrix(), contactB.invInertiaTensor);
+					Mat3 aFinalInertia = (Mat3)MatrixUtil.multiply(contactA.geometry.getOrientation().asRotMatrix(), contactA.invInertiaTensor);
+					Mat3 bFinalInertia = (Mat3)MatrixUtil.multiply(contactB.geometry.getOrientation().asRotMatrix(), contactB.invInertiaTensor);
 					
 					
 					/* raCrossN = torque(force being applied to the angular component of the object)
@@ -107,7 +107,7 @@ public class ContactPair {
 					float correction = (curContact.depth > 0 ? curContact.depth : 0)/sumInv;
 //					float correction = (curContact.depth > 0 ? curContact.depth : 0)/totalInertia;
 					Vec3 restCorrection = new Vec3(curContact.normal).getScaleMat(contactA.massInv*correction);
-					contactA.mesh.makeTranslate(restCorrection);
+					contactA.geometry.makeTranslate(restCorrection);
 //					contactA.collider.translate(restCorrection);
 					contactA.position.add(restCorrection);
 					//rotational correction
@@ -116,7 +116,7 @@ public class ContactPair {
 					
 					//resolve for object B
 					Vec3 bRestCorr = new Vec3(curContact.normal).getScaleMat(contactB.massInv*-correction);
-					contactB.mesh.makeTranslate(bRestCorr);
+					contactB.geometry.makeTranslate(bRestCorr);
 //					contactB.collider.translate(bRestCorr);
 					contactB.position.add(bRestCorr);
 					//adding a negative component currently causes infinite looping somewhere

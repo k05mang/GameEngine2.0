@@ -1,17 +1,17 @@
-package primitives.geometry;
+package mesh.primitives.geometry;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import primitives.Face;
-import primitives.Vertex;
+import mesh.Renderable;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
-import renderers.Renderable;
 
 public final class Disc extends Renderable {
 
@@ -45,7 +45,7 @@ public final class Disc extends Renderable {
 
 			Vertex curVert = new Vertex(x, 0, z,  0,1,0, u/2+.5f, -v/2+.5f);
 
-			mesh.add(curVert);
+			geometry.add(curVert);
 			
 			curVert.addTo(vbo);
 			
@@ -55,7 +55,7 @@ public final class Disc extends Renderable {
 			//since we are generating indices two segments ahead of the current one
 			//this will prevent redundant face generation at the end
 			if(segment < maxSegment-2){
-				mesh.add(new Face(
+				geometry.add(new Face(
 						0,//base vert
 						(segment+2)%maxSegment,//vert that is the second next segment
 						nextSeg//vert that is the next segment
@@ -74,7 +74,7 @@ public final class Disc extends Renderable {
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
 				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
 				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);

@@ -1,7 +1,8 @@
-package primitives.geometry;
+package mesh.primitives.geometry;
 
-import primitives.Face;
-import primitives.Vertex;
+import mesh.Renderable;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;
@@ -10,7 +11,6 @@ import gldata.IndexBuffer;
 import static java.lang.Math.PI;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
-import renderers.Renderable;
 import renderers.RenderMode;
 
 public final class Torus extends Renderable {
@@ -62,18 +62,18 @@ public final class Torus extends Renderable {
 				
 				Vertex vert = new Vertex(x, y, z,  normX, y, normZ, u, v);
 				vert.addTo(vbo);
-				mesh.add(vert);
+				geometry.add(vert);
 
 				//prevent generating faces on the last loop since the faces need for the end of the
 				//torus has already been generated
 				if(curRing < maxRing || ringSeg < maxRingSeg){
-					mesh.add(new Face(
+					geometry.add(new Face(
 							ringSeg+maxRingSeg*curRing,//current vertex (current segment of current rings)
 							(ringSeg+1)+maxRingSeg*(curRing+1),//next segment of next ring
 							(ringSeg+1)+maxRingSeg*curRing//next segment of current ring
 							));
 					
-					mesh.add(new Face(
+					geometry.add(new Face(
 							ringSeg+maxRingSeg*curRing,//current vertex (current segment of current rings)
 							ringSeg+maxRingSeg*(curRing+1),//current segment of next ring
 							(ringSeg+1)+maxRingSeg*(curRing+1)//next segment of next ring
@@ -85,7 +85,7 @@ public final class Torus extends Renderable {
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
-		IndexBuffer.IndexType dataType = getIndexType(mesh.getNumVertices());
+		IndexBuffer.IndexType dataType = getIndexType(geometry.getNumVertices());
 		
 		IndexBuffer indices = new IndexBuffer(dataType);
 		ibos.add(indices);
@@ -95,7 +95,7 @@ public final class Torus extends Renderable {
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
 				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				mesh.insertIndices(modeBuffer, curMode);//add indices to match the mode
+				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
 				modeBuffer.flush(BufferUsage.STATIC_DRAW);
 				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
 				ibos.add(modeBuffer);

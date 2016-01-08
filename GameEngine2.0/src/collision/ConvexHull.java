@@ -2,8 +2,8 @@ package collision;
 
 import java.util.ArrayList;
 
-import primitives.Face;
-import primitives.Vertex;
+import mesh.primitives.Face;
+import mesh.primitives.Vertex;
 import glMath.MatrixUtil;
 import glMath.Quaternion;
 import glMath.matrices.Mat4;

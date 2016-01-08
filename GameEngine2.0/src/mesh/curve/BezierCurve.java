@@ -1,7 +1,9 @@
-package primitives;
+package mesh.curve;
 
 import java.util.ArrayList;
 
+import mesh.Renderable;
+import mesh.primitives.Vertex;
 import glMath.VecUtil;
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
@@ -11,7 +13,6 @@ import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
-import renderers.Renderable;
 
 public class BezierCurve extends Renderable{
 
@@ -106,7 +107,7 @@ public class BezierCurve extends Renderable{
 	 */
 	void constructCurve(){
 		numSegments = MIN_SEGMENTS+(path.getOrder())*20;
-		mesh.empty();
+		geometry.empty();
 		//indices for the curve mesh
 		IndexBuffer curveIbo = ibos.get(0);
 		curveIbo.reset(getIndexType(numSegments));
@@ -129,7 +130,7 @@ public class BezierCurve extends Renderable{
 		for(int curVert = 0; curVert < numSegments; curVert++){
 			//TODO add normals
 			Vertex vert = new Vertex(path.getBezierPoint(t), path.getNormal(t), new Vec2());
-			mesh.add(vert);
+			geometry.add(vert);
 			curveVbo.add(vert.getPos());
 			curveVbo.add(vert.getNormal());
 			t += incr;
@@ -180,7 +181,7 @@ public class BezierCurve extends Renderable{
 			//TODO add normals
 			vert.setPos(path.getBezierPoint(t));
 			vert.setNormal(path.getNormal(t));
-			mesh.setVertex(curVert, vert);
+			geometry.setVertex(curVert, vert);
 			//only update the position and normals since UV is just padding
 			curveBuffer[curVert*2] = new Vec3(vert.getPos());
 			curveBuffer[curVert*2+1] = new Vec3(vert.getNormal());

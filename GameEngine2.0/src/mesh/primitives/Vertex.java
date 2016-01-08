@@ -1,4 +1,4 @@
-package primitives;
+package mesh.primitives;
 
 import java.util.Arrays;
 
