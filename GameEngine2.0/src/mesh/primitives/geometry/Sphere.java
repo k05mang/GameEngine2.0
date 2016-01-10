@@ -93,10 +93,6 @@ public final class Sphere extends Renderable{
 		
 		IndexBuffer.IndexType dataType = getIndexType(geometry.getNumVertices());
 		
-		IndexBuffer indices = new IndexBuffer(dataType);
-		ibos.add(indices);
-		indices.flush(BufferUsage.STATIC_DRAW);
-		
 		//check if there are additional modes that need to be accounted for
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){

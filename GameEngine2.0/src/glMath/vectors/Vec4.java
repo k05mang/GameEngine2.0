@@ -157,10 +157,12 @@ public class Vec4 implements Vector {
 	@Override
 	public float normalize() {
 		float len = (float)Math.sqrt(x*x+y*y+z*z+w*w);
-		x /= len;
-		y /= len;
-		z /= len;
-		w /= len;
+		if(len != 0){
+			x /= len;
+			y /= len;
+			z /= len;
+			w /= len;
+		}
 		return len;
 	}
 

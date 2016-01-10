@@ -1,42 +1,29 @@
-package mesh;
+package mesh.loaders;
 
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
-import gldata.AttribType;
-import gldata.BufferObject;
-import gldata.BufferType;
-import gldata.BufferUsage;
-import gldata.IndexBuffer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Scanner;
 
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
-import renderers.RenderMode;
 
-public class OBJ extends Renderable {
-
+public class OBJLoader implements MeshLoader {
+	
 	private String fileName;
 	private ArrayList<Vec3> verts, normals;
 	private ArrayList<Vec2> uvs;
-	
-	public OBJ(String file){
+
+	public OBJLoader(String file){
 		this(new File(file));
 	}
 	
-	public OBJ(File file){
-		super();
+	public OBJLoader(File file){
 		fileName = file.getName();
 		try(Scanner obj = new Scanner(file)){
-			//create vertex buffer
-			BufferObject vbo = new BufferObject(BufferType.ARRAY);
-			vbos.add(vbo);
-			vao.addVertexBuffer("default", vbo);
-			
 			
 			//will retain the different values for each field of data, position, normal, and text coords
 			verts = new ArrayList<Vec3>();
@@ -51,40 +38,20 @@ public class OBJ extends Renderable {
 			}
 			
 			//if the mesh hasn't defined normals compute normals
-			if(normals.isEmpty()){
-				geometry.computeNormals();
-			}
-
-			//construct index buffer
-			IndexBuffer ibo = new IndexBuffer(getIndexType(geometry.getNumVertices()-1));
-			ibos.add(ibo);
-			vao.addIndexBuffer("default", RenderMode.TRIANGLES, ibo);
-			
-			//add indices and vertices to the buffers
-			geometry.insertVertices(vbo);
-			geometry.insertIndices(ibo, RenderMode.TRIANGLES);
-
-			vbo.flush(BufferUsage.STATIC_DRAW);
-			ibo.flush(BufferUsage.STATIC_DRAW);
-			
-			vao.setIndexBuffer("default");
-
-			vao.addAttrib(0, AttribType.VEC3, false, 0);
-			vao.addAttrib(1, AttribType.VEC3, false, 0);
-			vao.addAttrib(2, AttribType.VEC2, false, 0);
-			
-			vao.registerVBO("default");
-
-			vao.setAttribVBO(0, "default");
-			vao.setAttribVBO(1, "default");
-			vao.setAttribVBO(2, "default");
-
-			vao.enableAttribute(0);
-			vao.enableAttribute(1);
-			vao.enableAttribute(2);
+//			if(normals.isEmpty()){
+//				geometry.computeNormals();
+//			}
+//			
+//			geometry.insertVertices(vbo);
+//			geometry.insertIndices(ibo, RenderMode.TRIANGLES);
 		}catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void load(){
+	
 	}
 	
 	private void parseLine(String line){
@@ -166,22 +133,23 @@ public class OBJ extends Renderable {
 			}
 			
 			//see if the "new" vertex is actually new and add it if it is
-			if(geometry.getIndex(newVert) == -1){
-				//add the value
-				geometry.add(newVert);
-			}
-			indices.add(geometry.getIndex(newVert));
+//			if(geometry.getIndex(newVert) == -1){
+//				//add the value
+//				geometry.add(newVert);
+////				newVert.addTo(vbo);
+//			}
+//			indices.add(geometry.getIndex(newVert));
 		}
 		
 		//now generate faces for the indices found
 		//since more than 3 vertices can define a face in OBJ triangulation may be necessary
 		
-		for(int curFace = 1; curFace < indices.size()-1; curFace++){
-			geometry.add(new Face(
-					indices.get(0),
-					indices.get(curFace),
-					indices.get(curFace+1)
-					));
-		}
+//		for(int curFace = 1; curFace < indices.size()-1; curFace++){
+//			geometry.add(new Face(
+//					indices.get(0),
+//					indices.get(curFace),
+//					indices.get(curFace+1)
+//					));
+//		}
 	}
 }

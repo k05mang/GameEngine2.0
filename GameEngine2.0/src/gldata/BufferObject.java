@@ -134,9 +134,9 @@ public class BufferObject {
 		if (!finished) {
 			int floatAsInt = Float.floatToIntBits(value);
 			data.add((byte) (floatAsInt & 0xff));
-			data.add((byte) ((floatAsInt >> 8) & 0xff));
-			data.add((byte) ((floatAsInt >> 16) & 0xff));
-			data.add((byte) ((floatAsInt >> 24) & 0xff));
+			data.add((byte) ((floatAsInt >>> 8) & 0xff));
+			data.add((byte) ((floatAsInt >>> 16) & 0xff));
+			data.add((byte) ((floatAsInt >>> 24) & 0xff));
 		}
 	}
 	
@@ -149,13 +149,13 @@ public class BufferObject {
 		if (!finished) {
 			long doubleAsLong = Double.doubleToLongBits(value);
 			data.add((byte) (doubleAsLong & 0xff));
-			data.add((byte) ((doubleAsLong >> 8) & 0xff));
-			data.add((byte) ((doubleAsLong >> 16) & 0xff));
-			data.add((byte) ((doubleAsLong >> 24) & 0xff));
-			data.add((byte) ((doubleAsLong >> 32) & 0xff));
-			data.add((byte) ((doubleAsLong >> 40) & 0xff));
-			data.add((byte) ((doubleAsLong >> 48) & 0xff));
-			data.add((byte) ((doubleAsLong >> 56) & 0xff));
+			data.add((byte) ((doubleAsLong >>> 8) & 0xff));
+			data.add((byte) ((doubleAsLong >>> 16) & 0xff));
+			data.add((byte) ((doubleAsLong >>> 24) & 0xff));
+			data.add((byte) ((doubleAsLong >>> 32) & 0xff));
+			data.add((byte) ((doubleAsLong >>> 40) & 0xff));
+			data.add((byte) ((doubleAsLong >>> 48) & 0xff));
+			data.add((byte) ((doubleAsLong >>> 56) & 0xff));
 		}
 	}
 	
@@ -178,7 +178,7 @@ public class BufferObject {
 	public void add(short value){
 		if (!finished) {
 			data.add((byte) (value & 0xff));
-			data.add((byte) ((value >> 8) & 0xff));
+			data.add((byte) ((value >>> 8) & 0xff));
 		}
 	}
 
@@ -190,9 +190,9 @@ public class BufferObject {
 	public void add(int value){
 		if (!finished) {
 			data.add((byte) (value & 0xff));
-			data.add((byte) ((value >> 8) & 0xff));
-			data.add((byte) ((value >> 16) & 0xff));
-			data.add((byte) ((value >> 24) & 0xff));
+			data.add((byte) ((value >>> 8) & 0xff));
+			data.add((byte) ((value >>> 16) & 0xff));
+			data.add((byte) ((value >>> 24) & 0xff));
 		}
 	}
 
@@ -295,9 +295,9 @@ public class BufferObject {
 		}else if(!finished){//check if this buffer has been flushed
 			int floatAsInt = Float.floatToIntBits(value);
 			data.set(offset, (byte)(floatAsInt & 0xff));
-			data.set(offset+1, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+2, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+3, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+1, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+2, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+3, (byte)((floatAsInt >>> 24) & 0xff));
 		}else{
 			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(4);
 			dataBuffer.putFloat(value);
@@ -324,13 +324,13 @@ public class BufferObject {
 		}else if(!finished){//check if this buffer has been flushed
 			long doubleAsLong = Double.doubleToLongBits(value);
 			data.set(offset, (byte)(doubleAsLong & 0xff));
-			data.set(offset+1, (byte)((doubleAsLong >> 8) & 0xff));
-			data.set(offset+2, (byte)((doubleAsLong >> 16) & 0xff));
-			data.set(offset+3, (byte)((doubleAsLong >> 24) & 0xff));
-			data.set(offset+4, (byte)((doubleAsLong >> 32) & 0xff));
-			data.set(offset+5, (byte)((doubleAsLong >> 40) & 0xff));
-			data.set(offset+6, (byte)((doubleAsLong >> 48) & 0xff));
-			data.set(offset+7, (byte)((doubleAsLong >> 56) & 0xff));
+			data.set(offset+1, (byte)((doubleAsLong >>> 8) & 0xff));
+			data.set(offset+2, (byte)((doubleAsLong >>> 16) & 0xff));
+			data.set(offset+3, (byte)((doubleAsLong >>> 24) & 0xff));
+			data.set(offset+4, (byte)((doubleAsLong >>> 32) & 0xff));
+			data.set(offset+5, (byte)((doubleAsLong >>> 40) & 0xff));
+			data.set(offset+6, (byte)((doubleAsLong >>> 48) & 0xff));
+			data.set(offset+7, (byte)((doubleAsLong >>> 56) & 0xff));
 		}else{
 			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(8);
 			dataBuffer.putDouble(value);
@@ -381,7 +381,7 @@ public class BufferObject {
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
 			data.set(offset, (byte)(value & 0xff));
-			data.set(offset+1, (byte)((value >> 8) & 0xff));
+			data.set(offset+1, (byte)((value >>> 8) & 0xff));
 		}else{
 			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(2);
 			dataBuffer.putShort(value);
@@ -407,9 +407,9 @@ public class BufferObject {
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
 			data.set(offset, (byte)(value & 0xff));
-			data.set(offset+1, (byte)((value >> 8) & 0xff));
-			data.set(offset+2, (byte)((value >> 16) & 0xff));
-			data.set(offset+3, (byte)((value >> 24) & 0xff));
+			data.set(offset+1, (byte)((value >>> 8) & 0xff));
+			data.set(offset+2, (byte)((value >>> 16) & 0xff));
+			data.set(offset+3, (byte)((value >>> 24) & 0xff));
 		}else{
 			ByteBuffer dataBuffer = BufferUtils.createByteBuffer(4);
 			dataBuffer.putInt(value);
@@ -434,16 +434,16 @@ public class BufferObject {
 			//add the x value
 			int floatAsInt = Float.floatToIntBits(value.x);
 			data.set(offset, (byte)(floatAsInt & 0xff));
-			data.set(offset+1, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+2, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+3, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+1, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+2, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+3, (byte)((floatAsInt >>> 24) & 0xff));
 			
 			//add the y value
 			floatAsInt = Float.floatToIntBits(value.y);
 			data.set(offset+4, (byte)(floatAsInt & 0xff));
-			data.set(offset+5, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+6, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+7, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+5, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+6, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+7, (byte)((floatAsInt >>> 24) & 0xff));
 		}else{
 			glNamedBufferSubData(bufferId, offset, value.asByteBuffer());
 		}
@@ -465,23 +465,23 @@ public class BufferObject {
 			//add the x value
 			int floatAsInt = Float.floatToIntBits(value.x);
 			data.set(offset, (byte)(floatAsInt & 0xff));
-			data.set(offset+1, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+2, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+3, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+1, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+2, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+3, (byte)((floatAsInt >>> 24) & 0xff));
 
 			//add the y value
 			floatAsInt = Float.floatToIntBits(value.y);
 			data.set(offset+4, (byte)(floatAsInt & 0xff));
-			data.set(offset+5, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+6, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+7, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+5, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+6, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+7, (byte)((floatAsInt >>> 24) & 0xff));
 			
 			//add the z value
 			floatAsInt = Float.floatToIntBits(value.z);
 			data.set(offset+8, (byte)(floatAsInt & 0xff));
-			data.set(offset+9, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+10, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+11, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+9, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+10, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+11, (byte)((floatAsInt >>> 24) & 0xff));
 		}else{
 			glNamedBufferSubData(bufferId, offset, value.asByteBuffer());
 		}
@@ -503,30 +503,30 @@ public class BufferObject {
 			//add the x value
 			int floatAsInt = Float.floatToIntBits(value.x);
 			data.set(offset, (byte)(floatAsInt & 0xff));
-			data.set(offset+1, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+2, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+3, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+1, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+2, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+3, (byte)((floatAsInt >>> 24) & 0xff));
 
 			//add the y value
 			floatAsInt = Float.floatToIntBits(value.y);
 			data.set(offset+4, (byte)(floatAsInt & 0xff));
-			data.set(offset+5, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+6, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+7, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+5, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+6, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+7, (byte)((floatAsInt >>> 24) & 0xff));
 			
 			//add the z value
 			floatAsInt = Float.floatToIntBits(value.z);
 			data.set(offset+8, (byte)(floatAsInt & 0xff));
-			data.set(offset+9, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+10, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+11, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+9, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+10, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+11, (byte)((floatAsInt >>> 24) & 0xff));
 
 			//add the w value
 			floatAsInt = Float.floatToIntBits(value.w);
 			data.set(offset+12, (byte)(floatAsInt & 0xff));
-			data.set(offset+13, (byte)((floatAsInt >> 8) & 0xff));
-			data.set(offset+14, (byte)((floatAsInt >> 16) & 0xff));
-			data.set(offset+15, (byte)((floatAsInt >> 24) & 0xff));
+			data.set(offset+13, (byte)((floatAsInt >>> 8) & 0xff));
+			data.set(offset+14, (byte)((floatAsInt >>> 16) & 0xff));
+			data.set(offset+15, (byte)((floatAsInt >>> 24) & 0xff));
 		}else{
 			glNamedBufferSubData(bufferId, offset, value.asByteBuffer());
 		}
@@ -565,9 +565,9 @@ public class BufferObject {
 				floatAsInt = Float.floatToIntBits(value.valueAt(curFloat));
 				byteOffset = curFloat*4;
 				data.set(offset+byteOffset, (byte)(floatAsInt & 0xff));
-				data.set(offset+byteOffset+1, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+byteOffset+2, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+byteOffset+3, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+byteOffset+1, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+byteOffset+2, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+byteOffset+3, (byte)((floatAsInt >>> 24) & 0xff));
 			}
 		}else{
 			glNamedBufferSubData(bufferId, offset, value.asByteBuffer());
@@ -611,7 +611,7 @@ public class BufferObject {
 		}else if(!finished){//check if this buffer has been flushed
 			for(int curValue = 0; curValue < values.length; curValue++){
 				data.set(offset+(curValue << 1), (byte)(values[curValue] & 0xff));
-				data.set(offset+(curValue << 1)+1, (byte)((values[curValue] >> 8) & 0xff));
+				data.set(offset+(curValue << 1)+1, (byte)((values[curValue] >>> 8) & 0xff));
 			}
 		}else{
 			ShortBuffer dataBuffer = BufferUtils.createShortBuffer(values.length);
@@ -636,9 +636,9 @@ public class BufferObject {
 		}else if(!finished){//check if this buffer has been flushed
 			for(int curValue = 0; curValue < values.length; curValue++){
 				data.set(offset+(curValue << 2), (byte)(values[curValue] & 0xff));
-				data.set(offset+(curValue << 2)+1, (byte)((values[curValue] >> 8) & 0xff));
-				data.set(offset+(curValue << 2)+2, (byte)((values[curValue] >> 16) & 0xff));
-				data.set(offset+(curValue << 2)+3, (byte)((values[curValue] >> 24) & 0xff));
+				data.set(offset+(curValue << 2)+1, (byte)((values[curValue] >>> 8) & 0xff));
+				data.set(offset+(curValue << 2)+2, (byte)((values[curValue] >>> 16) & 0xff));
+				data.set(offset+(curValue << 2)+3, (byte)((values[curValue] >>> 24) & 0xff));
 			}
 		}else{
 			IntBuffer dataBuffer = BufferUtils.createIntBuffer(values.length);
@@ -665,9 +665,9 @@ public class BufferObject {
 			for(int curValue = 0; curValue < values.length; curValue++){
 				floatAsInt = Float.floatToIntBits(values[curValue]);
 				data.set(offset+(curValue << 2), (byte)(floatAsInt & 0xff));
-				data.set(offset+(curValue << 2)+1, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+(curValue << 2)+2, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+(curValue << 2)+3, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+(curValue << 2)+1, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+(curValue << 2)+2, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+(curValue << 2)+3, (byte)((floatAsInt >>> 24) & 0xff));
 			}
 		}else{
 			FloatBuffer dataBuffer = BufferUtils.createFloatBuffer(values.length);
@@ -694,13 +694,13 @@ public class BufferObject {
 			for(int curValue = 0; curValue < values.length; curValue++){
 				doubleAsLong = Double.doubleToLongBits(values[curValue]);
 				data.set(offset+(curValue << 3), (byte)(doubleAsLong & 0xff));
-				data.set(offset+(curValue << 3)+1, (byte)((doubleAsLong >> 8) & 0xff));
-				data.set(offset+(curValue << 3)+2, (byte)((doubleAsLong >> 16) & 0xff));
-				data.set(offset+(curValue << 3)+3, (byte)((doubleAsLong >> 24) & 0xff));
-				data.set(offset+(curValue << 3)+4, (byte)((doubleAsLong >> 32) & 0xff));
-				data.set(offset+(curValue << 3)+5, (byte)((doubleAsLong >> 40) & 0xff));
-				data.set(offset+(curValue << 3)+6, (byte)((doubleAsLong >> 48) & 0xff));
-				data.set(offset+(curValue << 3)+7, (byte)((doubleAsLong >> 56) & 0xff));
+				data.set(offset+(curValue << 3)+1, (byte)((doubleAsLong >>> 8) & 0xff));
+				data.set(offset+(curValue << 3)+2, (byte)((doubleAsLong >>> 16) & 0xff));
+				data.set(offset+(curValue << 3)+3, (byte)((doubleAsLong >>> 24) & 0xff));
+				data.set(offset+(curValue << 3)+4, (byte)((doubleAsLong >>> 32) & 0xff));
+				data.set(offset+(curValue << 3)+5, (byte)((doubleAsLong >>> 40) & 0xff));
+				data.set(offset+(curValue << 3)+6, (byte)((doubleAsLong >>> 48) & 0xff));
+				data.set(offset+(curValue << 3)+7, (byte)((doubleAsLong >>> 56) & 0xff));
 			}
 		}else{
 			DoubleBuffer dataBuffer = BufferUtils.createDoubleBuffer(values.length);
@@ -727,16 +727,16 @@ public class BufferObject {
 			for(int curValue = 0; curValue < values.length; curValue++){
 				floatAsInt = Float.floatToIntBits(values[curValue].x);
 				data.set(offset+(curValue << 2), (byte)(floatAsInt & 0xff));
-				data.set(offset+(curValue << 2)+1, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+(curValue << 2)+2, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+(curValue << 2)+3, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+(curValue << 2)+1, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+(curValue << 2)+2, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+(curValue << 2)+3, (byte)((floatAsInt >>> 24) & 0xff));
 
 				//add the y value
 				floatAsInt = Float.floatToIntBits(values[curValue].y);
 				data.set(offset+(curValue << 2)+4, (byte)(floatAsInt & 0xff));
-				data.set(offset+(curValue << 2)+5, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+(curValue << 2)+6, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+(curValue << 2)+7, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+(curValue << 2)+5, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+(curValue << 2)+6, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+(curValue << 2)+7, (byte)((floatAsInt >>> 24) & 0xff));
 			}
 		}else{
 			FloatBuffer dataBuffer = BufferUtils.createFloatBuffer(values.length << 1);
@@ -764,23 +764,23 @@ public class BufferObject {
 			for(int curValue = 0; curValue < values.length; curValue++){
 				floatAsInt = Float.floatToIntBits(values[curValue].x);
 				data.set(offset+curValue*12, (byte)(floatAsInt & 0xff));
-				data.set(offset+curValue*12+1, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+curValue*12+2, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+curValue*12+3, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+curValue*12+1, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+curValue*12+2, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+curValue*12+3, (byte)((floatAsInt >>> 24) & 0xff));
 
 				//add the y value
 				floatAsInt = Float.floatToIntBits(values[curValue].y);
 				data.set(offset+curValue*12+4, (byte)(floatAsInt & 0xff));
-				data.set(offset+curValue*12+5, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+curValue*12+6, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+curValue*12+7, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+curValue*12+5, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+curValue*12+6, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+curValue*12+7, (byte)((floatAsInt >>> 24) & 0xff));
 				
 				//add the z value
 				floatAsInt = Float.floatToIntBits(values[curValue].z);
 				data.set(offset+curValue*12+8, (byte)(floatAsInt & 0xff));
-				data.set(offset+curValue*12+9, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+curValue*12+10, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+curValue*12+11, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+curValue*12+9, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+curValue*12+10, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+curValue*12+11, (byte)((floatAsInt >>> 24) & 0xff));
 			}
 		}else{
 			FloatBuffer dataBuffer = BufferUtils.createFloatBuffer(values.length*3);
@@ -809,30 +809,30 @@ public class BufferObject {
 			for(int curValue = 0; curValue < values.length; curValue++){
 				floatAsInt = Float.floatToIntBits(values[curValue].x);
 				data.set(offset+(curValue << 4), (byte)(floatAsInt & 0xff));
-				data.set(offset+(curValue << 4)+1, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+(curValue << 4)+2, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+(curValue << 4)+3, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+(curValue << 4)+1, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+(curValue << 4)+2, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+(curValue << 4)+3, (byte)((floatAsInt >>> 24) & 0xff));
 
 				//add the y value
 				floatAsInt = Float.floatToIntBits(values[curValue].y);
 				data.set(offset+(curValue << 4)+4, (byte)(floatAsInt & 0xff));
-				data.set(offset+(curValue << 4)+5, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+(curValue << 4)+6, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+(curValue << 4)+7, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+(curValue << 4)+5, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+(curValue << 4)+6, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+(curValue << 4)+7, (byte)((floatAsInt >>> 24) & 0xff));
 				
 				//add the z value
 				floatAsInt = Float.floatToIntBits(values[curValue].z);
 				data.set(offset+(curValue << 4)+8, (byte)(floatAsInt & 0xff));
-				data.set(offset+(curValue << 4)+9, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+(curValue << 4)+10, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+(curValue << 4)+11, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+(curValue << 4)+9, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+(curValue << 4)+10, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+(curValue << 4)+11, (byte)((floatAsInt >>> 24) & 0xff));
 //
 //				//add the w value
 				floatAsInt = Float.floatToIntBits(values[curValue].w);
 				data.set(offset+(curValue << 4)+12, (byte)(floatAsInt & 0xff));
-				data.set(offset+(curValue << 4)+13, (byte)((floatAsInt >> 8) & 0xff));
-				data.set(offset+(curValue << 4)+14, (byte)((floatAsInt >> 16) & 0xff));
-				data.set(offset+(curValue << 4)+15, (byte)((floatAsInt >> 24) & 0xff));
+				data.set(offset+(curValue << 4)+13, (byte)((floatAsInt >>> 8) & 0xff));
+				data.set(offset+(curValue << 4)+14, (byte)((floatAsInt >>> 16) & 0xff));
+				data.set(offset+(curValue << 4)+15, (byte)((floatAsInt >>> 24) & 0xff));
 			}
 		}else{
 			FloatBuffer dataBuffer = BufferUtils.createFloatBuffer(values.length << 2);
@@ -881,9 +881,9 @@ public class BufferObject {
 					floatAsInt = Float.floatToIntBits(value.valueAt(curFloat));
 					byteOffset = curValue*size_in_bytes+curFloat << 2;
 					data.set(offset+byteOffset, (byte)(floatAsInt & 0xff));
-					data.set(offset+byteOffset+1, (byte)((floatAsInt >> 8) & 0xff));
-					data.set(offset+byteOffset+2, (byte)((floatAsInt >> 16) & 0xff));
-					data.set(offset+byteOffset+3, (byte)((floatAsInt >> 24) & 0xff));
+					data.set(offset+byteOffset+1, (byte)((floatAsInt >>> 8) & 0xff));
+					data.set(offset+byteOffset+2, (byte)((floatAsInt >>> 16) & 0xff));
+					data.set(offset+byteOffset+3, (byte)((floatAsInt >>> 24) & 0xff));
 				}
 			}
 		}else{

@@ -7,6 +7,8 @@ import mesh.primitives.Face;
 import mesh.primitives.HalfEdge;
 import mesh.primitives.Vertex;
 import renderers.RenderMode;
+import glMath.VecUtil;
+import glMath.vectors.Vec3;
 import gldata.IndexBuffer;
 import gldata.VertexArray;
 import gldata.BufferObject;
@@ -148,6 +150,29 @@ public class Geometry {
 			return hashVerts.get(vert);
 		}else{
 			return -1;
+		}
+	}
+	
+	public void computeNormals(){
+		for(Face curFace : faces){
+			Vertex v0 = vertices.get(curFace.he1.sourceVert);
+			Vertex v1 = vertices.get(curFace.he2.sourceVert);
+			Vertex v2 = vertices.get(curFace.he3.sourceVert);
+			
+			//construct vectors with the first vertex as their origin
+			//v1-v0
+			Vec3 e1 = VecUtil.subtract(v1.getPos(), v0.getPos());
+			
+			//v2-v0
+			Vec3 e2 = VecUtil.subtract(v2.getPos(), v0.getPos());
+			
+			//then compute their cross product based on the winding of the face
+			Vec3 faceNormal = e1.cross(e2);
+			
+			//sum the current vertex normal and the face normal to get a normal that is the average of the faces sharing that normal
+			v0.setNormal(VecUtil.add(v0.getNormal(), faceNormal));
+			v1.setNormal(VecUtil.add(v1.getNormal(), faceNormal));
+			v2.setNormal(VecUtil.add(v2.getNormal(), faceNormal));
 		}
 	}
 

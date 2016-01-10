@@ -99,11 +99,11 @@ public abstract class ImageParser {
 		for(int cubeFace = 0; cubeFace < cubeMapFactor; cubeFace++){
 			for(int curRow = 0; curRow < height; curRow++){
 				for(int curCol = 0; curCol < width; curCol++){
-					int colorMod = (curRow+curCol)%2;
+					float colorMod = (curRow+curCol)%2 == 0 ? .35f : 1f;
 					//use an alternating checkerboard pattern
-					pixels.put((byte)(colorMod*255));
-					pixels.put((byte)(colorMod*255));
-					pixels.put((byte)(colorMod*255));
+					pixels.put((byte)(colorMod*175));
+					pixels.put((byte)(colorMod*175));
+					pixels.put((byte)(colorMod*175));
 					if(isRGBA){
 						pixels.put((byte)255);
 					}

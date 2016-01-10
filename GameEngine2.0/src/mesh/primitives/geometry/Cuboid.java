@@ -131,10 +131,6 @@ public final class Cuboid extends Renderable {
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
-		IndexBuffer indices = new IndexBuffer(IndexBuffer.IndexType.BYTE);
-		ibos.add(indices);
-		indices.flush(BufferUsage.STATIC_DRAW);
-		
 		//check if there are additional modes that need to be accounted for
 		if(modes.length > 0){
 			for(RenderMode curMode : modes){
