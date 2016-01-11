@@ -8,6 +8,7 @@ import mesh.primitives.HalfEdge;
 import mesh.primitives.Vertex;
 import renderers.RenderMode;
 import glMath.VecUtil;
+import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
 import gldata.IndexBuffer;
 import gldata.VertexArray;
@@ -29,13 +30,31 @@ public class Geometry {
 		edgeMap = new HashMap<Edge, HalfEdge>();
 	}
 	
+	public Geometry(Geometry geo){
+		vertices = new ArrayList<Vertex>(geo.vertices.size());
+		hashVerts = new HashMap<Vertex, Integer>();
+		faces = new ArrayList<Face>(geo.faces.size());
+		edgeMap = new HashMap<Edge, HalfEdge>();
+		
+		//copy each vertex into this geometry object
+		for(Vertex vert : geo.vertices){
+			vertices.add(new Vertex(vert));
+			hashVerts.put(vert, vertices.size()-1);
+		}
+		
+		//copy the faces
+		for(Face face : geo.faces){
+			faces.add(new Face(face));
+		}
+	}
+	
 	/**
 	 * Adds a vertex to this mesh
 	 * 
 	 * @param vert Vertex to add to this mesh
 	 */
 	public void add(Vertex vert){
-		vertices.add(vert);
+		vertices.add(new Vertex(vert));
 		hashVerts.put(vert, vertices.size()-1);
 	}
 	
@@ -45,7 +64,7 @@ public class Geometry {
 	 * @param face Face to add to this mesh
 	 */
 	public void add(Face face){
-		faces.add(face);
+		faces.add(new Face(face));
 		
 		//create edge that the half edge is associated with but in reverse order, this is due to the edge that marked the half edge
 		//potentially in the map has an opposite ordering
@@ -91,6 +110,7 @@ public class Geometry {
 	 */
 	public void empty(){
 		vertices.clear();
+		hashVerts.clear();
 		faces.clear();
 		edgeMap.clear();
 	}
@@ -153,7 +173,7 @@ public class Geometry {
 		}
 	}
 	
-	public void computeNormals(){
+	public void genNormals(){
 		for(Face curFace : faces){
 			Vertex v0 = vertices.get(curFace.he1.sourceVert);
 			Vertex v1 = vertices.get(curFace.he2.sourceVert);
@@ -166,13 +186,47 @@ public class Geometry {
 			//v2-v0
 			Vec3 e2 = VecUtil.subtract(v2.getPos(), v0.getPos());
 			
-			//then compute their cross product based on the winding of the face
+			//then compute their cross product
 			Vec3 faceNormal = e1.cross(e2);
 			
 			//sum the current vertex normal and the face normal to get a normal that is the average of the faces sharing that normal
 			v0.setNormal(VecUtil.add(v0.getNormal(), faceNormal));
 			v1.setNormal(VecUtil.add(v1.getNormal(), faceNormal));
 			v2.setNormal(VecUtil.add(v2.getNormal(), faceNormal));
+		}
+	}
+	
+	public void genTangentBitangent(){
+		for(Face curFace : faces){
+			Vertex v0 = vertices.get(curFace.he1.sourceVert);
+			Vertex v1 = vertices.get(curFace.he2.sourceVert);
+			Vertex v2 = vertices.get(curFace.he3.sourceVert);
+			
+			//construct vectors with the first vertex as their origin
+			//v1-v0
+			Vec3 e1 = VecUtil.subtract(v1.getPos(), v0.getPos());
+			
+			//v2-v0
+			Vec3 e2 = VecUtil.subtract(v2.getPos(), v0.getPos());
+			
+			//compute the changes in the UVs
+			Vec2 uv1 = VecUtil.subtract(v1.getUV(), v0.getUV());
+			Vec2 uv2 = VecUtil.subtract(v2.getUV(), v0.getUV());
+			
+			//compute determinant of the texture space basis matrix
+			float textDet = 1.0f/(uv1.x * uv2.y - uv1.y * uv2.x);
+			
+			Vec3 tangent = (VecUtil.scale(e1, uv2.y).subtract(VecUtil.scale(e2, uv1.y))).scale(textDet);
+			Vec3 bitangent = (VecUtil.scale(e2, uv1.x).subtract(VecUtil.scale(e1, uv2.x))).scale(textDet);
+			//add the tangent and bitangent to the vertices
+			v0.addToTangent(tangent);
+			v0.addToBitangent(bitangent);
+			
+			v1.addToTangent(tangent);
+			v1.addToBitangent(bitangent);
+			
+			v2.addToTangent(tangent);
+			v2.addToBitangent(bitangent);
 		}
 	}
 
@@ -189,24 +243,6 @@ public class Geometry {
 		}else{
 			return faces.get(index);
 		}
-	}
-	
-	/**
-	 * Gets the vertices of this mesh
-	 * 
-	 * @return ArrayList of the vertices stored in this mesh
-	 */
-	public ArrayList<Vertex> getVertices(){
-		return vertices;
-	}
-	
-	/**
-	 * Gets the faces of this mesh
-	 * 
-	 * @return ArrayList contained the faces stored in this mesh
-	 */
-	public ArrayList<Face> getFaces(){
-		return faces;
 	}
 	
 	/**

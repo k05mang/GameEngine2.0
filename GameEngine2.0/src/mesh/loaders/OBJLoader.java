@@ -6,44 +6,37 @@ import glMath.vectors.Vec3;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
+import core.MeshManager;
+import core.SceneManager;
+import mesh.Geometry;
+import mesh.OBJ;
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
 
 public class OBJLoader implements MeshLoader {
 	
-	private String fileName;
 	private ArrayList<Vec3> verts, normals;
 	private ArrayList<Vec2> uvs;
+	private Scanner obj;
+	private String curGroup;
+	private Geometry curMesh;
+	//TODO materials
 
 	public OBJLoader(String file){
 		this(new File(file));
 	}
 	
 	public OBJLoader(File file){
-		fileName = file.getName();
-		try(Scanner obj = new Scanner(file)){
-			
+		try{
+			obj = new Scanner(file);
 			//will retain the different values for each field of data, position, normal, and text coords
 			verts = new ArrayList<Vec3>();
 			normals = new ArrayList<Vec3>();
 			uvs = new ArrayList<Vec2>();
-			
-			while(obj.hasNextLine()){
-				String line = obj.nextLine();
-				
-				parseLine(line);
-				
-			}
-			
-			//if the mesh hasn't defined normals compute normals
-//			if(normals.isEmpty()){
-//				geometry.computeNormals();
-//			}
-//			
-//			geometry.insertVertices(vbo);
-//			geometry.insertIndices(ibo, RenderMode.TRIANGLES);
+			curMesh = new Geometry();
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -51,7 +44,19 @@ public class OBJLoader implements MeshLoader {
 	
 	@Override
 	public void load(){
-	
+		while(obj.hasNextLine()){
+			String line = obj.nextLine();
+			parseLine(line);
+			
+		}
+		//add the last mesh that was processed after we reached the end of the file
+		if(normals.isEmpty()){
+			curMesh.genNormals();
+			//add tangent and bitangent computation
+		}
+		
+		SceneManager.meshes.put(curGroup, new OBJ(curMesh));
+		obj.close();
 	}
 	
 	private void parseLine(String line){
@@ -86,6 +91,22 @@ public class OBJLoader implements MeshLoader {
 				break;
 			case "f":
 				parseFace(data);
+				break;
+			case "g":
+				if(curGroup != null){
+					//add the finished model to the scene
+					if(normals.isEmpty()){
+						curMesh.genNormals();
+						//add tangent and bitangent computation
+					}
+					
+					SceneManager.meshes.put(curGroup, new OBJ(curMesh));
+				}
+				//set variables for the next group
+				String[] groups = line.split("\\s++");
+				curGroup = groups[1];//only use the first group name ignore the rest
+				curMesh.empty();
+				//TODO materials
 				break;
 			default://otherwise ignore it for now
 				break;
@@ -133,23 +154,21 @@ public class OBJLoader implements MeshLoader {
 			}
 			
 			//see if the "new" vertex is actually new and add it if it is
-//			if(geometry.getIndex(newVert) == -1){
-//				//add the value
-//				geometry.add(newVert);
-////				newVert.addTo(vbo);
-//			}
-//			indices.add(geometry.getIndex(newVert));
+			if(curMesh.getIndex(newVert) == -1){
+				//add the value
+				curMesh.add(newVert);
+			}
+			indices.add(curMesh.getIndex(newVert));
 		}
 		
 		//now generate faces for the indices found
 		//since more than 3 vertices can define a face in OBJ triangulation may be necessary
-		
-//		for(int curFace = 1; curFace < indices.size()-1; curFace++){
-//			geometry.add(new Face(
-//					indices.get(0),
-//					indices.get(curFace),
-//					indices.get(curFace+1)
-//					));
-//		}
+		for(int curFace = 1; curFace < indices.size()-1; curFace++){
+			curMesh.add(new Face(
+					indices.get(0),
+					indices.get(curFace),
+					indices.get(curFace+1)
+					));
+		}
 	}
 }

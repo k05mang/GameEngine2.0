@@ -47,6 +47,10 @@ public class Face {
 		he3.parent = this;
 	}
 	
+	public Face(Face face){
+		this(face.he1.sourceVert, face.he2.sourceVert, face.he3.sourceVert);
+	}
+	
 	/**
 	 * Stores this face's vertex indices, representing the primitive of the face, in the given buffer object
 	 * 

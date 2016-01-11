@@ -119,6 +119,26 @@ public class Vertex{
 		this.bitangent = null;
 	}
 	
+	public Vertex(Vertex vert){
+		pos = new Vec3(vert.pos);
+		normal = new Vec3(vert.normal);
+		textCoords = new Vec2(vert.textCoords);
+		
+		//check if the vertex being passed has a bitangent to set this one with
+		if(vert.bitangent != null){
+			bitangent = new Vec3(vert.bitangent);
+		}else{
+			bitangent = null;
+		}
+		
+		//check if the vertex being passed has a tangent to set this one with
+		if(vert.tangent != null){
+			tangent = new Vec3(vert.tangent);
+		}else{
+			tangent = null;
+		}
+	}
+	
 //	public Vertex(float x, float y, float z, Vec3 normal, Vec2 textCoord, Vec3 tangent, Vec3 bitangent){
 //		this(x,y,z, normal.x, normal.y, normal.z, textCoord.x, textCoord.y,
 //				tangent.x, tangent.y, tangent.z, bitangent.x, bitangent.y, bitangent.z);
@@ -293,13 +313,7 @@ public class Vertex{
 	 * @param newTangent Vector to set as the new tangent for this vertex
 	 */
 	public void setTangent(Vec3 newTangent){
-		//check if the tangent was initialized or not
-		if(tangent == null){
-			tangent = new Vec3(newTangent);
-		}else{
-			tangent.set(newTangent);
-		}
-		this.tangent.normalize();
+		setTangent(newTangent.x, newTangent.y, newTangent.z);
 	}
 	
 	/**
@@ -315,6 +329,8 @@ public class Vertex{
 		}else{
 			tangent.add(addition);
 		}
+		//adjust invariance in the tangent to make it truly orthogonal
+		tangent.subtract(VecUtil.scale(normal, normal.dot(tangent)));//t - n * glm::dot(n, t)
 		tangent.normalize();
 	}
 	
@@ -337,9 +353,9 @@ public class Vertex{
 	 */
 	public void setBitangent(float btx, float bty, float btz){
 		if(tangent == null){
-			tangent = new Vec3(btx, bty, btz);
+			bitangent = new Vec3(btx, bty, btz);
 		}else{
-			tangent.set(btx, bty, btz);
+			bitangent.set(btx, bty, btz);
 		}
 		bitangent.normalize();
 	}
@@ -351,12 +367,7 @@ public class Vertex{
 	 * @param bitangent New bitangent for this vertex
 	 */
 	public void setBitangent(Vec3 newBitangent){
-		if(tangent == null){
-			tangent = new Vec3(newBitangent);
-		}else{
-			tangent.set(newBitangent);
-		}
-		this.bitangent.normalize();
+		setBitangent(newBitangent.x, newBitangent.y, newBitangent.z);
 	}
 	
 	/**

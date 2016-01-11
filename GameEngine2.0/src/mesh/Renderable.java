@@ -2,13 +2,14 @@ package mesh;
 
 import java.util.ArrayList;
 
+import core.Resource;
 import glMath.Transform;
 import glMath.matrices.Mat4;
 import gldata.VertexArray;
 import gldata.BufferObject;
 import gldata.IndexBuffer;
 
-public abstract class Renderable {
+public abstract class Renderable implements Resource{
 	protected Transform transforms;
 	protected Geometry geometry;
 	protected VertexArray vao;
@@ -37,8 +38,8 @@ public abstract class Renderable {
 	 * @param copy
 	 */
 	public Renderable(Renderable copy){
-		vao = copy.vao;
-		geometry = copy.geometry;
+		vao = copy.vao;//TODO add a copy constructor to the vertex array and bufferobject
+		geometry = new Geometry(copy.geometry);
 		transforms = new Transform(copy.transforms);
 	}
 	

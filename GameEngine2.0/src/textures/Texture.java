@@ -11,6 +11,7 @@ import java.nio.ShortBuffer;
 
 import org.lwjgl.BufferUtils;
 
+import core.Resource;
 import textures.enums.InternalFormat;
 import textures.enums.TexParam;
 import textures.enums.TexParamEnum;
@@ -34,7 +35,7 @@ import textures.enums.TextureType;
 //import static org.lwjgl.opengl.GL44.*;
 //import static org.lwjgl.opengl.GL45.*;
 
-public abstract class Texture {
+public abstract class Texture implements Resource{
 
 	protected int id, levels_samples;
 	protected TextureType type;
@@ -44,7 +45,7 @@ public abstract class Texture {
 		type = texType;
 		id = glCreateTextures(type.value);
 		iformat = format;
-		this.levels_samples = Math.max(1,  levels_samples);//cap it
+		this.levels_samples = Math.max(1, levels_samples);//cap it
 	}
 	
 	/**

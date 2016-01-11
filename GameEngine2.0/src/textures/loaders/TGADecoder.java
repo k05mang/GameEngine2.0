@@ -89,8 +89,8 @@ public class TGADecoder extends ImageParser {
 			}
 			type = TexDataType.UBYTE;
 		}else{
-			format = BaseFormat.RGB;
-			bufferPixelElements = 3;
+			format = BaseFormat.RED;
+			bufferPixelElements = 1;
 			type = TexDataType.UBYTE;
 		}
 	}
@@ -251,8 +251,6 @@ public class TGADecoder extends ImageParser {
 				}
 				byte finalValue = (byte)(255*(value/(float)(1 << pixelBitDepth)));
 				image.put(offset, finalValue);
-				image.put(offset+1, finalValue);
-				image.put(offset+2, finalValue);
 				break;
 		}
 	}
