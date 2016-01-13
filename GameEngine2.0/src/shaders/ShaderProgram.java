@@ -3,9 +3,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL41.*;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -122,35 +120,17 @@ public class ShaderProgram {
 		glLinkProgram(programId);
 		//if we linked successfully add the uniforms to the map and fix any that were unknown while parsing a single shader file
 		if(glGetProgrami(programId, GL_LINK_STATUS) == GL_TRUE){
-			HashMap<String, ShaderStruct> structs = new HashMap<String, ShaderStruct>();
-			//finalize all unknown uniforms and add them to the uniform hashmap
-			//get all the structs parsed from the shader associated with this program
-			for(Shader shader : shaders){
-				structs.putAll(shader.getStructs());
-				//detach the shaders
-				shader.detach(programId);
-			}
 			//iterate and add uniforms
 			for(Shader shader : shaders){
 				for(Uniform uniform : shader.getUniforms()){
-					//check if the uniform is an unknown type
-					if(uniform.getType() == Uniform.UNKNOWN){
-						//get the struct that defines this uniform, if anything goes wrong here that means the parser failed and needs further work
-						ShaderStruct structure = structs.get(uniform.getTypeName());
-						//generate new uniforms from the struct and add them
-						for(Uniform structUni : structure.genUniforms(uniform.getName(), structs)){
-							structUni.getBinding(programId);
-							uniforms.put(structUni.getName(), structUni);
-						}
-					}else{
-						//copy the uniform
-						Uniform copy = new Uniform(uniform);
-						//get its location in the newly linked shader program
-						copy.getBinding(programId);
-						//add it to the programs uniform variable mapping
-						uniforms.put(copy.getName(), copy);
-					}
+					//copy the uniform
+					Uniform copy = new Uniform(uniform);
+					//get its location in the newly linked shader program
+					copy.getBinding(programId);
+					//add it to the programs uniform variable mapping
+					uniforms.put(copy.getName(), copy);
 				}
+				shader.detach(programId);
 			}
 			return true;
 		}else{

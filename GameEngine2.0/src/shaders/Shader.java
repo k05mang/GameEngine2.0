@@ -52,7 +52,7 @@ public class Shader {
 	 */
 	public boolean compile(){
 		glCompileShader(shaderId);
-		return glGetShaderi(shaderId, GL_COMPILE_STATUS) == GL_TRUE	? true : false;
+		return glGetShaderi(shaderId, GL_COMPILE_STATUS) == GL_TRUE;
 	}
 	
 	/**
@@ -60,7 +60,7 @@ public class Shader {
 	 * @return True if this shader was successfully compiled on the GPU
 	 */
 	public boolean isCompiled(){
-		return glGetShaderi(shaderId, GL_COMPILE_STATUS) == GL_TRUE	? true : false;
+		return glGetShaderi(shaderId, GL_COMPILE_STATUS) == GL_TRUE;
 	}
 	
 	/**

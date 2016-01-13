@@ -289,20 +289,52 @@ public enum InternalFormat {
 	/**
 	 * Determines whether the current format is a depth format
 	 * 
-	 * @return True if it is a depth format false otherwise
+	 * @return True if it is a depth format, false otherwise
 	 */
 	public boolean isDepthFormat(){
 		if(
 			value == GL_DEPTH_COMPONENT16 || 
 			value == GL_DEPTH_COMPONENT24 || 
 			value == GL_DEPTH_COMPONENT32 || 
-			value == GL_DEPTH_COMPONENT32F || 
+			value == GL_DEPTH_COMPONENT32F ||
 			value == GL_DEPTH24_STENCIL8 || 
-			value == GL_DEPTH32F_STENCIL8 || 
+			value == GL_DEPTH32F_STENCIL8
+		){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Determines whether the current format is a stencil format
+	 * 
+	 * @return True if it is a stencil format, false otherwise
+	 */
+	public boolean isStencilFormat(){
+		if(
 			value == GL_STENCIL_INDEX1 || 
 			value == GL_STENCIL_INDEX4 || 
 			value == GL_STENCIL_INDEX8 || 
-			value == GL_STENCIL_INDEX16		
+			value == GL_STENCIL_INDEX16 ||
+			value == GL_DEPTH24_STENCIL8 || 
+			value == GL_DEPTH32F_STENCIL8
+		){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	/**
+	 * Determines whether the current format is a depth, stencil format
+	 * 
+	 * @return True if it is a depth, stencil format, false otherwise
+	 */
+	public boolean isDepthStencil(){
+		if(
+			value == GL_DEPTH24_STENCIL8 || 
+			value == GL_DEPTH32F_STENCIL8
 		){
 			return true;
 		}else{

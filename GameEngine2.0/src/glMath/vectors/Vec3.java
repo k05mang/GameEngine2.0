@@ -509,8 +509,7 @@ public class Vec3 implements Vector {
 	
 	@Override
 	public String toString(){
-		return x+" | "+y+" | "+z;
-//		return "x="+x+" | "+"y="+y+" | "+"z="+z;
+		return "("+x+","+y+","+z+")";
 	}
 	
 	@Override

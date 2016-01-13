@@ -586,7 +586,7 @@ public class Vec4 implements Vector {
 	
 	@Override
 	public String toString(){
-		return x+" | "+y+" | "+z+" | "+w;
+		return "("+x+","+y+","+z+","+w+")";
 	}
 	
 	@Override

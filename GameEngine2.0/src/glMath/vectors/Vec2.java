@@ -423,8 +423,7 @@ public class Vec2 implements Vector {
 	
 	@Override
 	public String toString(){
-		return x+" | "+y;
-//		return "x="+x+" | "+"y="+y;
+		return "("+x+","+y+")";
 	}
 	
 	@Override

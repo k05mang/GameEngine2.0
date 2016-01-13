@@ -119,6 +119,11 @@ public class Vertex{
 		this.bitangent = null;
 	}
 	
+	/**
+	 * Constructs a vertex using the given Vertex as a source to copy
+	 * 
+	 * @param vert Vertex to copy data from in the construction of this vertex
+	 */
 	public Vertex(Vertex vert){
 		pos = new Vec3(vert.pos);
 		normal = new Vec3(vert.normal);
@@ -138,26 +143,6 @@ public class Vertex{
 			tangent = null;
 		}
 	}
-	
-//	public Vertex(float x, float y, float z, Vec3 normal, Vec2 textCoord, Vec3 tangent, Vec3 bitangent){
-//		this(x,y,z, normal.x, normal.y, normal.z, textCoord.x, textCoord.y,
-//				tangent.x, tangent.y, tangent.z, bitangent.x, bitangent.y, bitangent.z);
-//	}
-//	
-//	public Vertex(Vec3 pos,  Vec3 normal, float u, float v, Vec3 tangent, Vec3 bitangent){
-//		this(pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, u, v,
-//				tangent.x, tangent.y, tangent.z, bitangent.x, bitangent.y, bitangent.z);
-//	}
-//	
-//	public Vertex(Vec3 pos,  Vec3 normal, Vec2 textCoord, float tx, float ty, float tz, Vec3 bitangent){
-//		this(pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, textCoord.x, textCoord.y,
-//				tx, ty, tz, bitangent.x, bitangent.y, bitangent.z);
-//	}
-//	
-//	public Vertex(Vec3 pos,  Vec3 normal, Vec2 textCoord, Vec3 tangent, float btx, float bty, float btz){
-//		this(pos.x, pos.y, pos.z, normal.x, normal.y, normal.z, textCoord.x, textCoord.y,
-//				tangent.x, tangent.y, tangent.z, btx, bty, btz);
-//	}
 	
 	/**
 	 * Sets this vertex to the given vertex. All values from the given vertex are copied into this vertex
@@ -430,18 +415,18 @@ public class Vertex{
 		return Arrays.hashCode(new Object[]{pos, normal, textCoords});
 	}
 	
-	/**
-	 * Prints this vertex's information to the terminal window
-	 */
-	public void print(){
-		System.out.println(pos.toString());
-		System.out.println(normal.toString());
-		System.out.println(textCoords.toString());
+	@Override
+	public String toString(){
+		StringBuilder result = new StringBuilder();
+		result.append("Position: "+pos.toString()+"\n");
+		result.append("Normal: "+normal.toString()+"\n");
+		result.append("UV's: "+textCoords.toString()+"\n");
 		if(tangent != null){
-			System.out.println(tangent.toString());
+			result.append("Tangent: "+tangent.toString()+"\n");
 		}
 		if(bitangent != null){
-			System.out.println(bitangent.toString());
+			result.append("Bitangent: "+bitangent.toString()+"\n");
 		}
+		return result.toString();
 	}
 }

@@ -108,8 +108,6 @@ public class OBJLoader implements MeshLoader {
 				curMesh.empty();
 				//TODO materials
 				break;
-			default://otherwise ignore it for now
-				break;
 		}
 	}
 	
