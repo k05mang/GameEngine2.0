@@ -36,25 +36,24 @@ public final class Cone extends Renderable {
 		
 		//check and restrict the values passed to the constructor if they do not meet minimum requirements
 		int subdiv = Math.max(3, slices);
-		this.radius = radius;
-		this.length = length;
-		float vertOffset = centered ? this.length/2.0f : this.length;
+		this.radius = Math.abs(radius);
+		this.length = Math.abs(length);
 		
 		IndexBuffer.IndexType dataType = getIndexType(subdiv);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		Vertex tip = new Vertex(0, centered ? this.length/2.0f : 0 ,0, 0,1,0, 0,0);
+		Vertex tip = new Vertex(0,0,0, 0,1,0, 0,0);
 		geometry.add(tip);
 		tip.addTo(vbo);
 		for(int segment = 1; segment < subdiv+1; segment++){
 			double theta = 2*PI*(segment/(double)subdiv);
 			
-			float x = this.radius*(float)(cos(theta));
-			float z = this.radius*(float)(sin(theta));
+			float x = (float)(cos(theta));
+			float z = (float)(sin(theta));
 			
-			Vertex bottomVert = new Vertex(x, -vertOffset, z,  x, -vertOffset, z, 0,0);
+			Vertex bottomVert = new Vertex(x, -1, z,  x, -1, z, 0,0);
 			geometry.add(bottomVert);
 			bottomVert.addTo(vbo);
 			
@@ -82,13 +81,13 @@ public final class Cone extends Renderable {
 //			float capu = (float)cos(theta);
 //			float capv =(float)sin(theta);
 //			
-//			float x = this.radius*capu;
-//			float z = this.radius*capv;
+//			float x = capu;
+//			float z = capv;
 //			
 //			if(segment < subdiv){
 //				float topu = (segment+.5f)/(float)subdiv;
-//				float topx = this.radius*(float)cos(2*PI*topu);
-//				float topz = this.radius*(float)sin(2*PI*topu);
+//				float topx = (float)cos(2*PI*topu);
+//				float topz = (float)sin(2*PI*topu);
 //				Vertex top = new Vertex(0, vertOffset, 0,  x, this.radius/this.length, z, topu,1);
 //				mesh.add(top);
 //				top.addTo(vbo);
@@ -126,6 +125,12 @@ public final class Cone extends Renderable {
 //			}
 //		}
 
+		if(centered){
+			transforms.translate(0, this.length/2.0f, 0);
+		}
+		
+		transforms.scale(this.radius, this.length, this.radius);
+		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		

@@ -31,8 +31,8 @@ public final class Cylinder extends Renderable{
 		super();
 		
 		int maxSegment = Math.max(3, segments);
-		this.length = length;
-		this.radius = radius;
+		this.length = Math.abs(length);
+		this.radius = Math.abs(radius);
 		
 		int lastIndex = maxSegment*4-1;
 		IndexBuffer.IndexType dataType = getIndexType(lastIndex);
@@ -47,15 +47,14 @@ public final class Cylinder extends Renderable{
 			float capu = (float)cos(theta);
 			float capv = (float)sin(theta);
 			
-			float x = this.radius*capu;
-			float y = this.length/2.0f;
-			float z = this.radius*capv;
+			float x = capu;
+			float z = capv;
 
-			Vertex capTop = new Vertex(x, y, z,  0,1,0, capu/2+.5f, -capv/2+.5f);
-			Vertex sideTop = new Vertex(x, y, z,  x, 0, z, 1-u, 1);
+			Vertex capTop = new Vertex(x, 1, z,  0,1,0, capu/2+.5f, -capv/2+.5f);
+			Vertex sideTop = new Vertex(x, 1, z,  x, 0, z, 1-u, 1);
 			
-			Vertex sideBottom = new Vertex(x, -y, z,  x, 0, z, 1-u,0);
-			Vertex capBottom = new Vertex(x, -y, z,  0,-1,0, capu/2+.5f, -capv/2+.5f);
+			Vertex sideBottom = new Vertex(x, -1, z,  x, 0, z, 1-u,0);
+			Vertex capBottom = new Vertex(x, -1, z,  0,-1,0, capu/2+.5f, -capv/2+.5f);
 
 			geometry.add(capTop);
 			geometry.add(sideTop);
@@ -103,6 +102,8 @@ public final class Cylinder extends Renderable{
 						));
 			}
 		}
+		
+		transforms.scale(this.radius, this.length, this.radius);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		

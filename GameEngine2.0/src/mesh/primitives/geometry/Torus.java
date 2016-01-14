@@ -33,8 +33,8 @@ public final class Torus extends Renderable {
 	public Torus(float radius, float tubeRadius, int rings, int ringSegs, RenderMode... modes){
 		super();
 		
-		this.radius = radius;
-		this.tubeRadius = tubeRadius;
+		this.radius = Math.abs(radius);
+		this.tubeRadius = Math.abs(tubeRadius);
 		int maxRing = Math.max(3, rings);
 		int maxRingSeg = Math.max(3, ringSegs);
 		

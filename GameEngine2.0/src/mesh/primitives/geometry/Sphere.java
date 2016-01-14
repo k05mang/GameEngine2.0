@@ -37,7 +37,7 @@ public final class Sphere extends Renderable{
 		
 		int maxSlice = Math.max(3, slices);
 		int maxStack = Math.max(1, stacks);
-		this.radius = radius;
+		this.radius = Math.abs(radius);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
@@ -51,9 +51,9 @@ public final class Sphere extends Renderable{
 				double phi = PI*v;
 				double theta = 2*PI*u;
 				
-				float x = (float)( this.radius*cos(theta)*sin(phi) );
-				float y = (float)( this.radius*cos(phi) );//since y is the up axis have it use the conventional z calculation
-				float z = (float)( this.radius*sin(theta)*sin(phi) );
+				float x = (float)( cos(theta)*sin(phi) );
+				float y = (float)( cos(phi) );//since y is the up axis have it use the conventional z calculation
+				float z = (float)( sin(theta)*sin(phi) );
 				
 				Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
 				geometry.add(vert);
@@ -87,6 +87,8 @@ public final class Sphere extends Renderable{
 				}
 			}
 		}
+		
+		transforms.scale(this.radius, this.radius, this.radius);
 		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);

@@ -26,92 +26,93 @@ public final class Cuboid extends Renderable {
 	public Cuboid(float width, float height, float depth, RenderMode... modes){
 		super();
 		
-		halfDimensions = new Vec3(width/2.0f,height/2.0f,depth/2.0f);
+		halfDimensions = new Vec3(Math.abs(width)/2.0f, Math.abs(height)/2.0f, Math.abs(depth)/2.0f);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
 		//-----zpos face------
-		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-1, 1, 1, 
 				0, 0, 1,
 				0, 1));
-		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-1, -1, 1, 
 				0, 0, 1, 
 				0, 0));
-		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(1, 1, 1, 
 				0, 0, 1, 
 				1, 1));
-		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(1, -1, 1, 
 				0, 0, 1, 
 				1, 0));
 		//-----zneg face------
-		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(1, 1, -1, 
 				0, 0, -1, 
 				0, 1));
-		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(1, -1, -1, 
 				0, 0, -1,
 				0, 0));
-		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-1, 1, -1, 
 				0, 0, -1, 
 				1, 1));
-		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-1, -1, -1, 
 				0, 0, -1, 
 				1, 0));
 		
 		//-----xpos face------
-		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(1, 1, 1, 
 				1, 0, 0, 
 				0, 1));
-		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(1, -1, 1, 
 				1, 0, 0, 
 				0, 0));
-		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(1, 1, -1, 
 				1, 0, 0, 
 				1, 1));
-		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(1, -1, -1, 
 				1, 0, 0, 
 				1, 0));
 		//-----xneg face------
-		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-1, 1, -1, 
 				-1, 0, 0, 
 				0, 1));
-		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-1, -1, -1, 
 				-1, 0, 0, 
 				0, 0));
-		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-1, 1, 1, 
 				-1, 0, 0, 
 				1, 1));
-		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-1, -1, 1, 
 				-1, 0, 0, 
 				1, 0));
 		
 		//-----ypos face------
-		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-1, 1, -1, 
 				0, 1, 0, 
 				0, 1));
-		geometry.add(new Vertex(-halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-1, 1, 1, 
 				0, 1, 0, 
 				0, 0));
-		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(1, 1, -1, 
 				0, 1, 0, 
 				1, 1));
-		geometry.add(new Vertex(halfDimensions.x, halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(1, 1, 1, 
 				0, 1, 0, 
 				1, 0));
 		//-----yneg face------
-		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(-1, -1, 1, 
 				0, -1, 0, 
 				0, 1));
-		geometry.add(new Vertex(-halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(-1, -1, -1, 
 				0, -1, 0, 
 				0, 0));
-		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
+		geometry.add(new Vertex(1, -1, 1, 
 				0, -1, 0, 
 				1, 1));
-		geometry.add(new Vertex(halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
+		geometry.add(new Vertex(1, -1, -1, 
 				0, -1, 0, 
 				1, 0));
 		
+		transforms.scale(halfDimensions);
 		//generate the face indices
 		for (int face = 0; face < 6; face++) {
 			geometry.add(new Face(

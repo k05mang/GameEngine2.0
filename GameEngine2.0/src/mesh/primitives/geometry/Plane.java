@@ -24,16 +24,16 @@ public final class Plane extends Renderable{
 	 */
 	public Plane(float width, float length, RenderMode... modes){
 		super();
-		this.width = width/2.0f;
-		this.length = length/2.0f;
+		this.width = Math.abs(width)/2.0f;
+		this.length = Math.abs(length)/2.0f;
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		Vertex topLeft = new Vertex(-this.width,0,-this.length, 0,1,0, 0,1);
-		Vertex bottomLeft = new Vertex(-this.width,0,this.length, 0,1,0, 0,0);
-		Vertex topRight = new Vertex(this.width,0,-this.length, 0,1,0, 1,1);
-		Vertex bottomRight = new Vertex(this.width,0,this.length, 0,1,0, 1,0);
+		Vertex topLeft = new Vertex(-1,0,-1, 0,1,0, 0,1);
+		Vertex bottomLeft = new Vertex(-1,0,1, 0,1,0, 0,0);
+		Vertex topRight = new Vertex(1,0,-1, 0,1,0, 1,1);
+		Vertex bottomRight = new Vertex(1,0,1, 0,1,0, 1,0);
 		
 		topLeft.addTo(vbo);
 		bottomLeft.addTo(vbo);
@@ -48,6 +48,7 @@ public final class Plane extends Renderable{
 		geometry.add(new Face(0,1,2));
 		geometry.add(new Face(2,1,3));
 		
+		transforms.scale(this.width, 1, this.length);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		

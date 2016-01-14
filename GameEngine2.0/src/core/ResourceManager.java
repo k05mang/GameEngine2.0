@@ -14,7 +14,7 @@ public class ResourceManager {
 		resources.put(id,  res);
 	}
 	
-	public Resource getResource(String id){
+	public Resource get(String id){
 		return resources.get(id);
 	}
 	

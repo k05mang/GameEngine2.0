@@ -34,7 +34,7 @@ public final class Icosphere extends Renderable {
 	 */
 	public Icosphere(float radius, int order, RenderMode... modes){
 		super();
-		this.radius = radius;
+		this.radius = Math.abs(radius);
 		int clampedOrder = Math.max(0,  order);
 		int lastIndex = 11+((1 << (clampedOrder << 1))-1)*10;//11+(2^(clampedOrder*2)-1)*10
 		
@@ -49,12 +49,12 @@ public final class Icosphere extends Renderable {
 		float length = (float)Math.sqrt(1+goldenRatio*goldenRatio);
 		
 		//use the cyclic permutation of (0, +/-1, +/-phi)
-		//since values need to be normalized then scaled by the radius store the two non-zero values separately after being changed
+		//since values need to be normalized then scaled by the this.radius store the two non-zero values separately after being changed
 		
 		//represents the 1 of the permutation for an icosphere with edge length 2 
-		float one = radius/length;
+		float one = this.radius/length;
 		//represents the phi in the equation above
-		float phi = radius*goldenRatio/length;
+		float phi = this.radius*goldenRatio/length;
 
 		//phi > one
 		HashMap<Vertex, Integer> vertMap = new HashMap<Vertex, Integer>();//map to quickly find the index of a vertex when we know the vertex

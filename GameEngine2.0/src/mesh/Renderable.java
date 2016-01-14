@@ -38,8 +38,8 @@ public abstract class Renderable implements Resource{
 	 * @param copy
 	 */
 	public Renderable(Renderable copy){
-		vao = copy.vao;//TODO add a copy constructor to the vertex array and bufferobject
-		geometry = new Geometry(copy.geometry);
+		vao = copy.vao;
+		geometry = copy.geometry;//new Geometry(copy.geometry);
 		transforms = new Transform(copy.transforms);
 	}
 	
@@ -119,6 +119,14 @@ public abstract class Renderable implements Resource{
 			buffer.delete();
 		}
 	}
+	
+	public void setTransform(Transform trans){
+		transforms.set(trans);
+	}
+	
+//	public Transform getTransform(){
+//		return transforms;
+//	}
 	
 	/**
 	 * Gets the IndexBuffer IndexType based on the given {@code size}, the value returned is to be passed to 

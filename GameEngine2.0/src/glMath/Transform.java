@@ -126,6 +126,59 @@ public class Transform {
 		
 		return this;
 	}
+	
+	public void set(Transform trans){
+		orientation.set(trans.orientation);
+		position.set(trans.position);
+		scale.set(trans.scale);
+	}
+	
+	public void setScale(float x, float y, float z){
+		scale.set(x, y, z);
+	}
+	
+	public void setScale(Vec3 scalars){
+		scale.set(scalars);
+	}
+	
+	public void setOrientation(Quaternion orientation){
+		this.orientation.set(orientation);
+	}
+	
+	public void setPos(float x, float y, float z){
+		position.set(x, y, z);
+	}
+	
+	public void setPos(Vec3 newPos){
+		position.set(newPos);
+	}
+	
+	/**
+	 * Gets the scalars for this transformation
+	 * 
+	 * @return The x, y, z scalars for this transformation
+	 */
+	public Vec3 getScalars(){
+		return scale;
+	}
+	
+	/**
+	 * Gets the position of this transformation
+	 * 
+	 * @return The x, y, z position of this transformation
+	 */
+	public Vec3 getPosition(){
+		return position;
+	}
+	
+	/**
+	 * Gets the orientation of this transformation
+	 * 
+	 * @return The quaternion representing the orientation of this transformation
+	 */
+	public Quaternion getOrientation(){
+		return orientation;
+	}
 
 	
 	/**
@@ -289,32 +342,5 @@ public class Transform {
 				new Vec3(-sin, cos, 0),
 				new Vec3(0,0,1)
 				);
-	}
-	
-	/**
-	 * Gets the scalars for this transformation
-	 * 
-	 * @return The x, y, z scalars for this transformation
-	 */
-	public Vec3 getScalars(){
-		return scale;
-	}
-	
-	/**
-	 * Gets the translation of this transformation
-	 * 
-	 * @return The x, y, z translation of this transformation
-	 */
-	public Vec3 getTranslation(){
-		return position;
-	}
-	
-	/**
-	 * Gets the orientation of this transformation
-	 * 
-	 * @return The quaternion representing the orientation of this transformation
-	 */
-	public Quaternion getOrientation(){
-		return orientation;
 	}
 }

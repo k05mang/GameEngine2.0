@@ -26,7 +26,7 @@ public final class Disc extends Renderable {
 	 * for the Disc to render with
 	 */
 	public Disc(float radius, int segments, RenderMode... modes){
-		this.radius = radius;
+		this.radius = Math.abs(radius);
 		
 		int maxSegment = Math.max(3, segments);
 		IndexBuffer.IndexType dataType = getIndexType(maxSegment-1);
@@ -40,8 +40,8 @@ public final class Disc extends Renderable {
 			float u = (float)(cos(theta));
 			float v = (float)(sin(theta));
 			
-			float x = this.radius*u;
-			float z = this.radius*v;
+			float x = u;
+			float z = v;
 
 			Vertex curVert = new Vertex(x, 0, z,  0,1,0, u/2+.5f, -v/2+.5f);
 
@@ -63,6 +63,7 @@ public final class Disc extends Renderable {
 			}
 		}
 
+		transforms.scale(this.radius, 1, this.radius);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
