@@ -1,6 +1,6 @@
 package framebuffer;
 
-//import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.*;
 //import static org.lwjgl.opengl.GL12.*;
 //import static org.lwjgl.opengl.GL13.*;
 //import static org.lwjgl.opengl.GL14.*;
@@ -17,6 +17,11 @@ import static org.lwjgl.opengl.GL30.*;
 //import static org.lwjgl.opengl.GL43.*;
 //import static org.lwjgl.opengl.GL44.*;
 import static org.lwjgl.opengl.GL45.*;
+
+import java.nio.IntBuffer;
+
+import org.lwjgl.BufferUtils;
+
 import textures.ArrayTexture;
 import textures.CubeMapFace;
 import textures.Texture;
@@ -232,6 +237,19 @@ public class FBO implements Resource {
 	
 	public void attachDepthStencil(TextureCubeMapArray texture, CubeMapFace face, int index, int level){
 		glNamedFramebufferTextureLayer(id, GL_DEPTH_STENCIL_ATTACHMENT, texture.getId(), level, 6*index+face.layer);
+	}
+	
+	public void setDrawBuffers(int... attachments){
+		if(attachments.length == 0){
+			glNamedFramebufferDrawBuffers(id, GL_NONE);
+		}else{
+			IntBuffer buffers = BufferUtils.createIntBuffer(attachments.length);
+			for(int attachment : attachments){
+				buffers.put(GL_COLOR_ATTACHMENT0+attachment);
+			}
+			buffers.flip();
+			glNamedFramebufferDrawBuffers(id, buffers);
+		}
 	}
 	
 	@Override
