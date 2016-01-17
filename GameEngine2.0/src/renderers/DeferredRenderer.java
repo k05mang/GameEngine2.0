@@ -1,33 +1,37 @@
 package renderers;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.glClear;
 
 import java.util.ArrayList;
 
 import lights.Light;
 import mesh.Renderable;
+import mesh.primitives.geometry.Plane;
 import shaders.Shader;
 import shaders.ShaderProgram;
 import shaders.ShaderStage;
 import core.Camera;
 import core.Resource;
+import core.Scene;
 import framebuffer.Gbuffer;
+import glMath.Transform;
 
 public class DeferredRenderer {
 
 	private Gbuffer gbuffer;
-	private ShaderProgram geoPass, stencilPass, lightPass;
+	private ShaderProgram geoPass, stencilPass, lightPass, finalPass;
 	private Camera main;
-	private int width, height;
+	private Plane quad;
 	
 	public DeferredRenderer(int width, int height, Camera cam){
 		main = cam;
-		this.width = width;
-		this.height = height;
 		gbuffer = new Gbuffer(width, height);
+		quad = new Plane(2,2,RenderMode.TRIANGLES);
+		
 		Shader geoVert = new Shader("shaders/geoPass/geoVert.glsl", ShaderStage.VERTEX);
-		Shader geoFrag = new Shader("shaders/geoPass/geoVert.glsl", ShaderStage.FRAG);
+		Shader geoFrag = new Shader("shaders/geoPass/geoFrag.glsl", ShaderStage.FRAG);
 
 		if(!geoVert.compile()){
 			System.out.println(geoVert.getInfoLog());
@@ -73,25 +77,46 @@ public class DeferredRenderer {
 		if(!lightPass.link()){
 			System.out.println(lightPass.getInfoLog());
 		}
+
+		Shader finalVert = new Shader("shaders/finalPass/finalVert.glsl", ShaderStage.VERTEX);
+		Shader finalFrag = new Shader("shaders/finalPass/finalFrag.glsl", ShaderStage.FRAG);
+
+		if(!finalVert.compile()){
+			System.out.println(finalVert.getInfoLog());
+		}
+		if(!finalFrag.compile()){
+			System.out.println(finalFrag.getInfoLog());
+		}
+		finalPass = new ShaderProgram();
+		finalPass.attach(finalVert);
+		finalPass.attach(finalFrag);
+		if(!finalPass.link()){
+			System.out.println(finalPass.getInfoLog());
+		}
+		
+
+		lightPass.setUniform("screenSpace", width, height);
+		setupUniforms();
 	}
 	
 	private void setupUniforms(){
 		geoPass.setUniform("proj", main.getProjection());
-		geoPass.setUniform("color", .5f, .7f, .3f);
-		geoPass.setUniform("specPow", .5f, .7f, .3f);
-		geoPass.setUniform("specInt", .5f, .7f, .3f);
-		
+		geoPass.setUniform("color", 1, 1, 1);
+		geoPass.setUniform("specPow", 157.0f);
+		geoPass.setUniform("specInt", .9f);
 
 		stencilPass.setUniform("proj", main.getProjection());
 		
-
 		lightPass.setUniform("proj", main.getProjection());
-		lightPass.setUniform("screenSpace", width, height);
 		lightPass.setUniform("ambient", .3f);
 		lightPass.setUniform("positions", 0);
 		lightPass.setUniform("normals", 1);
-		intensity;
-		uniform vec3 lightColor, lightPos, eye;
+		lightPass.setUniform("depth", 2);
+		
+		finalPass.setUniform("diffuse", 0);
+		finalPass.setUniform("lighting", 1);
+		finalPass.setUniform("specular", 2);
+		finalPass.setUniform("model", Transform.getRotateMat(1, 0, 0, -90));
 	}
 	
 	public void render(ArrayList<Resource> meshes, ArrayList<Light> lights){
@@ -99,30 +124,52 @@ public class DeferredRenderer {
 		geoPass.setUniform("view", main.getLookAt());
 		stencilPass.setUniform("view", main.getLookAt());
 		lightPass.setUniform("view", main.getLookAt());
+		lightPass.setUniform("eye", main.getEye());
 		
 		geoPass.bind();
 		//render geometry
 		for(Resource mesh : meshes){
 			Renderable castMesh = ((Renderable) mesh);
 			geoPass.setUniform("model", castMesh.getModelView());
-			Renderer.render(castMesh);
+			castMesh.render();
 		}
 		geoPass.unbind();
 		
 		gbuffer.setupLightingPass();
 		
 		for(Light light : lights){
+			stencilPass.bind();
 			Renderable mesh = light.getVolume();
 			gbuffer.stencilPass();
 			//render the light volume for stenciling
-			Renderer.render(mesh);
+			stencilPass.setUniform("model", mesh.getModelView());
+			mesh.render();
+			stencilPass.unbind();
 			
+			lightPass.bind();
 			//render the volume for calculation
 			gbuffer.lightPass();
-			Renderer.render(mesh);
+			lightPass.setUniform("intensity", light.getIntensity());
+			lightPass.setUniform("lightColor", light.getColor());
+			lightPass.setUniform("lightPos", light.getPos());
+			lightPass.setUniform("model", mesh.getModelView());
+			mesh.render();
+			lightPass.unbind();
 		}
-		glDepthMask(true);//enable writing into the depth buffer
-		glDisable(GL_STENCIL_TEST);//enable stencil testing
-		glDisable(GL_BLEND);
+		
+		gbuffer.finalPass();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		finalPass.bind();
+		quad.render();
+		finalPass.unbind();
+	}
+	
+	public void delete(){
+		gbuffer.delete();
+		geoPass.delete(); 
+		stencilPass.delete(); 
+		lightPass.delete();
+		finalPass.delete();
+		quad.delete();
 	}
 }

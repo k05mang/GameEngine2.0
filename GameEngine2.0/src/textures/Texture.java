@@ -43,7 +43,7 @@ public abstract class Texture implements Resource{
 	 * @param texUnit Texture unit to bind this texture object to
 	 */
 	public void bindToTextureUnit(int texUnit){
-		glBindTextureUnit(GL_TEXTURE0+texUnit, id);
+		glBindTextureUnit(texUnit, id);
 	}
 	
 	/**
@@ -52,7 +52,7 @@ public abstract class Texture implements Resource{
 	 * @param texUnit Texture unit to unbind this texture object to
 	 */
 	public void unbindFromTextureUnit(int texUnit){
-		glBindTextureUnit(GL_TEXTURE0+texUnit, 0);
+		glBindTextureUnit(texUnit, 0);
 	}
 	
 	public int getId(){

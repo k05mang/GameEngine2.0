@@ -10,9 +10,11 @@ public class Shader {
 	private int shaderId;
 	private ShaderStage type;
 	private ShaderParser parser;
+	private String fileName;
 	
 	public Shader(String fileName, ShaderStage shaderType){
 		type = shaderType;
+		this.fileName = fileName;
 		File shaderFile = new File(fileName);
 		parser = new ShaderParser(shaderFile);
 		shaderId = glCreateShader(type.type);
@@ -79,7 +81,7 @@ public class Shader {
 	 * @return Shader log containing any error information from the GPU
 	 */
 	public String getInfoLog(){
-		return glGetShaderInfoLog(shaderId);
+		return fileName+"\n"+glGetShaderInfoLog(shaderId);
 	}
 	
 	/**

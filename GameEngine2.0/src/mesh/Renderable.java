@@ -1,5 +1,7 @@
 package mesh;
 
+import static org.lwjgl.opengl.GL11.glDrawElements;
+
 import java.util.ArrayList;
 
 import core.Resource;
@@ -59,15 +61,6 @@ public abstract class Renderable implements Resource{
 	 */
 	public Mat4 getModelView(){
 		return transforms.getTransform();
-	}
-	
-	/**
-	 * Gets this renderable's VertexArray used to render its mesh data to the opengl context
-	 * 
-	 * @return This renderable's VertexArray object
-	 */
-	public VertexArray getVAO(){
-		return vao;
 	}
 	
 	/**
@@ -146,5 +139,11 @@ public abstract class Renderable implements Resource{
 		}else{
 			return null;
 		}
+	}
+	
+	public void render(){
+		vao.bind();
+		glDrawElements(vao.getRenderMode().mode, vao.getNumIndices(), vao.getIndexType().enumType, 0);
+		vao.unbind();
 	}
 }

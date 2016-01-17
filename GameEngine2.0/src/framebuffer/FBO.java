@@ -9,7 +9,7 @@ import static org.lwjgl.opengl.GL11.*;
 //import static org.lwjgl.opengl.GL21.*;
 import static org.lwjgl.opengl.GL30.*;
 //import static org.lwjgl.opengl.GL31.*;
-//import static org.lwjgl.opengl.GL32.*;
+import static org.lwjgl.opengl.GL32.*;
 //import static org.lwjgl.opengl.GL33.*;
 //import static org.lwjgl.opengl.GL40.*;
 //import static org.lwjgl.opengl.GL41.*;
@@ -41,6 +41,7 @@ public class FBO implements Resource {
 	 */
 	public FBO(){
 		id = glCreateFramebuffers();
+		bindTarget = GL_FRAMEBUFFER;
 	}
 	
 	/**
@@ -257,4 +258,34 @@ public class FBO implements Resource {
 		glDeleteFramebuffers(id);
 	}
 
+	public boolean isComplete(){
+		if(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	public String getStatus(){
+		switch(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER)){
+			case GL_FRAMEBUFFER_UNDEFINED:
+				return "GL_FRAMEBUFFER_UNDEFINED";
+			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+				return "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+				return "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+				return "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
+				return "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
+			case GL_FRAMEBUFFER_UNSUPPORTED:
+				return "GL_FRAMEBUFFER_UNSUPPORTED";
+			case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
+				return "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
+			case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+				return "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS";
+			default:
+				return "GL_FRAMEBUFFER_COMPLETE";
+		}
+	}
 }
