@@ -7,14 +7,16 @@ import static org.lwjgl.opengl.GL11.glClear;
 import java.util.ArrayList;
 
 import lights.Light;
-import mesh.Renderable;
+import mesh.Material;
+import mesh.Mesh;
 import mesh.primitives.geometry.Plane;
 import shaders.Shader;
 import shaders.ShaderProgram;
 import shaders.ShaderStage;
+import textures.Texture;
 import core.Camera;
 import core.Resource;
-import core.Scene;
+import core.SceneManager;
 import framebuffer.Gbuffer;
 import glMath.Transform;
 
@@ -103,19 +105,18 @@ public class DeferredRenderer {
 		geoPass.setUniform("proj", main.getProjection());
 		geoPass.setUniform("color", 1, 1, 1);
 		geoPass.setUniform("specPow", 157.0f);
-		geoPass.setUniform("specInt", .9f);
+		geoPass.setUniform("specInt", 2);
+		geoPass.setUniform("diffuseTexture", 0);
 
 		stencilPass.setUniform("proj", main.getProjection());
 		
 		lightPass.setUniform("proj", main.getProjection());
-		lightPass.setUniform("ambient", .3f);
 		lightPass.setUniform("positions", 0);
 		lightPass.setUniform("normals", 1);
-		lightPass.setUniform("depth", 2);
-		
+
 		finalPass.setUniform("diffuse", 0);
 		finalPass.setUniform("lighting", 1);
-		finalPass.setUniform("specular", 2);
+		finalPass.setUniform("ambient", .3f);
 		finalPass.setUniform("model", Transform.getRotateMat(1, 0, 0, -90));
 	}
 	
@@ -129,8 +130,12 @@ public class DeferredRenderer {
 		geoPass.bind();
 		//render geometry
 		for(Resource mesh : meshes){
-			Renderable castMesh = ((Renderable) mesh);
+			Mesh castMesh = ((Mesh) mesh);
 			geoPass.setUniform("model", castMesh.getModelView());
+			Material mat = (Material) SceneManager.materials.get(castMesh.getMaterial());
+			if(mat.hasMaterial(Material.DIFFUSE)){
+				((Texture) SceneManager.textures.get(mat.getTextureId(Material.DIFFUSE))).bindToTextureUnit(0);
+			}
 			castMesh.render();
 		}
 		geoPass.unbind();
@@ -139,7 +144,7 @@ public class DeferredRenderer {
 		
 		for(Light light : lights){
 			stencilPass.bind();
-			Renderable mesh = light.getVolume();
+			Mesh mesh = light.getVolume();
 			gbuffer.stencilPass();
 			//render the light volume for stenciling
 			stencilPass.setUniform("model", mesh.getModelView());
@@ -149,10 +154,7 @@ public class DeferredRenderer {
 			lightPass.bind();
 			//render the volume for calculation
 			gbuffer.lightPass();
-			lightPass.setUniform("intensity", light.getIntensity());
-			lightPass.setUniform("lightColor", light.getColor());
-			lightPass.setUniform("lightPos", light.getPos());
-			lightPass.setUniform("model", mesh.getModelView());
+			light.setUniforms(lightPass);
 			mesh.render();
 			lightPass.unbind();
 		}

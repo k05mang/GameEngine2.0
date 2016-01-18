@@ -2,7 +2,8 @@ package lights;
 
 import glMath.Transform;
 import glMath.vectors.Vec3;
-import mesh.Renderable;
+import mesh.Mesh;
+import shaders.ShaderProgram;
 
 public abstract class Light {
 	
@@ -63,5 +64,12 @@ public abstract class Light {
 		this.intensity = intensity;
 	}
 	
-	public abstract Renderable getVolume();
+	public void setUniforms(ShaderProgram shader){
+		shader.setUniform("light.pos", trans.getPosition());
+		shader.setUniform("light.color", color);
+		shader.setUniform("light.intensity", intensity);
+		shader.setUniform("model", trans.getTransform());
+	}
+	
+	public abstract Mesh getVolume();
 }

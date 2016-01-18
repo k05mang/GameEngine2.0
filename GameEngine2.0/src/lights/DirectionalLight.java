@@ -1,12 +1,12 @@
 package lights;
 
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.geometry.Plane;
 import renderers.RenderMode;
 import glMath.vectors.Vec3;
 
 public class DirectionalLight extends Light {
-	public final static Plane volume = new Plane(1, 1, RenderMode.TRIANGLES);
+	public final static Plane volume = new Plane(1, 1, RenderMode.TRIANGLES, RenderMode.LINES);
 
 	public DirectionalLight(Vec3 direction, Vec3 color, float intensity) {
 		super(direction, color, intensity);
@@ -24,7 +24,7 @@ public class DirectionalLight extends Light {
 		super(dirx, diry, dirz, r, g, b, intensity);
 	}
 	
-	public Renderable getVolume(){
+	public Mesh getVolume(){
 		volume.setTransform(trans);
 		return volume;
 	}

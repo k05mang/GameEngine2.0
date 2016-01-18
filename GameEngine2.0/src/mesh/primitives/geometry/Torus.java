@@ -1,6 +1,6 @@
 package mesh.primitives.geometry;
 
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
 import gldata.AttribType;
@@ -13,7 +13,7 @@ import static java.lang.Math.sin;
 import static java.lang.Math.cos;
 import renderers.RenderMode;
 
-public final class Torus extends Renderable {
+public final class Torus extends Mesh {
 	
 	private float tubeRadius, radius;
 
@@ -120,7 +120,7 @@ public final class Torus extends Renderable {
 	/**
 	 * Constructs a copy of the given torus
 	 * 
-	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
 	 * for more information about cautions with the copy constructor
 	 * 
 	 * @param copy Torus to copy

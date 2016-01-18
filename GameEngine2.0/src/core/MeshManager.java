@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import textures.Texture;
-import mesh.Renderable;
+import mesh.Mesh;
 
 public class MeshManager extends ResourceManager{
 	
@@ -14,13 +14,9 @@ public class MeshManager extends ResourceManager{
 		super();
 	}
 	
-	public void put(String id, Renderable mesh){
-		resources.put(id, mesh);
-	}
-	
 	public void transformMesh(String id, Transform transformation){
 		if(resources.get(id) != null){
-			((Renderable)resources.get(id)).transform(transformation);
+			((Mesh)resources.get(id)).transform(transformation);
 		}
 	}
 }

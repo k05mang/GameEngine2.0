@@ -1,6 +1,6 @@
 package mesh.primitives.geometry;
 
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
 import glMath.vectors.Vec3;
@@ -11,7 +11,7 @@ import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
 
-public final class Cuboid extends Renderable {
+public final class Cuboid extends Mesh {
 	private Vec3 halfDimensions;
 	
 	/**
@@ -194,7 +194,7 @@ public final class Cuboid extends Renderable {
 	/**
 	 * Constructs a copy of the given cuboid
 	 * 
-	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * Refer to {@link Mesh.Model#Renderable(Mesh) Renderable's copy constructor} 
 	 * for more information about cautions with the copy constructor
 	 * 
 	 * @param copy Cuboid to copy

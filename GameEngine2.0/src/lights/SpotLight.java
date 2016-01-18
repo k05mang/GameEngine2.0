@@ -1,14 +1,14 @@
 package lights;
 
 import glMath.vectors.Vec3;
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.geometry.Cone;
 import renderers.RenderMode;
 
 public class SpotLight extends Light {
 
 	private float radius, length, cutoff;
-	public final static Cone volume = new Cone(1, 1, VOLUME_FINENESS, false, RenderMode.TRIANGLES);
+	public final static Cone volume = new Cone(1, 1, VOLUME_FINENESS, false, RenderMode.TRIANGLES, RenderMode.LINES);
 	
 	public SpotLight(float radius, float length, Vec3 position, Vec3 color, float intensity) {
 		this(radius, length, position.x, position.y, position.z, color.x, color.y, color.z, intensity);
@@ -49,7 +49,7 @@ public class SpotLight extends Light {
 		return cutoff;
 	}
 	
-	public Renderable getVolume(){
+	public Mesh getVolume(){
 		volume.setTransform(trans);
 		return volume;
 	}

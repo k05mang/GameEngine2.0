@@ -1,32 +1,35 @@
 package mesh;
 
 import static org.lwjgl.opengl.GL11.glDrawElements;
+import glMath.Transform;
+import glMath.matrices.Mat4;
+import gldata.BufferObject;
+import gldata.IndexBuffer;
+import gldata.VertexArray;
 
 import java.util.ArrayList;
 
 import core.Resource;
-import glMath.Transform;
-import glMath.matrices.Mat4;
-import gldata.VertexArray;
-import gldata.BufferObject;
-import gldata.IndexBuffer;
+import core.SceneManager;
 
-public abstract class Renderable implements Resource{
+public abstract class Mesh implements Resource{
 	protected Transform transforms;
 	protected Geometry geometry;
 	protected VertexArray vao;
 	protected ArrayList<BufferObject> vbos;
 	protected ArrayList<IndexBuffer> ibos;
+	protected String material;
 	
 	/**
 	 * Constructs a Renderable with a VertexArray, Mesh, Transform, and array of BufferObjects and IndexBuffers
 	 */
-	public Renderable(){
+	public Mesh(){
 		vao = new VertexArray();
 		geometry = new Geometry();
 		transforms = new Transform();
 		vbos = new ArrayList<BufferObject>();
 		ibos = new ArrayList<IndexBuffer>();
+		material = "default";
 	}
 	
 	/**
@@ -39,10 +42,11 @@ public abstract class Renderable implements Resource{
 	 * </p>
 	 * @param copy
 	 */
-	public Renderable(Renderable copy){
+	public Mesh(Mesh copy){
 		vao = copy.vao;
 		geometry = copy.geometry;//new Geometry(copy.geometry);
 		transforms = new Transform(copy.transforms);
+		material = copy.material;
 	}
 	
 	/**
@@ -117,10 +121,6 @@ public abstract class Renderable implements Resource{
 		transforms.set(trans);
 	}
 	
-//	public Transform getTransform(){
-//		return transforms;
-//	}
-	
 	/**
 	 * Gets the IndexBuffer IndexType based on the given {@code size}, the value returned is to be passed to 
 	 * an IndexBuffer to decide the IndexType of the buffer.
@@ -145,5 +145,15 @@ public abstract class Renderable implements Resource{
 		vao.bind();
 		glDrawElements(vao.getRenderMode().mode, vao.getNumIndices(), vao.getIndexType().enumType, 0);
 		vao.unbind();
+	}
+	
+	public void setMaterial(String material){
+		if(SceneManager.materials.get(material) != null){
+			this.material = material;
+		}
+	}
+	
+	public String getMaterial(){
+		return material;
 	}
 }

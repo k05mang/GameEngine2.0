@@ -2,7 +2,7 @@ package mesh.primitives.geometry;
 
 import java.util.HashMap;
 
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
 import glMath.VecUtil;
@@ -15,7 +15,7 @@ import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
 
-public final class Icosphere extends Renderable {
+public final class Icosphere extends Mesh {
 	private float radius;
 	
 	/**
@@ -271,7 +271,7 @@ public final class Icosphere extends Renderable {
 	/**
 	 * Constructs a copy of the given icosphere
 	 * 
-	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
 	 * for more information about cautions with the copy constructor
 	 * 
 	 * @param copy Icosphere to copy

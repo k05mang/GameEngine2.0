@@ -3,7 +3,7 @@ package mesh.primitives.geometry;
 import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
 import gldata.AttribType;
@@ -14,7 +14,7 @@ import gldata.IndexBuffer;
 import gldata.VertexArray;
 import renderers.RenderMode;
 
-public final class Cone extends Renderable {
+public final class Cone extends Mesh {
 
 	private float length, radius;
 	
@@ -167,7 +167,7 @@ public final class Cone extends Renderable {
 	/**
 	 * Constructs a copy of the given cone
 	 * 
-	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * Refer to {@link Mesh.Renderable#Renderable(Mesh) Renderable's copy constructor} 
 	 * for more information about cautions with the copy constructor
 	 * 
 	 * @param copy Cone to copy

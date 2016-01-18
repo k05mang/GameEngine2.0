@@ -1,6 +1,6 @@
 package mesh.primitives.geometry;
 
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
 import gldata.AttribType;
@@ -10,7 +10,7 @@ import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
 
-public final class Plane extends Renderable{
+public final class Plane extends Mesh{
 	float width, length;
 	
 	/**
@@ -97,7 +97,7 @@ public final class Plane extends Renderable{
 	/**
 	 * Constructs a copy of the given plane
 	 * 
-	 * Refer to {@link renderer.Renderable#Renderable(Renderable) Renderable's copy constructor} 
+	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
 	 * for more information about cautions with the copy constructor
 	 * 
 	 * @param copy Plane to copy

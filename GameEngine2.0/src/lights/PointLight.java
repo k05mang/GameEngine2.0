@@ -2,13 +2,13 @@ package lights;
 
 import renderers.RenderMode;
 import glMath.vectors.Vec3;
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.geometry.Sphere;
 
 public class PointLight extends Light {
 
 	private float radius;
-	public final static Sphere volume = new Sphere(1, VOLUME_FINENESS, RenderMode.TRIANGLES);
+	public final static Sphere volume = new Sphere(1, VOLUME_FINENESS, RenderMode.TRIANGLES, RenderMode.LINES);
 	
 	public PointLight(float radius, Vec3 position, Vec3 color, float intensity) {
 		this(radius, position.x, position.y, position.z, color.x, color.y, color.z, intensity);
@@ -32,7 +32,7 @@ public class PointLight extends Light {
 		return radius;
 	}
 	
-	public Renderable getVolume(){
+	public Mesh getVolume(){
 		volume.setTransform(trans);
 		return volume;
 	}

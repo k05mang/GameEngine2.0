@@ -2,28 +2,30 @@ package mesh.loaders;
 
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Scanner;
 
-import core.MeshManager;
-import core.SceneManager;
 import mesh.Geometry;
+import mesh.Material;
 import mesh.OBJ;
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
+import textures.enums.InternalFormat;
+import textures.enums.TextureType;
+import textures.loaders.ImageLoader;
+import core.SceneManager;
 
 public class OBJLoader implements MeshLoader {
 	
 	private ArrayList<Vec3> verts, normals;
 	private ArrayList<Vec2> uvs;
 	private Scanner obj;
-	private String curGroup;
+	private String curGroup, curMat, filename;
 	private Geometry curMesh;
-	//TODO materials
 
 	public OBJLoader(String file){
 		this(new File(file));
@@ -37,6 +39,8 @@ public class OBJLoader implements MeshLoader {
 			normals = new ArrayList<Vec3>();
 			uvs = new ArrayList<Vec2>();
 			curMesh = new Geometry();
+			curMat = null;
+			filename = file.getParent()+"\\";
 		}catch(IOException e){
 			e.printStackTrace();
 		}
@@ -55,7 +59,7 @@ public class OBJLoader implements MeshLoader {
 			//add tangent and bitangent computation
 		}
 		
-		SceneManager.meshes.put(curGroup, new OBJ(curMesh));
+		SceneManager.meshes.put(curGroup+"_"+curMat, new OBJ(curMesh, curMat));
 		obj.close();
 	}
 	
@@ -92,21 +96,28 @@ public class OBJLoader implements MeshLoader {
 			case "f":
 				parseFace(data);
 				break;
-			case "g":
-				if(curGroup != null){
+			case "usemtl":
+				if(curMat != null){
 					//add the finished model to the scene
 					if(normals.isEmpty()){
 						curMesh.genNormals();
 						//add tangent and bitangent computation
 					}
 					
-					SceneManager.meshes.put(curGroup, new OBJ(curMesh));
+					SceneManager.meshes.put(curGroup+"_"+curMat, new OBJ(curMesh, curMat));
 				}
+				curMat = data[1];
+				curMesh.empty();
+				break;
+			case "mtllib":
+				for(int curFile = 1; curFile < data.length; curFile++){
+					parseMtl(data[curFile]);
+				}
+				break;
+			case "g":
 				//set variables for the next group
 				String[] groups = line.split("\\s++");
 				curGroup = groups[1];//only use the first group name ignore the rest
-				curMesh.empty();
-				//TODO materials
 				break;
 		}
 	}
@@ -167,6 +178,89 @@ public class OBJLoader implements MeshLoader {
 					indices.get(curFace),
 					indices.get(curFace+1)
 					));
+		}
+	}
+	
+	private void parseMtl(String file){
+		try(Scanner mtl = new Scanner(new File(filename+file))){
+			String line;//current line being parsed
+			String matName;
+			Material curMat = null;
+			while(mtl.hasNextLine()){
+				line = mtl.nextLine().trim();
+				//check if the line defines the start of a new material
+				if(line.startsWith("newmtl")){
+					curMat = new Material();
+					String[] values = line.split("\\s++");
+					matName = values[1];//get the material name
+					//loop through the material definition and collect data
+					do{
+						line = mtl.nextLine().trim();//get the next line
+						String[] lineValues = line.split("\\s++");
+						switch(lineValues[0]){
+							case "Ka":
+								//check if the value was difined with a single greyscale value or multiple values
+								if(lineValues.length == 2){
+									float color = Float.parseFloat(lineValues[1]);
+									curMat.setColor(new Vec4(color, color, color, 1));
+								}else if(lineValues.length == 4){//in this case 3 colors define the color
+									float r = Float.parseFloat(lineValues[1]);
+									float g = Float.parseFloat(lineValues[2]);
+									float b = Float.parseFloat(lineValues[3]);
+									curMat.setColor(new Vec4(r, g, b, 1));
+								}
+								break;
+							case "Kd":
+								//check if the value was difined with a single greyscale value or multiple values
+								if(lineValues.length == 2){
+									float color = Float.parseFloat(lineValues[1]);
+									curMat.setColor(new Vec4(color, color, color, 1));
+								}else if(lineValues.length == 4){//in this case 3 colors define the color
+									float r = Float.parseFloat(lineValues[1]);
+									float g = Float.parseFloat(lineValues[2]);
+									float b = Float.parseFloat(lineValues[3]);
+									curMat.setColor(new Vec4(r, g, b, 1));
+								}
+								break;
+							case "map_Ka":
+								//check to make sure the map hasn't been added to the system already
+								if(SceneManager.textures.get(lineValues[lineValues.length-1]) == null){
+									SceneManager.textures.put(lineValues[lineValues.length-1],
+											ImageLoader.load(InternalFormat.RGBA8, TextureType._2D, filename+lineValues[lineValues.length-1]));
+								}
+								curMat.setTexture(Material.DIFFUSE, lineValues[lineValues.length-1]);//add texture to material
+								break;
+							case "map_Kd":
+								//check to make sure the map hasn't been added to the system already
+								if(SceneManager.textures.get(lineValues[lineValues.length-1]) == null){
+									SceneManager.textures.put(lineValues[lineValues.length-1],
+											ImageLoader.load(InternalFormat.RGBA8, TextureType._2D, filename+lineValues[lineValues.length-1]));
+								}
+								curMat.setTexture(Material.DIFFUSE, lineValues[lineValues.length-1]);//add texture to material
+								break;
+							case "map_bump":
+								//check to make sure the map hasn't been added to the system already
+								if(SceneManager.textures.get(lineValues[lineValues.length-1]) == null){
+									SceneManager.textures.put(lineValues[lineValues.length-1],
+											ImageLoader.load(InternalFormat.R8, TextureType._2D, filename+lineValues[lineValues.length-1]));
+								}
+								curMat.setTexture(Material.BUMP, lineValues[lineValues.length-1]);//add texture to material
+								break;
+							case "bump":
+								//check to make sure the map hasn't been added to the system already
+								if(SceneManager.textures.get(lineValues[lineValues.length-1]) == null){
+									SceneManager.textures.put(lineValues[lineValues.length-1],
+											ImageLoader.load(InternalFormat.R8, TextureType._2D, filename+lineValues[lineValues.length-1]));
+								}
+								curMat.setTexture(Material.BUMP, lineValues[lineValues.length-1]);//add texture to material
+								break;
+						}
+					}while(mtl.hasNextLine() && !line.isEmpty());//only read the materials until a new one is found or the file ends
+					SceneManager.materials.put(matName, curMat);//adds the material to the main application
+				}
+			}
+		}catch(IOException e){
+			e.printStackTrace();
 		}
 	}
 }

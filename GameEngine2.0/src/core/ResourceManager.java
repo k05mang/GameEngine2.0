@@ -18,6 +18,13 @@ public class ResourceManager {
 		return resources.get(id);
 	}
 	
+	public void remove(String id){
+		Resource removed = resources.remove(id);
+		if(removed != null){
+			removed.delete();
+		}
+	}
+	
 	public ArrayList<String> getIds(){
 		return new ArrayList<String>(resources.keySet());
 	}

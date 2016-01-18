@@ -22,7 +22,6 @@ import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import textures.ArrayTexture;
 import textures.CubeMapFace;
 import textures.Texture;
 import textures.Texture1DArray;
@@ -52,6 +51,8 @@ public class FBO implements Resource {
 	 * @param draw True if the buffer should be bound to the draw framebuffer. false if not
 	 */
 	public void bind(boolean read, boolean draw){
+		//unbind the framebuffer from it's current buffer
+		glBindFramebuffer(bindTarget, 0);
 		if(read && draw){
 			glBindFramebuffer(GL_FRAMEBUFFER, id);
 			bindTarget = GL_FRAMEBUFFER;
@@ -96,10 +97,10 @@ public class FBO implements Resource {
 	}
 	
 	/**
-	 * Attaches the given Texture to this Framebuffer's attachment point
+	 * Attaches the mipmap {@code level} of {@code texture} to this framebuffers color attachment point
 	 * 
 	 * @param attachment Color attachment point to attach the texture to in the framebuffer
-	 * @param texture Texture to attacht to the framebuffer
+	 * @param texture Texture to attach to the framebuffer
 	 * @param level Mipmap level of the texture to attach to the framebuffer
 	 */
 	public void attachColor(int attachment, Texture texture, int level){
@@ -107,33 +108,76 @@ public class FBO implements Resource {
 	}
 	
 	/**
-	 * Attaches the given Texture layer to this Framebuffer's attachment point
+	 * Attaches the mipmap {@code level} of the {@code layer} of {@code texture} to this framebuffers color attachment point
 	 * 
 	 * @param attachment Color attachment point to attach the texture to in the framebuffer
-	 * @param texture Texture to attach to the framebuffer
-	 * @param layer
-	 * @param level
+	 * @param texture Texture to attach to the attachment point
+	 * @param layer Layer of the texture to bind to the attachment point
+	 * @param level Mipmap level to bind to the attachment point
 	 */
 	public void attachColor(int attachment, Texture3D texture, int layer, int level){
 		glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0+Math.max(0, attachment), texture.getId(), level, layer);
 	}
 	
+	/**
+	 * Attaches the mipmap {@code level} of the {@code index} of the texture array {@code texture} to this framebuffers color attachment point
+	 * 
+	 * @param attachment Color attachment point to attach the texture to in the framebuffer
+	 * @param texture Texture to attach to the framebuffer
+	 * @param index Index of {@code texture} to bind to the attachment point
+	 * @param level Mipmap level of {@code texture} at {@code index} to bind to the attachment point
+	 */
 	public void attachColor(int attachment, Texture1DArray texture, int index, int level){
 		glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0+Math.max(0, attachment), texture.getId(), level, index);
 	}
 	
+	/**
+	 * Attaches the mipmap {@code level} of the {@code index} of the texture array {@code texture} to this framebuffers color attachment point
+	 * 
+	 * @param attachment Color attachment point to attach the texture to in the framebuffer
+	 * @param texture Texture to attach to the framebuffer
+	 * @param index Index of {@code texture} to bind to the attachment point
+	 * @param level Mipmap level of {@code texture} at {@code index} to bind to the attachment point
+	 */
 	public void attachColor(int attachment, Texture2DArray texture, int index, int level){
 		glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0+Math.max(0, attachment), texture.getId(), level, index);
 	}
-	
+
+	/**
+	 * Attaches the mipmap {@code level} of the {@code index} of the texture array {@code texture} to this framebuffers color attachment point
+	 * 
+	 * @param attachment Color attachment point to attach the texture to in the framebuffer
+	 * @param texture Texture to attach to the framebuffer
+	 * @param index Index of {@code texture} to bind to the attachment point
+	 * @param level Mipmap level of {@code texture} at {@code index} to bind to the attachment point
+	 */
 	public void attachColor(int attachment, Texture2DMSArray texture, int index, int level){
 		glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0+Math.max(0, attachment), texture.getId(), level, index);
 	}
 	
+	/**
+	 * Attaches the mipmap {@code level} of the {@code face} of the cube map {@code texture} to this framebuffers 
+	 * color attachment point
+	 * 
+	 * @param attachment Color attachment point to attach the texture to in the framebuffer
+	 * @param texture Texture to attach to the framebuffer
+	 * @param face Cube map face to attach to this framebuffer
+	 * @param level Mipmap level of texture to attach to this framebuffer
+	 */
 	public void attachColor(int attachment, TextureCubeMap texture, CubeMapFace face, int level){
 		glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0+Math.max(0, attachment), texture.getId(), level, face.layer);
 	}
 	
+	/**
+	 * Attaches the mipmap {@code level} of the {@code face} of the cube map at {@code index} of the {@code texture} to this framebuffers 
+	 * color attachment point
+	 * 
+	 * @param attachment Color attachment point to attach the texture to in the framebuffer
+	 * @param texture Texture to attach to the framebuffer
+	 * @param face Cube map face to attach to this framebuffer
+	 * @param index Index of the texture to bind to this framebuffer
+	 * @param level Mipmap level of texture to attach to this framebuffer
+	 */
 	public void attachColor(int attachment, TextureCubeMapArray texture, CubeMapFace face, int index, int level){
 		glNamedFramebufferTextureLayer(id, GL_COLOR_ATTACHMENT0+Math.max(0, attachment), texture.getId(), level, 6*index+face.layer);
 	}

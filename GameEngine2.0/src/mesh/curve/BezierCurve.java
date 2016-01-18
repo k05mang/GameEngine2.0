@@ -2,7 +2,7 @@ package mesh.curve;
 
 import java.util.ArrayList;
 
-import mesh.Renderable;
+import mesh.Mesh;
 import mesh.primitives.Vertex;
 import glMath.VecUtil;
 import glMath.vectors.Vec2;
@@ -14,7 +14,7 @@ import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
 
-public class BezierCurve extends Renderable{
+public class BezierCurve extends Mesh{
 
 	private BezierPath path;
 	private int numSegments;

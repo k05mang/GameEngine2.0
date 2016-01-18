@@ -8,9 +8,9 @@ import gldata.IndexBuffer;
 
 import renderers.RenderMode;
 
-public class OBJ extends Renderable {
+public class OBJ extends Mesh {
 	
-	public OBJ(Geometry mesh){
+	public OBJ(Geometry mesh, String material){
 		super();
 		
 		geometry = new Geometry(mesh);
@@ -46,5 +46,7 @@ public class OBJ extends Renderable {
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
 		vao.enableAttribute(2);
+		
+		this.material = material;
 	}
 }
