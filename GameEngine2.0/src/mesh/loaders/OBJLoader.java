@@ -14,7 +14,10 @@ import mesh.Material;
 import mesh.OBJ;
 import mesh.primitives.Face;
 import mesh.primitives.Vertex;
+import textures.Texture;
 import textures.enums.InternalFormat;
+import textures.enums.TexParam;
+import textures.enums.TexParamEnum;
 import textures.enums.TextureType;
 import textures.loaders.ImageLoader;
 import core.SceneManager;
@@ -225,32 +228,48 @@ public class OBJLoader implements MeshLoader {
 							case "map_Ka":
 								//check to make sure the map hasn't been added to the system already
 								if(SceneManager.textures.get(lineValues[lineValues.length-1]) == null){
-									SceneManager.textures.put(lineValues[lineValues.length-1],
-											ImageLoader.load(InternalFormat.RGBA8, TextureType._2D, filename+lineValues[lineValues.length-1]));
+									Texture texture = ImageLoader.load(InternalFormat.RGBA8, TextureType._2D, filename+lineValues[lineValues.length-1]);
+									texture.setParam(TexParam.MIN_FILTER, TexParamEnum.LINEAR);
+									texture.setParam(TexParam.MAG_FILTER, TexParamEnum.LINEAR);
+									texture.setParam(TexParam.WRAP_S, TexParamEnum.REPEAT);
+									texture.setParam(TexParam.WRAP_T, TexParamEnum.REPEAT);
+									SceneManager.textures.put(lineValues[lineValues.length-1], texture);
 								}
 								curMat.setTexture(Material.DIFFUSE, lineValues[lineValues.length-1]);//add texture to material
 								break;
 							case "map_Kd":
 								//check to make sure the map hasn't been added to the system already
 								if(SceneManager.textures.get(lineValues[lineValues.length-1]) == null){
-									SceneManager.textures.put(lineValues[lineValues.length-1],
-											ImageLoader.load(InternalFormat.RGBA8, TextureType._2D, filename+lineValues[lineValues.length-1]));
+									Texture texture = ImageLoader.load(InternalFormat.RGBA8, TextureType._2D, filename+lineValues[lineValues.length-1]);
+									texture.setParam(TexParam.MIN_FILTER, TexParamEnum.LINEAR);
+									texture.setParam(TexParam.MAG_FILTER, TexParamEnum.LINEAR);
+									texture.setParam(TexParam.WRAP_S, TexParamEnum.REPEAT);
+									texture.setParam(TexParam.WRAP_T, TexParamEnum.REPEAT);
+									SceneManager.textures.put(lineValues[lineValues.length-1], texture);
 								}
 								curMat.setTexture(Material.DIFFUSE, lineValues[lineValues.length-1]);//add texture to material
 								break;
 							case "map_bump":
 								//check to make sure the map hasn't been added to the system already
 								if(SceneManager.textures.get(lineValues[lineValues.length-1]) == null){
-									SceneManager.textures.put(lineValues[lineValues.length-1],
-											ImageLoader.load(InternalFormat.R8, TextureType._2D, filename+lineValues[lineValues.length-1]));
+									Texture texture = ImageLoader.load(InternalFormat.R8, TextureType._2D, filename+lineValues[lineValues.length-1]);
+									texture.setParam(TexParam.MIN_FILTER, TexParamEnum.LINEAR);
+									texture.setParam(TexParam.MAG_FILTER, TexParamEnum.LINEAR);
+									texture.setParam(TexParam.WRAP_S, TexParamEnum.REPEAT);
+									texture.setParam(TexParam.WRAP_T, TexParamEnum.REPEAT);
+									SceneManager.textures.put(lineValues[lineValues.length-1], texture);
 								}
 								curMat.setTexture(Material.BUMP, lineValues[lineValues.length-1]);//add texture to material
 								break;
 							case "bump":
 								//check to make sure the map hasn't been added to the system already
 								if(SceneManager.textures.get(lineValues[lineValues.length-1]) == null){
-									SceneManager.textures.put(lineValues[lineValues.length-1],
-											ImageLoader.load(InternalFormat.R8, TextureType._2D, filename+lineValues[lineValues.length-1]));
+									Texture texture = ImageLoader.load(InternalFormat.R8, TextureType._2D, filename+lineValues[lineValues.length-1]);
+									texture.setParam(TexParam.MIN_FILTER, TexParamEnum.LINEAR);
+									texture.setParam(TexParam.MAG_FILTER, TexParamEnum.LINEAR);
+									texture.setParam(TexParam.WRAP_S, TexParamEnum.REPEAT);
+									texture.setParam(TexParam.WRAP_T, TexParamEnum.REPEAT);
+									SceneManager.textures.put(lineValues[lineValues.length-1], texture);
 								}
 								curMat.setTexture(Material.BUMP, lineValues[lineValues.length-1]);//add texture to material
 								break;

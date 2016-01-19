@@ -1,15 +1,26 @@
 package shaders;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL41.*;
+import static org.lwjgl.opengl.GL11.GL_FALSE;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.opengl.GL20.GL_LINK_STATUS;
+import static org.lwjgl.opengl.GL20.glCreateProgram;
+import static org.lwjgl.opengl.GL20.glDeleteProgram;
+import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
+import static org.lwjgl.opengl.GL20.glGetProgrami;
+import static org.lwjgl.opengl.GL20.glLinkProgram;
+import static org.lwjgl.opengl.GL20.glUseProgram;
+import static org.lwjgl.opengl.GL41.glProgramParameteri;
+import glMath.matrices.Mat2;
+import glMath.matrices.Mat3;
+import glMath.matrices.Matrix;
+import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
+import glMath.vectors.Vector;
+import gldata.BufferObject;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import gldata.BufferObject;
-import glMath.matrices.Matrix;
-import glMath.vectors.Vector;
 
 public class ShaderProgram {
 	private HashMap<String, Uniform> uniforms;//mapping of uniform names to their uniform handlers
@@ -148,6 +159,10 @@ public class ShaderProgram {
 		return glGetProgramInfoLog(programId);
 	}
 	
+	public int getId(){
+		return programId;
+	}
+	
 	/**
 	 * Sets the uniform specified by the given name, and sets it to the value of data,
 	 * if the uniform cannot be found then this function returns false
@@ -156,14 +171,14 @@ public class ShaderProgram {
 	 * @param data Buffer containing the data to set the uniform to
 	 * @return True if the uniform was found and set to the given data
 	 */
-	public boolean setUniform(String uniformName, ByteBuffer data){
-		Uniform found = uniforms.get(uniformName);
-		if(found != null){
-			return found.set(programId, data);
-		}else{
-			return false;
-		}
-	}
+//	public boolean setUniform(String uniformName, ByteBuffer data){
+//		Uniform found = uniforms.get(uniformName);
+//		if(found != null){
+//			return found.set(programId, false, data);
+//		}else{
+//			return false;
+//		}
+//	}
 	
 	/**
 	 * Sets the uniform specified by the given name, and sets it to the value of variables.
@@ -182,7 +197,7 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, float... variables){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			return found.set(programId, variables);
+			return found.set(programId, false, variables);
 		}else{
 			return false;
 		}
@@ -205,14 +220,10 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, int... variables){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			return found.set(programId, variables);
+			return found.set(programId, false, variables);
 		}else{
 			return false;
 		}
-	}
-	
-	public int getId(){
-		return programId;
 	}
 
 	/**
@@ -239,23 +250,6 @@ public class ShaderProgram {
 	}
 	
 	/**
-	 * Sets a matrix uniform specified by the given name
-	 * 
-	 * @param uniformName Name of uniform to modify
-	 * @param transpose Whether to transpose the data as it is being passed to the GPU
-	 * @param data Data to set the uniform to
-	 * @return True if the uniform was found and set to the given data
-	 */
-	public boolean setUniform(String uniformName, boolean transpose, ByteBuffer data){
-		Uniform found = uniforms.get(uniformName);
-		if(found != null){
-			return found.setMat(programId, transpose, data);
-		}else{
-			return false;
-		}
-	}
-	
-	/**
 	 * Sets a vector uniform to the given vector
 	 * 
 	 * @param uniformName Name of uniform to modify
@@ -265,7 +259,16 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, Vector value){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			return found.set(programId, value.asByteBuffer());
+			if(value instanceof Vec2){
+				Vec2 castVal = (Vec2) value;
+				return found.set(programId, false, castVal.x, castVal.y);
+			}else if(value instanceof Vec3){
+				Vec3 castVal = (Vec3) value;
+				return found.set(programId, false, castVal.x, castVal.y, castVal.z);
+			}else{
+				Vec4 castVal = (Vec4) value;
+				return found.set(programId, false, castVal.x, castVal.y, castVal.z, castVal.w);
+			}
 		}else{
 			return false;
 		}
@@ -281,7 +284,25 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, Matrix value){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			return found.setMat(programId, false, value.asByteBuffer());
+			if(value instanceof Mat2){
+				return found.set(programId, false, 
+						value.valueAt(0), value.valueAt(1),
+						value.valueAt(2), value.valueAt(3)
+						);
+			}else if(value instanceof Mat3){
+				return found.set(programId, false, 
+						value.valueAt(0), value.valueAt(1), value.valueAt(2), 
+						value.valueAt(3), value.valueAt(4), value.valueAt(5), 
+						value.valueAt(6), value.valueAt(7), value.valueAt(8)
+						);
+			}else{
+				return found.set(programId, false, 
+						value.valueAt(0), value.valueAt(1), value.valueAt(2), value.valueAt(3),
+						value.valueAt(4), value.valueAt(5), value.valueAt(6), value.valueAt(7),
+						value.valueAt(8), value.valueAt(9), value.valueAt(10), value.valueAt(11),
+						value.valueAt(12), value.valueAt(13), value.valueAt(14), value.valueAt(15)
+						);
+			}
 		}else{
 			return false;
 		}
@@ -298,7 +319,25 @@ public class ShaderProgram {
 	public boolean setUniform(String uniformName, boolean transpose, Matrix value){
 		Uniform found = uniforms.get(uniformName);
 		if(found != null){
-			return found.setMat(programId, transpose, value.asByteBuffer());
+			if(value instanceof Mat2){
+				return found.set(programId, transpose, 
+						value.valueAt(0), value.valueAt(1),
+						value.valueAt(2), value.valueAt(3)
+						);
+			}else if(value instanceof Mat3){
+				return found.set(programId, transpose, 
+						value.valueAt(0), value.valueAt(1), value.valueAt(2), 
+						value.valueAt(3), value.valueAt(4), value.valueAt(5), 
+						value.valueAt(6), value.valueAt(7), value.valueAt(8)
+						);
+			}else{
+				return found.set(programId, transpose, 
+						value.valueAt(0), value.valueAt(1), value.valueAt(2), value.valueAt(3),
+						value.valueAt(4), value.valueAt(5), value.valueAt(6), value.valueAt(7),
+						value.valueAt(8), value.valueAt(9), value.valueAt(10), value.valueAt(11),
+						value.valueAt(12), value.valueAt(13), value.valueAt(14), value.valueAt(15)
+						);
+			}
 		}else{
 			return false;
 		}
