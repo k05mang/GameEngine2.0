@@ -31,88 +31,183 @@ public final class Cuboid extends Mesh {
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		//-----zpos face------
-		geometry.add(new Vertex(-1, 1, 1, 
-				0, 0, 1,
-				0, 1));
-		geometry.add(new Vertex(-1, -1, 1, 
-				0, 0, 1, 
-				0, 0));
-		geometry.add(new Vertex(1, 1, 1, 
-				0, 0, 1, 
-				1, 1));
-		geometry.add(new Vertex(1, -1, 1, 
-				0, 0, 1, 
-				1, 0));
-		//-----zneg face------
-		geometry.add(new Vertex(1, 1, -1, 
-				0, 0, -1, 
-				0, 1));
-		geometry.add(new Vertex(1, -1, -1, 
-				0, 0, -1,
-				0, 0));
-		geometry.add(new Vertex(-1, 1, -1, 
-				0, 0, -1, 
-				1, 1));
-		geometry.add(new Vertex(-1, -1, -1, 
-				0, 0, -1, 
-				1, 0));
-		
 		//-----xpos face------
-		geometry.add(new Vertex(1, 1, 1, 
+		geometry.add(new Vertex(
+				1, 1, 1, 	//position
+				1, 0, 0, 	//normal
+				0, 1,		//uvs
+				0,0,-1,		//tangent
+				0,1,0		//bitangent
+				));
+		geometry.add(new Vertex(
+				1, -1, 1, 
 				1, 0, 0, 
-				0, 1));
-		geometry.add(new Vertex(1, -1, 1, 
+				0, 0,
+				0,0,-1,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				1, 1, -1, 
 				1, 0, 0, 
-				0, 0));
-		geometry.add(new Vertex(1, 1, -1, 
+				1, 1,
+				0,0,-1,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				1, -1, -1, 
 				1, 0, 0, 
-				1, 1));
-		geometry.add(new Vertex(1, -1, -1, 
-				1, 0, 0, 
-				1, 0));
+				1, 0,
+				0,0,-1,	
+				0,1,0	
+				));
 		//-----xneg face------
-		geometry.add(new Vertex(-1, 1, -1, 
+		geometry.add(new Vertex(
+				-1, 1, -1, 
 				-1, 0, 0, 
-				0, 1));
-		geometry.add(new Vertex(-1, -1, -1, 
+				0, 1,
+				0,0,1,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				-1, -1, -1, 
 				-1, 0, 0, 
-				0, 0));
-		geometry.add(new Vertex(-1, 1, 1, 
+				0, 0,
+				0,0,1,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				-1, 1, 1, 
 				-1, 0, 0, 
-				1, 1));
-		geometry.add(new Vertex(-1, -1, 1, 
+				1, 1,
+				0,0,1,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				-1, -1, 1, 
 				-1, 0, 0, 
-				1, 0));
+				1, 0,
+				0,0,1,	
+				0,1,0	
+				));
 		
 		//-----ypos face------
-		geometry.add(new Vertex(-1, 1, -1, 
+		geometry.add(new Vertex(
+				-1, 1, -1, 
 				0, 1, 0, 
-				0, 1));
-		geometry.add(new Vertex(-1, 1, 1, 
+				0, 1,
+				1,0,0,	
+				0,0,-1	
+				));
+		geometry.add(new Vertex(
+				-1, 1, 1, 
 				0, 1, 0, 
-				0, 0));
-		geometry.add(new Vertex(1, 1, -1, 
+				0, 0,
+				1,0,0,	
+				0,0,-1	
+				));
+		geometry.add(new Vertex(
+				1, 1, -1, 
 				0, 1, 0, 
-				1, 1));
-		geometry.add(new Vertex(1, 1, 1, 
+				1, 1,
+				1,0,0,	
+				0,0,-1	
+				));
+		geometry.add(new Vertex(
+				1, 1, 1, 
 				0, 1, 0, 
-				1, 0));
+				1, 0,
+				1,0,0,	
+				0,0,-1	
+				));
 		//-----yneg face------
-		geometry.add(new Vertex(-1, -1, 1, 
+		geometry.add(new Vertex(
+				-1, -1, 1, 
 				0, -1, 0, 
-				0, 1));
-		geometry.add(new Vertex(-1, -1, -1, 
+				0, 1,
+				1,0,0,	
+				0,0,1	
+				));
+		geometry.add(new Vertex(
+				-1, -1, -1, 
 				0, -1, 0, 
-				0, 0));
-		geometry.add(new Vertex(1, -1, 1, 
+				0, 0,
+				1,0,0,	
+				0,0,1	
+				));
+		geometry.add(new Vertex(
+				1, -1, 1, 
 				0, -1, 0, 
-				1, 1));
-		geometry.add(new Vertex(1, -1, -1, 
+				1, 1,
+				1,0,0,	
+				0,0,1	
+				));
+		geometry.add(new Vertex(
+				1, -1, -1, 
 				0, -1, 0, 
-				1, 0));
+				1, 0,
+				1,0,0,	
+				0,0,1	
+				));
 		
-		transforms.scale(halfDimensions);
+		//-----zpos face------
+		geometry.add(new Vertex(
+				-1, 1, 1, 
+				0, 0, 1,
+				0, 1,
+				1,0,0,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				-1, -1, 1, 
+				0, 0, 1, 
+				0, 0,
+				1,0,0,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				1, 1, 1, 
+				0, 0, 1, 
+				1, 1,
+				1,0,0,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				1, -1, 1, 
+				0, 0, 1, 
+				1, 0,
+				1,0,0,	
+				0,1,0	
+				));
+		//-----zneg face------
+		geometry.add(new Vertex(
+				1, 1, -1, 
+				0, 0, -1, 
+				0, 1,
+				-1,0,0,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				1, -1, -1, 
+				0, 0, -1,
+				0, 0,
+				-1,0,0,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				-1, 1, -1, 
+				0, 0, -1, 
+				1, 1,
+				-1,0,0,	
+				0,1,0	
+				));
+		geometry.add(new Vertex(
+				-1, -1, -1, 
+				0, 0, -1, 
+				1, 0,
+				-1,0,0,	
+				0,1,0	
+				));
+
 		//generate the face indices
 		for (int face = 0; face < 6; face++) {
 			geometry.add(new Face(
@@ -126,6 +221,7 @@ public final class Cuboid extends Mesh {
 					2 + 4 * face
 					));
 		}
+		transforms.scale(halfDimensions);
 
 		geometry.insertVertices(vbo);
 		
@@ -145,9 +241,11 @@ public final class Cuboid extends Mesh {
 		}
 
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
+		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
 		
 		//register the vbo with the vao
 		vao.registerVBO("default");
@@ -156,11 +254,15 @@ public final class Cuboid extends Mesh {
 		vao.setAttribVBO(0, "default");
 		vao.setAttribVBO(1, "default");
 		vao.setAttribVBO(2, "default");
+		vao.setAttribVBO(3, "default");
+		vao.setAttribVBO(4, "default");
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
 		vao.enableAttribute(2);
+		vao.enableAttribute(3);
+		vao.enableAttribute(4);
 	}
 	
 	/**

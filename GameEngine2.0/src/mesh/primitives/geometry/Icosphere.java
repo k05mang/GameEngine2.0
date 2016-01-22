@@ -173,9 +173,9 @@ public final class Icosphere extends Mesh {
 			vao.setIndexBuffer(modes[0].toString());
 		}
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
 		
 		//register the vbo with the vao
 		vao.registerVBO("default");

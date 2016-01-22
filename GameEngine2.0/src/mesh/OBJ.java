@@ -33,19 +33,25 @@ public class OBJ extends Mesh {
 		
 		vao.setIndexBuffer("default");
 
-		vao.addAttrib(0, AttribType.VEC3, false, 0);
-		vao.addAttrib(1, AttribType.VEC3, false, 0);
-		vao.addAttrib(2, AttribType.VEC2, false, 0);
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
+		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
 		
 		vao.registerVBO("default");
 
 		vao.setAttribVBO(0, "default");
 		vao.setAttribVBO(1, "default");
 		vao.setAttribVBO(2, "default");
+		vao.setAttribVBO(3, "default");
+		vao.setAttribVBO(4, "default");
 
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
 		vao.enableAttribute(2);
+		vao.enableAttribute(3);
+		vao.enableAttribute(4);
 		
 		this.material = material;
 	}

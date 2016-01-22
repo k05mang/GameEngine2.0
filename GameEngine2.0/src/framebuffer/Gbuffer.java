@@ -33,7 +33,6 @@ public class Gbuffer {
 	}
 
 	public void geoPass(){
-//		specular.unbindFromTextureUnit(2);//1 will be the engine target for deferred lightAccum texture
 		framebuffer.bind(true, true);
 		framebuffer.setDrawBuffers(0,1,2);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);//clear the buffer for a new pass

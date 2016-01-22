@@ -43,7 +43,7 @@ public final class Disc extends Mesh {
 			float x = u;
 			float z = v;
 
-			Vertex curVert = new Vertex(x, 0, z,  0,1,0, u/2+.5f, -v/2+.5f);
+			Vertex curVert = new Vertex(x, 0, z,  0,1,0, u/2+.5f, -v/2+.5f, 1,0,0, 0,0,1);
 
 			geometry.add(curVert);
 			
@@ -79,9 +79,11 @@ public final class Disc extends Mesh {
 			vao.setIndexBuffer(modes[0].toString());
 		}
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
+		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
 		
 		//register the vbo with the vao
 		vao.registerVBO("default");
@@ -90,11 +92,15 @@ public final class Disc extends Mesh {
 		vao.setAttribVBO(0, "default");
 		vao.setAttribVBO(1, "default");
 		vao.setAttribVBO(2, "default");
+		vao.setAttribVBO(3, "default");
+		vao.setAttribVBO(4, "default");
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
 		vao.enableAttribute(2);
+		vao.enableAttribute(3);
+		vao.enableAttribute(4);
 	}
 	
 	/**

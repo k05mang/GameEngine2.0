@@ -25,6 +25,13 @@ public class ResourceManager {
 		}
 	}
 	
+	public void removeAll(){
+		for(Resource remove : resources.values()){
+			remove.delete();
+		}
+		resources.clear();
+	}
+	
 	public ArrayList<String> getIds(){
 		return new ArrayList<String>(resources.keySet());
 	}

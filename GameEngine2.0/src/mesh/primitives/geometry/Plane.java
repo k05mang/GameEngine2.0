@@ -30,10 +30,10 @@ public final class Plane extends Mesh{
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		Vertex topLeft = new Vertex(-1,0,-1, 0,1,0, 0,1);
-		Vertex bottomLeft = new Vertex(-1,0,1, 0,1,0, 0,0);
-		Vertex topRight = new Vertex(1,0,-1, 0,1,0, 1,1);
-		Vertex bottomRight = new Vertex(1,0,1, 0,1,0, 1,0);
+		Vertex topLeft = new Vertex(-1,0,-1, 0,1,0, 0,1, 1,0,0, 0,0,1);
+		Vertex bottomLeft = new Vertex(-1,0,1, 0,1,0, 0,0, 1,0,0, 0,0,1);
+		Vertex topRight = new Vertex(1,0,-1, 0,1,0, 1,1, 1,0,0, 0,0,1);
+		Vertex bottomRight = new Vertex(1,0,1, 0,1,0, 1,0, 1,0,0, 0,0,1);
 		
 		topLeft.addTo(vbo);
 		bottomLeft.addTo(vbo);
@@ -64,9 +64,11 @@ public final class Plane extends Mesh{
 			vao.setIndexBuffer(modes[0].toString());
 		}
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
+		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
 		
 		//register the vbo with the vao
 		vao.registerVBO("default");
@@ -75,11 +77,15 @@ public final class Plane extends Mesh{
 		vao.setAttribVBO(0, "default");
 		vao.setAttribVBO(1, "default");
 		vao.setAttribVBO(2, "default");
+		vao.setAttribVBO(3, "default");
+		vao.setAttribVBO(4, "default");
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
 		vao.enableAttribute(2);
+		vao.enableAttribute(3);
+		vao.enableAttribute(4);
 	}
 	
 	/**

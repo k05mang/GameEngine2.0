@@ -66,8 +66,8 @@ public class BezierCurve extends Mesh{
 		
 		
 		//specify the attributes for the vertex array of the curve vbo
-		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
 				
 		//bind the vbos to the vao
 		vao.registerVBO("curve");

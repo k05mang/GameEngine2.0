@@ -104,9 +104,15 @@ public class DeferredRenderer {
 	private void setupUniforms(){
 		geoPass.setUniform("proj", main.getProjection());
 		geoPass.setUniform("color", 1, 1, 1);
-		geoPass.setUniform("specPow", 157.0f);
+		geoPass.setUniform("specPower", 157.0f);
 		geoPass.setUniform("specInt", 2);
-		geoPass.setUniform("diffuseTexture", 0);
+		
+		geoPass.setUniform("albedo", 0);
+		geoPass.setUniform("normalMap", 1);
+		geoPass.setUniform("specMap", 2);
+		geoPass.setUniform("bumpMap", 3);
+		
+		geoPass.setUniform("gamma", 1);
 
 		stencilPass.setUniform("proj", main.getProjection());
 		
@@ -117,6 +123,7 @@ public class DeferredRenderer {
 		finalPass.setUniform("diffuse", 0);
 		finalPass.setUniform("lighting", 1);
 		finalPass.setUniform("ambient", .3f);
+		finalPass.setUniform("gamma", 1);
 		finalPass.setUniform("model", Transform.getRotateMat(1, 0, 0, -90));
 	}
 	
@@ -133,9 +140,7 @@ public class DeferredRenderer {
 			Mesh castMesh = ((Mesh) mesh);
 			geoPass.setUniform("model", castMesh.getModelView());
 			Material mat = (Material) SceneManager.materials.get(castMesh.getMaterial());
-			if(mat.hasMaterial(Material.DIFFUSE)){
-				((Texture) SceneManager.textures.get(mat.getTextureId(Material.DIFFUSE))).bindToTextureUnit(0);
-			}
+			mat.bind(geoPass);
 			castMesh.render();
 		}
 		geoPass.unbind();

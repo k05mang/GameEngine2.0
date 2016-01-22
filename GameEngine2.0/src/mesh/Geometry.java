@@ -158,7 +158,7 @@ public class Geometry {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public Vertex getVertex(int index) throws IndexOutOfBoundsException{
-		if(index > vertices.size()-1){
+		if(index > vertices.size()-1 || index < 0){
 			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Vertex from mesh");
 		}else{
 			return vertices.get(index);
@@ -238,7 +238,7 @@ public class Geometry {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public Face getFace(int index) throws IndexOutOfBoundsException{
-		if(index > vertices.size()-1){
+		if(index > faces.size()-1 || index < 0){
 			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Face from mesh");
 		}else{
 			return faces.get(index);
@@ -248,7 +248,7 @@ public class Geometry {
 	/**
 	 * Inserts this meshes vertices into the given BufferObject
 	 * 
-	 * @param vao BUfferObject to add the vertices to
+	 * @param vao BufferObject to add the vertices to
 	 */
 	public void insertVertices(BufferObject buffer){
 		for(Vertex vert : vertices){

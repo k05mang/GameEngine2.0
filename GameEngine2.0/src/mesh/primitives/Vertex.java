@@ -337,7 +337,7 @@ public class Vertex{
 	 * @param btz Z component of this vertex's new bitangent
 	 */
 	public void setBitangent(float btx, float bty, float btz){
-		if(tangent == null){
+		if(bitangent == null){
 			bitangent = new Vec3(btx, bty, btz);
 		}else{
 			bitangent.set(btx, bty, btz);

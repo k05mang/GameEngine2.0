@@ -55,29 +55,43 @@ public final class Sphere extends Mesh{
 				float y = (float)( cos(phi) );//since y is the up axis have it use the conventional z calculation
 				float z = (float)( sin(theta)*sin(phi) );
 				
-				Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
-				geometry.add(vert);
-				vert.addTo(vbo);//add vertex to vertex array
+				int curIndex = 0;//current index
+				int nextStackIndex = 0;//same slice next stack
 				
-				//calculate indices
-				//restrict face calculation to within the sphere boundaries, since the bottom will result in erratic behavior
-				//when at the end of the a loop
-				if(curStack < maxStack && curSlice < maxSlice){
-					int curIndex = curStack*(maxSlice+1)+curSlice;//current index
-					int nextStackIndex = (curStack+1)*(maxSlice+1)+curSlice;//same slice next stack
+				if(curStack == 0 && curSlice < maxSlice){
+					float uvOffset = .5f/maxSlice;
+					nextStackIndex = maxSlice+curSlice;//same slice next stack
+					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u-uvOffset, 1-v);
+					geometry.add(vert);
 					
-					//don't have the left face indexing generate faces for the bottom cap, only the top cap
-					//the left triangle of the quad, or top cap if at the start of stack loop
-					if(curStack != maxStack-1){
+					geometry.add(new Face(
+						curSlice,//current vertex index
+						nextStackIndex+1,//next slice of the next stack 
+						nextStackIndex//current slice of the next stack
+						));
+				}else if(curStack == maxStack && curSlice < maxSlice){
+					float uvOffset = .5f/maxSlice;
+					curIndex = maxSlice+(curStack-2)*(maxSlice+1)+curSlice;//current index
+					nextStackIndex = maxSlice+(curStack-1)*(maxSlice+1)+curSlice;//same slice next stack
+					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u-uvOffset, 1-v);
+					geometry.add(vert);
+					
+					geometry.add(new Face(
+						curIndex,//current vertex index
+						curIndex+1,//next index of current stack
+						nextStackIndex//next stack next slice
+						));
+				}else if(curStack > 0 && curStack < maxStack){
+					curIndex = maxSlice+(curStack-1)*(maxSlice+1)+curSlice;//current index
+					nextStackIndex = maxSlice+(curStack)*(maxSlice+1)+curSlice;//same slice next stack
+					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
+					geometry.add(vert);
+					if(curSlice < maxSlice && curStack < maxStack-1){
 						geometry.add(new Face(
 							curIndex,//current vertex index
 							nextStackIndex+1,//next slice of the next stack 
 							nextStackIndex//current slice of the next stack
 							));
-					}
-					//don't have the right face indexing generate faces for the top cap, only the bottom cap
-					//and the right triangle of the quad, or bottom cap if at the end of stack loop
-					if(curStack != 0){
 						geometry.add(new Face(
 							curIndex,//current vertex index
 							curIndex+1,//next index of current stack
@@ -87,9 +101,9 @@ public final class Sphere extends Mesh{
 				}
 			}
 		}
-		
+		geometry.genTangentBitangent();
+		geometry.insertVertices(vbo);
 		transforms.scale(this.radius, this.radius, this.radius);
-		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
@@ -107,9 +121,11 @@ public final class Sphere extends Mesh{
 			vao.setIndexBuffer(modes[0].toString());
 		}
 		//specify the attributes for the vertex array
-		vao.addAttrib(0, AttribType.VEC3, false, 0);//position
-		vao.addAttrib(1, AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(2, AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
+		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
 		
 		//register the vbo with the vao
 		vao.registerVBO("default");
@@ -118,11 +134,15 @@ public final class Sphere extends Mesh{
 		vao.setAttribVBO(0, "default");
 		vao.setAttribVBO(1, "default");
 		vao.setAttribVBO(2, "default");
+		vao.setAttribVBO(3, "default");
+		vao.setAttribVBO(4, "default");
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
 		vao.enableAttribute(2);
+		vao.enableAttribute(3);
+		vao.enableAttribute(4);
 	}
 	
 	/**

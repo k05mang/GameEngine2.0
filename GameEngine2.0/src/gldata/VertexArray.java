@@ -22,6 +22,7 @@ public class VertexArray {
 	private HashMap<String, IndexBuffer> ibos;
 	private HashMap<String, RenderMode> renderModes;
 	private String ibo;
+	private ArrayList<AttribType> attributes;
 	
 	/**
 	 * Constructs an empty vertex array with an associated handle on the GPU
@@ -31,14 +32,18 @@ public class VertexArray {
 		vaoId = glCreateVertexArrays();
 		//vertex buffer mapping to different names
 		vbos = new HashMap<String, BufferObject>();
-		
+		//hashmap of index buffers
 		ibos = new HashMap<String, IndexBuffer>();
+		//hashmap correlating the rendermodes of the index buffers map
 		renderModes = new HashMap<String, RenderMode>();
-		ibo = null;
-		stride = 0;
+		ibo = null;//current index buffer to use
+		stride = 0;//stride of the attribute
 		
+		//binding indices for the vertex buffers
 		bufferIndices = new HashMap<String, Integer>();
 		highestBufferIndex = 0;
+		
+		attributes = new ArrayList<AttribType>();//attributes associated with this vertex array
 	}
 	
 	/**
@@ -146,24 +151,23 @@ public class VertexArray {
 	/**
 	 * Adds an attribute definition for this vertex array
 	 * 
-	 * @param index Specifies the index of the attribute to set
 	 * @param type The glsl attribute type that will define how the attribute will behave
 	 * @param normalize Indicates whether the data being sent to the attribute should be normalized
 	 * @param divisor Attribute divisor that decides the frequency of updating the attribute from the vertex buffer
 	 */
-	public void addAttrib(int index, AttribType type, boolean normalize, int divisor){
-		ArrayList<AttribType> attributes = new ArrayList<AttribType>();
+	public void addAttrib(AttribType type, boolean normalize, int divisor){
+		int baseIndex = attributes.size();
 		type.decompose(attributes);
 		//set the attribute data
-		for(int curIndex = 0; curIndex <  attributes.size(); curIndex++){
+		for(int curIndex = baseIndex; curIndex <  attributes.size(); curIndex++){
 			AttribType curType = attributes.get(curIndex);
 			//decide what function to call based on the data type
 			if(curType.isDouble()){
-				glVertexArrayAttribLFormat(vaoId, index+curIndex, curType.size, curType.type, stride);
+				glVertexArrayAttribLFormat(vaoId, curIndex, curType.size, curType.type, stride);
 			}else if(curType.isFloat()){
-				glVertexArrayAttribFormat(vaoId, index+curIndex, curType.size, curType.type, normalize, stride);
+				glVertexArrayAttribFormat(vaoId, curIndex, curType.size, curType.type, normalize, stride);
 			}else{
-				glVertexArrayAttribIFormat(vaoId, index+curIndex, curType.size, curType.type, stride);
+				glVertexArrayAttribIFormat(vaoId, curIndex, curType.size, curType.type, stride);
 			}
 			stride += curType.bytes;
 		}

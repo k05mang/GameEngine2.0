@@ -36,6 +36,7 @@ public class Vec2 implements Vector {
 	public Vec2(float x, float y){
 		this.x = x;
 		this.y = y;
+		trunc();
 	}
 	
 	/**
@@ -65,6 +66,7 @@ public class Vec2 implements Vector {
 		if(init.length >= 2){
 			x = init[0];
 			y = init[1];
+			trunc();
 		}
 	}
 	
@@ -90,6 +92,7 @@ public class Vec2 implements Vector {
 		if(len != 0){
 			x /= len;
 			y /= len;
+			trunc();
 		}
 		return len;
 	}
@@ -100,6 +103,7 @@ public class Vec2 implements Vector {
 			Vec2 vect = (Vec2)vector;
 			x += vect.x;
 			y += vect.y;
+			trunc();
 		}else{
 			System.err.println("Type mismatch in vector addition, vector is not of type Vec2");
 		}
@@ -109,6 +113,7 @@ public class Vec2 implements Vector {
 	public Vec2 add(float x, float y) {
 		this.x += x;
 		this.y += y;
+		trunc();
 		return this;
 	}
 
@@ -118,6 +123,7 @@ public class Vec2 implements Vector {
 			Vec2 vect = (Vec2)vector;
 			x -= vect.x;
 			y -= vect.y;
+			trunc();
 		}else{
 			System.err.println("Type mismatch in vector subtraction, vector is not of type Vec2");
 		}
@@ -127,6 +133,7 @@ public class Vec2 implements Vector {
 	public Vec2 subtract(float x, float y) {
 		this.x -= x;
 		this.y -= y;
+		trunc();
 		return this;
 	}
 
@@ -134,6 +141,7 @@ public class Vec2 implements Vector {
 	public Vec2 scale(float factor) {
 		x *= factor;
 		y *= factor;
+		trunc();
 		return this;
 	}
 	
@@ -162,6 +170,7 @@ public class Vec2 implements Vector {
 				System.err.println("Index out of bounds for this vector");
 				break;
 		}
+		trunc();
 		return this;
 	}
 	
@@ -171,6 +180,7 @@ public class Vec2 implements Vector {
 			Vec2 vector = (Vec2)vec;
 			x = vector.x;
 			y = vector.y;
+			trunc();
 		}else{
 			System.err.println("Vector given is not of type Vec2, failed to set values");
 		}
@@ -190,6 +200,7 @@ public class Vec2 implements Vector {
 			default:
 				break;
 		}
+		trunc();
 		return this;
 	}
 	

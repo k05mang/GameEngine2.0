@@ -70,14 +70,14 @@ public abstract class VecUtil {
 	 * @return The sum of the given vectors
 	 */
 	public static Vec2 add(Vec2... vectors){
-		if(vectors.length > 1){
+		if(vectors.length > 0){
 			Vec2 result = new Vec2(0);
 			for (int curVector = 0; curVector < vectors.length; curVector++){
 				result.add(vectors[curVector]);
 			}
 			return result;
 		}else{
-			return vectors.length == 1 ? vectors[0] : null;
+			return null;
 		}
 	}
 	
@@ -88,14 +88,14 @@ public abstract class VecUtil {
 	 * @return The sum of the given vectors
 	 */
 	public static Vec3 add(Vec3... vectors){
-		if(vectors.length > 1){
+		if(vectors.length > 0){
 			Vec3 result = new Vec3(0);
 			for (int curVector = 0; curVector < vectors.length; curVector++){
 				result.add(vectors[curVector]);
 			}
 			return result;
 		}else{
-			return vectors.length == 1 ? vectors[0] : null;
+			return null;
 		}
 	}
 
@@ -106,14 +106,14 @@ public abstract class VecUtil {
 	 * @return The sum of the given vectors
 	 */
 	public static Vec4 add(Vec4... vectors){
-		if(vectors.length > 1){
+		if(vectors.length > 0){
 			Vec4 result = new Vec4(0);
 			for (int curVector = 0; curVector < vectors.length; curVector++){
 				result.add(vectors[curVector]);
 			}
 			return result;
 		}else{
-			return vectors.length == 1 ? vectors[0] : null;
+			return null;
 		}
 	}
 	
@@ -125,13 +125,13 @@ public abstract class VecUtil {
 	 */
 	public static Vec2 subtract(Vec2... vectors){
 		if(vectors.length > 1){
-			Vec2 result = new Vec2((Vec2)vectors[0]);
+			Vec2 result = new Vec2(vectors[0]);
 			for (int curVector = 1; curVector < vectors.length; curVector++){
 				result.subtract(vectors[curVector]);
 			}
 			return result;
 		}else{
-			return vectors.length == 1 ? vectors[0] : null;
+			return vectors.length == 1 ? new Vec2(vectors[0]) : null;
 		}
 	}
 
@@ -143,13 +143,13 @@ public abstract class VecUtil {
 	 */
 	public static Vec3 subtract(Vec3... vectors){
 		if(vectors.length > 1){
-			Vec3 result = new Vec3((Vec3)vectors[0]);
+			Vec3 result = new Vec3(vectors[0]);
 			for (int curVector = 1; curVector < vectors.length; curVector++){
 				result.subtract(vectors[curVector]);
 			}
 			return result;
 		}else{
-			return vectors.length == 1 ? vectors[0] : null;
+			return vectors.length == 1 ? new Vec3(vectors[0]) : null;
 		}
 	}
 
@@ -161,13 +161,13 @@ public abstract class VecUtil {
 	 */
 	public static Vec4 subtract(Vec4... vectors){
 		if(vectors.length > 1){
-			Vec4 result = new Vec4((Vec4)vectors[0]);
+			Vec4 result = new Vec4(vectors[0]);
 			for (int curVector = 1; curVector < vectors.length; curVector++){
 				result.subtract(vectors[curVector]);
 			}
 			return result;
 		}else{
-			return vectors.length == 1 ? vectors[0] : null;
+			return vectors.length == 1 ? new Vec4(vectors[0]) : null;
 		}
 	}
 	

@@ -39,6 +39,7 @@ public class Vec3 implements Vector {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+		trunc();
 	}
 	
 	/**
@@ -91,6 +92,7 @@ public class Vec3 implements Vector {
 			x = init[0];
 			y = init[1];
 			z = init[2];
+			trunc();
 		}
 	}
 	
@@ -131,6 +133,7 @@ public class Vec3 implements Vector {
 			x /= len;
 			y /= len;
 			z /= len;
+			trunc();
 		}
 		return len;
 	}
@@ -142,6 +145,7 @@ public class Vec3 implements Vector {
 			x += vect.x;
 			y += vect.y;
 			z += vect.z;
+			trunc();
 		}else{
 			System.err.println("Type mismatch in vector addition, vector is not of type Vec3");
 		}
@@ -152,6 +156,7 @@ public class Vec3 implements Vector {
 		this.x += x;
 		this.y += y;
 		this.z += z;
+		trunc();
 		return this;
 	}
 
@@ -162,6 +167,7 @@ public class Vec3 implements Vector {
 			x -= vect.x;
 			y -= vect.y;
 			z -= vect.z;
+			trunc();
 		}else{
 			System.err.println("Type mismatch in vector subtraction, vector is not of type Vec3");
 		}
@@ -172,6 +178,7 @@ public class Vec3 implements Vector {
 		this.x -= x;
 		this.y -= y;
 		this.z -= z;
+		trunc();
 		return this;
 	}
 
@@ -180,6 +187,7 @@ public class Vec3 implements Vector {
 		x *= factor;
 		y *= factor;
 		z *= factor;
+		trunc();
 		return this;
 	}
 	
@@ -213,6 +221,7 @@ public class Vec3 implements Vector {
 				System.err.println("Index out of bounds for this vector");
 				break;
 		}
+		trunc();
 		return this;
 	}
 	
@@ -223,6 +232,7 @@ public class Vec3 implements Vector {
 			x = vector.x;
 			y = vector.y;
 			z = vector.z;
+			trunc();
 		}else{
 			System.err.println("Vector given is not of type Vec3, failed to set values");
 		}
@@ -247,6 +257,7 @@ public class Vec3 implements Vector {
 			default:
 				break;
 		}
+		trunc();
 		return this;
 	}
 	
