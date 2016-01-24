@@ -13,7 +13,6 @@ import mesh.primitives.geometry.Plane;
 import shaders.Shader;
 import shaders.ShaderProgram;
 import shaders.ShaderStage;
-import textures.Texture;
 import core.Camera;
 import core.Resource;
 import core.SceneManager;

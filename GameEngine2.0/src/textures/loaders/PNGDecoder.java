@@ -86,9 +86,9 @@ class PNGDecoder extends ImageParser{
 		//determine the format and type of the pixel data
 		switch(colorType){
 			case 0://greyscale
-				format = BaseFormat.RED;
+				format = BaseFormat.RGB;
 				samplesPerPixel = 1;
-				bufferStride = width*1;
+				bufferStride = width*3;
 				break;
 			case 2://truecolor
 				format = BaseFormat.RGB;
@@ -101,9 +101,9 @@ class PNGDecoder extends ImageParser{
 				bufferStride = width*3;
 				break;
 			case 4://greyscale with alpha
-				format = BaseFormat.RG;
+				format = BaseFormat.RGBA;
 				samplesPerPixel = 2;
-				bufferStride = width*2;
+				bufferStride = width*4;
 				break;
 			case 6://truecolor with alpha
 				format = BaseFormat.RGBA;
@@ -149,23 +149,8 @@ class PNGDecoder extends ImageParser{
 					break;
 				case "tRNS":
 					parseTRNS(chunkLength);
-					switch(colorType){
-						case 0://greyscale
-							format = BaseFormat.RG;
-							samplesPerPixel = 1;
-							bufferStride = width*2;
-							break;
-						case 2://truecolor
-							format = BaseFormat.RGBA;
-							samplesPerPixel = 3;
-							bufferStride = width*4;
-							break;
-						case 3://indexed
-							format = BaseFormat.RGBA;
-							samplesPerPixel = 1;
-							bufferStride = width*4;
-							break;
-					}
+					format = BaseFormat.RGBA;
+					bufferStride = width*4;
 					break;
 				default:
 					imageStream.skipBytes(chunkLength);//until implemented ignore other non critical chunks
@@ -267,7 +252,7 @@ class PNGDecoder extends ImageParser{
 	private void processScanline(ByteBuffer image, byte[] scanline, int scanlineIndex){
 		int offset = ((height-1-TOP_OFFSET)-scanlineIndex*VERT_STRIDE)*bufferStride;//current scanline to start buffering to in the image buffer
 		int curPixel = LEFT_OFFSET;
-		int valuesPerPixel = format == BaseFormat.RG ? 2 : 1;
+		int valuesPerPixel = format == BaseFormat.RGBA ? 4 : 3;
 		if(colorType == 0 || colorType == 4){//greyscale
 			//if the bit depth is less than a byte then values need to be expanded
 			if(bitDepth < 8){
@@ -288,17 +273,16 @@ class PNGDecoder extends ImageParser{
 						//bitGroups-bitGroup-1
 						//when bitGroup is 0 for the above
 						int value = (int)(bitmask & (scanline[curByte] >>> (bitDepth*(bitGroups-bitGroup-1))));
-						value = (int)(255*(value/(float)bitmask));
-						image.put(offset+valuesPerPixel*curPixel, (byte)value);
 						//check if there is a trns chunk defined
 						if(trns != null){
 							//check if the value being processed has a value in the trns chunk
 							if(trns[0] == value){
-								image.put(offset+valuesPerPixel*curPixel+1, (byte)0);
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)0);
 							}else{//if not then there still needs to be a alpha value and this defaults to max opacity
-								image.put(offset+valuesPerPixel*curPixel+1, (byte)255);
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)255);
 							}
 						}
+						expandGrey(image, offset+valuesPerPixel*curPixel, (byte)value);
 						curPixel += HORIZ_STRIDE;
 					}
 				}
@@ -311,16 +295,16 @@ class PNGDecoder extends ImageParser{
 				if(bitDepth == 8){
 					for(int curByte = 0; curByte < scanline.length; curByte += pixelStride){
 						//greyscale
-						image.put(offset+valuesPerPixel*curPixel, scanline[curByte]);
+						expandGrey(image, offset+valuesPerPixel*curPixel, scanline[curByte]);
 						
 						if(isAlpha){
-							image.put(offset+valuesPerPixel*curPixel+1, scanline[curByte+1]);
+							image.put(offset+valuesPerPixel*curPixel+3, scanline[curByte+1]);
 						}else if(trns != null){
 							//check if the value being processed has a value in the trns chunk
 							if(trns[0] == scanline[curByte]){
-								image.put(offset+valuesPerPixel*curPixel+1, (byte)0);
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)0);
 							}else{//if not then there still needs to be a alpha value and this defaults to max opacity
-								image.put(offset+valuesPerPixel*curPixel+1, (byte)255);
+								image.put(offset+valuesPerPixel*curPixel+3, (byte)255);
 							}
 						}
 						curPixel += HORIZ_STRIDE;
@@ -341,7 +325,7 @@ class PNGDecoder extends ImageParser{
 						}
 						value = (int)Math.floor((255*(value/65535.0))+ 0.5);
 
-						image.put(offset+valuesPerPixel*curPixel, (byte)value);
+						expandGrey(image, offset+valuesPerPixel*curPixel, (byte)value);
 						
 						if(isAlpha){
 							value = (int)(0xff & scanline[curByte+2]);
@@ -349,7 +333,7 @@ class PNGDecoder extends ImageParser{
 							value += (int)(0xff & scanline[curByte+3]);
 							value = (int)Math.floor((255*(value/65535.0))+ 0.5);
 							//alpha
-							image.put(offset+valuesPerPixel*curPixel+1, (byte)value);
+							image.put(offset+valuesPerPixel*curPixel+3, (byte)value);
 						}
 						curPixel += HORIZ_STRIDE;
 					}
@@ -452,6 +436,22 @@ class PNGDecoder extends ImageParser{
 			}
 		}
 	}
+	
+	/**
+ 	 * Expands the given greyscale value of the png file to fit into RGB values
+ 	 * 
+ 	 * @param image ByteBuffer where the processed image data is being stored
+ 	 * @param offset Offset into the ByteBuffer to store the greyscale value
+ 	 * @param value Greyscale value to store into the ByteBuffer
+ 	 */
+ 	private void expandGrey(ByteBuffer image, int offset, byte value){
+ 		//R
+ 		image.put(offset, value);
+ 		//G
+ 		image.put(offset+1, value);
+ 		//B
+ 		image.put(offset+2, value);
+ 	}
 	
 	/**
 	 * Processes the raw decompressed image data for png's with adam7 interlacing

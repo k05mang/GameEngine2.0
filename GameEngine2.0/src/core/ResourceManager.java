@@ -6,7 +6,7 @@ import java.util.HashMap;
 public class ResourceManager {
 	protected HashMap<String, Resource> resources;
 	
-	protected ResourceManager(){
+	public ResourceManager(){
 		resources = new HashMap<String, Resource>();
 	}
 	

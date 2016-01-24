@@ -40,7 +40,8 @@ public abstract class Mesh implements Resource{
 	 * 
 	 * The Transform object for this Renderable will be a copy of the Transform for the given Renderable and will not be shared.
 	 * </p>
-	 * @param copy
+	 * 
+	 * @param copy Mesh to copy from
 	 */
 	public Mesh(Mesh copy){
 		vao = copy.vao;
@@ -117,6 +118,11 @@ public abstract class Mesh implements Resource{
 		}
 	}
 	
+	/**
+	 * Sets this mesh's transformation to the given transformation
+	 * 
+	 * @param trans Transformation to set this mesh to
+	 */
 	public void setTransform(Transform trans){
 		transforms.set(trans);
 	}
@@ -141,18 +147,31 @@ public abstract class Mesh implements Resource{
 		}
 	}
 	
+	/**
+	 * Renders the mesh using render state information stored in the mesh
+	 */
 	public void render(){
 		vao.bind();
 		glDrawElements(vao.getRenderMode().mode, vao.getNumIndices(), vao.getIndexType().enumType, 0);
 		vao.unbind();
 	}
 	
+	/**
+	 * Sets the material this mesh should use when rendering
+	 * 
+	 * @param material Material to use when rendering this mesh
+	 */
 	public void setMaterial(String material){
 		if(SceneManager.materials.get(material) != null){
 			this.material = material;
 		}
 	}
 	
+	/**
+	 * Gets the material this mesh is currently using to render with
+	 * 
+	 * @return Id of the material this mesh is using to render with
+	 */
 	public String getMaterial(){
 		return material;
 	}

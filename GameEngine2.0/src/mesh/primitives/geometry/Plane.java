@@ -30,10 +30,10 @@ public final class Plane extends Mesh{
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		Vertex topLeft = new Vertex(-1,0,-1, 0,1,0, 0,1, 1,0,0, 0,0,1);
-		Vertex bottomLeft = new Vertex(-1,0,1, 0,1,0, 0,0, 1,0,0, 0,0,1);
-		Vertex topRight = new Vertex(1,0,-1, 0,1,0, 1,1, 1,0,0, 0,0,1);
-		Vertex bottomRight = new Vertex(1,0,1, 0,1,0, 1,0, 1,0,0, 0,0,1);
+		Vertex topLeft = new Vertex(-1,0,-1, 0,1,0, 0,1, 1,0,0, 0,0,-1);
+		Vertex bottomLeft = new Vertex(-1,0,1, 0,1,0, 0,0, 1,0,0, 0,0,-1);
+		Vertex topRight = new Vertex(1,0,-1, 0,1,0, 1,1, 1,0,0, 0,0,-1);
+		Vertex bottomRight = new Vertex(1,0,1, 0,1,0, 1,0, 1,0,0, 0,0,-1);
 		
 		topLeft.addTo(vbo);
 		bottomLeft.addTo(vbo);
