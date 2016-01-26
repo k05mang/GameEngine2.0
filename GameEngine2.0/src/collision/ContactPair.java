@@ -47,8 +47,8 @@ public class ContactPair {
 					Vec3 rbCrossN = pointB.cross(curContact.normal);
 					
 					//map the inertia tensor to be oriented to the objects current orientation, since it was computed when the object was at rest
-					Mat3 aFinalInertia = (Mat3)MatrixUtil.multiply(contactA.geometry.getOrientation().asRotMatrix(), contactA.invInertiaTensor);
-					Mat3 bFinalInertia = (Mat3)MatrixUtil.multiply(contactB.geometry.getOrientation().asRotMatrix(), contactB.invInertiaTensor);
+					Mat3 aFinalInertia = (Mat3)MatrixUtil.multiply(contactA.geometry.getOrientation().asMat3(), contactA.invInertiaTensor);
+					Mat3 bFinalInertia = (Mat3)MatrixUtil.multiply(contactB.geometry.getOrientation().asMat3(), contactB.invInertiaTensor);
 					
 					
 					/* raCrossN = torque(force being applied to the angular component of the object)

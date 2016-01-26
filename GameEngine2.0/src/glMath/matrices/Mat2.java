@@ -1,6 +1,7 @@
 package glMath.matrices;
 
 import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
 import glMath.vectors.Vector;
 
 import java.nio.BufferOverflowException;
@@ -52,6 +53,15 @@ public class Mat2 implements Matrix {
 		matrix = new Vec2[2];
 		matrix[0] = new Vec2(col1);
 		matrix[1] = new Vec2(col2);
+	}
+	
+	public Mat2(float... values){
+		matrix = new Vec2[2];
+		matrix[0] = new Vec2();
+		matrix[1] = new Vec2();
+		for(int curValue = 0; curValue < values.length; curValue++){
+			setValueAt(curValue, values[curValue]);
+		}
 	}
 	
 	/**
@@ -205,6 +215,28 @@ public class Mat2 implements Matrix {
 				}
 			default:
 				throw new IndexOutOfBoundsException("Value at index: "+index+" is out of bounds for a Mat2");
+		}
+	}
+
+	@Override
+	public void setValueAt(int index, float value){
+		//decide what vector to read from
+		switch(index/4){
+			case 0:
+				//decide what value from that vector to get
+				switch(index%4){
+					case 0:
+						matrix[0].x = value;
+					case 1:
+						matrix[0].y = value;
+				}
+			case 1:
+				switch(index%4){
+					case 0:
+						matrix[1].x = value;
+					case 1:
+						matrix[1].y = value;
+				}
 		}
 	}
 	

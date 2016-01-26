@@ -74,6 +74,17 @@ public class Mat4 implements Matrix {
 		matrix[3] = new Vec4(rightCol , 1);
 	}
 	
+	public Mat4(float... values){
+		matrix = new Vec4[4];
+		matrix[0] = new Vec4();
+		matrix[1] = new Vec4();
+		matrix[2] = new Vec4();
+		matrix[3] = new Vec4();
+		for(int curValue = 0; curValue < values.length; curValue++){
+			setValueAt(curValue, values[curValue]);
+		}
+	}
+	
 	/**
 	 * Constructs this matrix using the given matrix as a copy
 	 * 
@@ -420,11 +431,63 @@ public class Mat4 implements Matrix {
 	}
 
 	@Override
-	public void setValueAt(int col, int row, float value) {
+	public void setValueAt(int col, int row, float value) throws IndexOutOfBoundsException{
 		if(col < matrix.length && row < 4){
 			matrix[col].set(row,  value);
 		}else{
-			System.err.println("The requested "+(col < matrix.length ? "row" : "column")+" is out of bounds for this matrix");
+			throw new IndexOutOfBoundsException("Value at column: "+col+", row :"+row+" is out of bounds for a Mat4");
+		}
+	}
+
+	@Override
+	public void setValueAt(int index, float value){
+		//decide what vector to read from
+		switch(index/4){
+			case 0:
+				//decide what value from that vector to get
+				switch(index%4){
+					case 0:
+						matrix[0].x = value;
+					case 1:
+						matrix[0].y = value;
+					case 2:
+						matrix[0].z = value;
+					case 3:
+						matrix[0].w = value;
+				}
+			case 1:
+				switch(index%4){
+					case 0:
+						matrix[1].x = value;
+					case 1:
+						matrix[1].y = value;
+					case 2:
+						matrix[1].z = value;
+					case 3:
+						matrix[1].w = value;
+				}
+			case 2:
+				switch(index%4){
+					case 0:
+						matrix[2].x = value;
+					case 1:
+						matrix[2].y = value;
+					case 2:
+						matrix[2].z = value;
+					case 3:
+						matrix[2].w = value;
+				}
+			case 3:
+				switch(index%4){
+					case 0:
+						matrix[3].x = value;
+					case 1:
+						matrix[3].y = value;
+					case 2:
+						matrix[3].z = value;
+					case 3:
+						matrix[3].w = value;
+				}
 		}
 	}
 

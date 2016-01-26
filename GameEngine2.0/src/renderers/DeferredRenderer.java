@@ -7,6 +7,7 @@ import static org.lwjgl.opengl.GL11.glClear;
 import java.util.ArrayList;
 
 import lights.Light;
+import mesh.Arrow;
 import mesh.Material;
 import mesh.Mesh;
 import mesh.primitives.geometry.Plane;
@@ -25,6 +26,7 @@ public class DeferredRenderer {
 	private ShaderProgram geoPass, stencilPass, lightPass, finalPass;
 	private Camera main;
 	private Plane quad;
+	private Arrow arrow, arrowBase;
 	
 	public DeferredRenderer(int width, int height, Camera cam){
 		main = cam;
@@ -98,6 +100,8 @@ public class DeferredRenderer {
 
 		lightPass.setUniform("screenSpace", width, height);
 		setupUniforms();
+		arrow = new Arrow(25,0,0,0, 1,1,0);
+		arrowBase = new Arrow(25,0,0,0, 0,1,0);
 	}
 	
 	private void setupUniforms(){
@@ -142,6 +146,14 @@ public class DeferredRenderer {
 			mat.bind(geoPass);
 			castMesh.render();
 		}
+		geoPass.setUniform("color", 1,0,0);
+		geoPass.setUniform("useDiffuse", false);
+		arrow.render(geoPass);
+//		arrow.setLength(arrow.getLength()+1f);
+//		arrow.translate(0, 1, 0);
+//		arrow.rotate(1, 0, 1, 1);
+		geoPass.setUniform("color", 0,1,0);
+		arrowBase.render(geoPass);
 		geoPass.unbind();
 		
 		gbuffer.setupLightingPass();
@@ -177,5 +189,7 @@ public class DeferredRenderer {
 		lightPass.delete();
 		finalPass.delete();
 		quad.delete();
+		arrow.delete();
+		arrowBase.delete();
 	}
 }

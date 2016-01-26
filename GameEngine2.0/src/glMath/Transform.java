@@ -53,6 +53,18 @@ public class Transform {
 		scale.set(scale.x*scalars.x, scale.y*scalars.y, scale.z*scalars.z);
 		return this;
 	}
+	
+	/**
+	 * Scales this transform by the given scalar, this means all axis will
+	 * be scaled uniformly.
+	 * 
+	 * @param scalar Scalar for the transform
+	 * @return This transform post operation
+	 */
+	public Transform scale(float scalar){
+		scale(scalar, scalar, scalar);
+		return this;
+	}
 
 	/**
 	 * Translates this transform by the given amounts
@@ -88,7 +100,7 @@ public class Transform {
 	 * @return This transform object
 	 */
 	public Transform rotate(float x, float y, float z, float theta){
-		orientation.set(Quaternion.fromAxisAngle(x, y, z, theta).mult(orientation));
+		orientation.set(orientation.mult(Quaternion.fromAxisAngle(x, y, z, theta)));
 		return this;
 	} 
 	
@@ -100,7 +112,7 @@ public class Transform {
 	 * @return This transform object
 	 */
 	public Transform rotate(Vec3 axis, float theta){
-		orientation.set(Quaternion.fromAxisAngle(axis, theta).mult(orientation));
+		orientation.set(orientation.mult(Quaternion.fromAxisAngle(axis, theta)));
 		return this;
 	}
 	
@@ -116,41 +128,86 @@ public class Transform {
 	 * Transforms this by the given transform
 	 * 
 	 * @param value Transform to use in the modification of this object
-	 * @return This object after trasnformation
+	 * @return This object after transformation
 	 */
 	public Transform transform(Transform value){
-		orientation = Quaternion.multiply(value.orientation, orientation);
+		orientation = Quaternion.multiply(orientation, value.orientation);
 		position.add(value.position);
-		Vec3 scalars = value.scale;
-		scale.set(scale.x*scalars.x, scale.y*scalars.y, scale.z*scalars.z);
+		scale.set(scale.x*value.scale.x, scale.y*value.scale.y, scale.z*value.scale.z);
 		
 		return this;
 	}
 	
+	/**
+	 * Sets this transform equal to the given transform
+	 * 
+	 * @param trans Transform to copy into this transform
+	 */
 	public void set(Transform trans){
 		orientation.set(trans.orientation);
 		position.set(trans.position);
 		scale.set(trans.scale);
 	}
 	
+	/**
+	 * Sets the scaling for this transform, this will overwrite any previous
+	 * scaling data associated with this transform.
+	 * 
+	 * @param x X axis scale
+	 * @param y Y axis scale
+	 * @param z Z axis scale
+	 */
 	public void setScale(float x, float y, float z){
 		scale.set(x, y, z);
 	}
 	
+	/**
+	 * Sets the scaling for this transform, this will overwrite any previous
+	 * scaling data associated with this transform.
+	 *  
+	 * @param scalars Scalars to set this transforms scale to
+	 */
 	public void setScale(Vec3 scalars){
 		scale.set(scalars);
 	}
 	
+	/**
+	 * Sets the scaling for this transform, this will overwrite any previous
+	 * scaling data associated with this transform.
+	 *  
+	 * @param scalar Scalar to set all the scaling values to
+	 */
+	public void setScale(float scalar){
+		scale.set(scalar, scalar, scalar);
+	}
+	
+	/**
+	 * Sets the orientation for this transform
+	 * 
+	 * @param orientation Orientation to set this transform to
+	 */
 	public void setOrientation(Quaternion orientation){
 		this.orientation.set(orientation);
 	}
 	
-	public void setPos(float x, float y, float z){
+	/**
+	 * Sets the translation for this transform
+	 * 
+	 * @param x X translation
+	 * @param y Y translation
+	 * @param z Z translation
+	 */
+	public void setTranslation(float x, float y, float z){
 		position.set(x, y, z);
 	}
 	
-	public void setPos(Vec3 newPos){
-		position.set(newPos);
+	/**
+	 * Sets the translation for this transform
+	 * 
+	 * @param trans Translation to set this transforms translation to
+	 */
+	public void setTranslation(Vec3 trans){
+		position.set(trans);
 	}
 	
 	/**
@@ -167,7 +224,7 @@ public class Transform {
 	 * 
 	 * @return The x, y, z position of this transformation
 	 */
-	public Vec3 getPosition(){
+	public Vec3 getTranslation(){
 		return position;
 	}
 	
@@ -309,9 +366,7 @@ public class Transform {
 	 * @return A 4x4 matrix representing a rotation of theta degrees around the given axis
 	 */
 	public static Mat4 getRotateMat(float x, float y, float z, float theta){
-		Vec3 axis = new Vec3(x, y, z);
-		axis.normalize();
-		return Quaternion.fromAxisAngle(axis, theta).asMatrix();
+		return Quaternion.fromAxisAngle(x, y, z, theta).asMatrix();
 	}
 	
 	/**
@@ -322,9 +377,7 @@ public class Transform {
 	 * @return A 4x4 matrix representing a rotation of theta degrees around the given axis
 	 */
 	public static Mat4 getRotateMat(Vec3 axis, float theta){
-		Vec3 nAxis = new Vec3(axis);
-		nAxis.normalize();
-		return Quaternion.fromAxisAngle(nAxis, theta).asMatrix();
+		return Quaternion.fromAxisAngle(axis, theta).asMatrix();
 	}
 	
 	/**

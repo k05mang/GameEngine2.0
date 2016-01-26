@@ -33,7 +33,7 @@ public class SpotLight extends Light {
 		maxVec.normalize();
 		//get the dot product of the vector from the middle of the light to the farthest edge of the light
 		//this gets the cutoff
-		cutoff = lengthVec.dot(maxVec);
+		cutoff = lengthVec.dot(maxVec);//result is in radians
 		trans.scale(this.radius, this.length, this.radius);
 	}
 	

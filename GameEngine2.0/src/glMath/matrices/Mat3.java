@@ -54,6 +54,16 @@ public class Mat3 implements Matrix {
 		matrix[2] = new Vec3(col3);
 	}
 	
+	public Mat3(float... values){
+		matrix = new Vec3[3];
+		matrix[0] = new Vec3();
+		matrix[1] = new Vec3();
+		matrix[2] = new Vec3();
+		for(int curValue = 0; curValue < values.length; curValue++){
+			setValueAt(curValue, values[curValue]);
+		}
+	}
+	
 	/**
 	 * Constructs a copy of the given matrix
 	 * 
@@ -259,7 +269,7 @@ public class Mat3 implements Matrix {
 	}
 
 	@Override
-	public void setColumn(int index, Vector column) {
+	public void setColumn(int index, Vector column) throws IndexOutOfBoundsException{
 		if(index < matrix.length && column instanceof Vec3){
 			matrix[index].set(column);
 		}else{
@@ -293,6 +303,41 @@ public class Mat3 implements Matrix {
 			matrix[col].set(row,  value);
 		}else{
 			System.err.println("The requested "+(col < matrix.length ? "row" : "column")+" is out of bounds for this matrix");
+		}
+	}
+
+	@Override
+	public void setValueAt(int index, float value){
+		//decide what vector to read from
+		switch(index/4){
+			case 0:
+				//decide what value from that vector to get
+				switch(index%4){
+					case 0:
+						matrix[0].x = value;
+					case 1:
+						matrix[0].y = value;
+					case 2:
+						matrix[0].z = value;
+				}
+			case 1:
+				switch(index%4){
+					case 0:
+						matrix[1].x = value;
+					case 1:
+						matrix[1].y = value;
+					case 2:
+						matrix[1].z = value;
+				}
+			case 2:
+				switch(index%4){
+					case 0:
+						matrix[2].x = value;
+					case 1:
+						matrix[2].y = value;
+					case 2:
+						matrix[2].z = value;
+				}
 		}
 	}
 

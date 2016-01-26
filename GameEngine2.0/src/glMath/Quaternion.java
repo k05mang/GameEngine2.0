@@ -94,7 +94,7 @@ public class Quaternion {
 	 * @param copy Quaternion to copy
 	 */
 	public Quaternion(Quaternion copy){
-		data = new Vec4(copy.getData());
+		data = new Vec4(copy.data);
 	}
 	
 	/**
@@ -114,7 +114,7 @@ public class Quaternion {
 	 * @return The product of this qauternion and the given quaternion, i.e. this*rhs
 	 */
 	public Quaternion mult(Quaternion rhs){
-		Vec4 multData = rhs.getData();
+		Vec4 multData = rhs.data;
 		return new Quaternion(data.w*multData.x + data.x*multData.w + data.y*multData.z - data.z*multData.y,
 				                data.w*multData.y + data.y*multData.w + data.z*multData.x - data.x*multData.z,
 				                data.w*multData.z + data.z*multData.w + data.x*multData.y - data.y*multData.x,
@@ -167,13 +167,11 @@ public class Quaternion {
 	 * that represents this quaternion's rotations and rotating the given vector
 	 * 
 	 * @param vector Vector to rotate
-	 * @return The given vecetor rotated by the rotation represented by this quaternion
+	 * @return The given vector rotated by the rotation represented by this quaternion
 	 */
 	public Vec3 multVec(Vec3 vector){
-		Vec3 vecCopy = new Vec3(vector);
-		vecCopy.normalize();
-		Quaternion vec = new Quaternion(new Vec4(vecCopy, 0));
-		return (Vec3)multiply(this, vec, conjugate()).getData().swizzle("xyz");
+		Quaternion vec = new Quaternion(new Vec4(vector, 0));
+		return (Vec3)multiply(this, vec, conjugate()).data.swizzle("xyz");
 	}
 	
 	/**
@@ -182,7 +180,7 @@ public class Quaternion {
 	 * @param dupe Quaternion to duplicate
 	 */
 	public void set(Quaternion dupe){
-		data.set(dupe.getData());
+		data.set(dupe.data);
 	}
 	
 	/**
@@ -244,10 +242,11 @@ public class Quaternion {
 		float wy = data.w*data.y;
 		float wz = data.w*data.z;
 		
-		return new Mat4( new Vec4(1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f),
-						new Vec4(2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f),
-						new Vec4(2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2), 0.0f),
-						new Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+		return new Mat4( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
+						2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f,
+						2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2), 0.0f,
+						0.0f, 0.0f, 0.0f, 1.0f
+		);
 	}
 	
 	/**
@@ -256,33 +255,25 @@ public class Quaternion {
 	 * 
 	 * @return The rotation component of the matrix representing this quaternion
 	 */
-	public Mat3 asRotMatrix(){
+	public Mat3 asMat3(){
 		normalize();
 		
 		float x2 = data.x*data.x;
 		float y2 = data.y*data.y;
 		float z2 = data.z*data.z;
 		
-		float xy = data.x*data.y;
+		float xy = -data.x*data.y;
 		float xz = data.x*data.z;
-		float yz = data.y*data.z;
+		float yz = -data.y*data.z;
 		
 		float wx = data.w*data.x;
-		float wy = data.w*data.y;
+		float wy = -data.w*data.y;
 		float wz = data.w*data.z;
 		
-		return new Mat3( new Vec3(1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy)),
-						new Vec3(2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx)),
-						new Vec3(2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2)));
-	}
-	
-	/**
-	 * Gets the raw data object for this quaternion
-	 * 
-	 * @return Main data storage for this quaternion
-	 */
-	public Vec4 getData(){
-		return data;
+		return new Mat3( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy),
+						2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx),
+						2.0f * (xz - wy), 2.0f * (yz + wx), 1.0f - 2.0f * (x2 + y2)
+						);
 	}
 	
 	/**
@@ -314,20 +305,20 @@ public class Quaternion {
 	
 	/**
 	 * Multiplies n Quaternions starting with the left most given quaternion and multiplying down the list of inputs
-	 * this effectively translates to (...(q1*q2)*q3)*q4)...*qn)
+	 * this effectively translates to ((q1*q2)*q3)*q4)...*qn)
 	 * 
 	 * @param quats Quaternions to multiply
 	 * @return The product of the given quaternions
 	 */
 	public static Quaternion multiply(Quaternion... quats){
-		if(quats.length > 1){
+		if(quats.length > 0){
 			Quaternion result = new Quaternion(quats[0]);
 			for(int curQuat = 1; curQuat < quats.length; curQuat++){
 				result.set(result.mult(quats[curQuat]));// result *= quats[curQuat]
 			}
 			return result;
 		}else{
-			return quats.length == 1 ? quats[0] : null;
+			return null;
 		}
 	}
 	 /**
@@ -338,13 +329,9 @@ public class Quaternion {
 	  * @return Quaternion representing the rotation of the given angle around the given axis
 	  */
 	public static Quaternion fromAxisAngle(Vec3 axis, float angle){
-		Vec3 nAxis = new Vec3(axis);
-		nAxis.normalize();
-		float sinAngle = (float)Math.sin((angle*Math.PI/180)/2.0f);
-		nAxis.scale(sinAngle);
-		
-		return new Quaternion(new Vec4(nAxis, (float)Math.cos((angle*Math.PI/180)/2.0f)));
+		return fromAxisAngle(axis.x, axis.y, axis.z, angle);
 	}
+	
 	 /**
 	  * Generates a quatenrion given an axis of rotation and a rotation angle
 	  * 

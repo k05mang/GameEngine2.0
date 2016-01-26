@@ -28,14 +28,14 @@ public abstract class Light {
 	public Light(float xpos, float ypos, float zpos, float r, float g, float b, float intensity, float attenLin, float attenQuad){
 		color = new Vec3(r, g, b);
 		trans = new Transform();
-		trans.setPos(xpos, ypos, zpos);
+		trans.setTranslation(xpos, ypos, zpos);
 		this.intensity = intensity;
 		this.attenLinear = attenLin;
 		this.attenQuad = attenQuad;
 	}
 	
 	public Vec3 getPos(){
-		return trans.getPosition();
+		return trans.getTranslation();
 	}
 	
 	public Vec3 getColor(){
@@ -83,7 +83,7 @@ public abstract class Light {
 	}
 	
 	public void setUniforms(ShaderProgram shader){
-		shader.setUniform("light.pos", trans.getPosition());
+		shader.setUniform("light.pos", trans.getTranslation());
 		shader.setUniform("light.color", color);
 		shader.setUniform("light.intensity", intensity);
 		shader.setUniform("light.attenLinear", attenLinear);

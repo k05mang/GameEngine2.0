@@ -152,6 +152,8 @@ public interface Matrix {
 	 */
 	public void setValueAt(int col, int row, float value);
 	
+	public void setValueAt(int index, float value);
+	
 	/**
 	 * Retrieves the underlying matrix that stores this matrix
 	 * 

@@ -86,7 +86,7 @@ public class SpatialOctree {
 	 */
 	public boolean add(GameObject object){
 		//alternative might be to have the tree dynamically resize as items are added and removed
-		Vec3 relObjCenter = (Vec3)VecUtil.subtract(object.getPosition(), root.volume.getCenter());
+		Vec3 relObjCenter = (Vec3)VecUtil.subtract(object.getTranslation(), root.volume.getCenter());
 		AABB objVolume = object.getBoundingVolume();
 		Vec3 objHalfDim = objVolume.getHalfDimensions();
 

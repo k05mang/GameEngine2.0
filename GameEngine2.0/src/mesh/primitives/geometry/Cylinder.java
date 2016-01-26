@@ -94,7 +94,7 @@ public final class Cylinder extends Mesh{
 
 		geometry.genTangentBitangent();
 		geometry.insertVertices(vbo);
-		transforms.scale(this.radius, this.length, this.radius);
+		transforms.scale(this.radius, this.length/2, this.radius);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 
