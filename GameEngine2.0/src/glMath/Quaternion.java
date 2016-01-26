@@ -238,9 +238,9 @@ public class Quaternion {
 		float xz = data.x*data.z;
 		float yz = data.y*data.z;
 		
-		float wx = data.w*data.x;
-		float wy = data.w*data.y;
-		float wz = data.w*data.z;
+		float wx = data.w*-data.x;
+		float wy = data.w*-data.y;
+		float wz = data.w*-data.z;
 		
 		return new Mat4( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy), 0.0f,
 						2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx), 0.0f,
@@ -262,13 +262,13 @@ public class Quaternion {
 		float y2 = data.y*data.y;
 		float z2 = data.z*data.z;
 		
-		float xy = -data.x*data.y;
+		float xy = data.x*data.y;
 		float xz = data.x*data.z;
-		float yz = -data.y*data.z;
+		float yz = data.y*data.z;
 		
-		float wx = data.w*data.x;
-		float wy = -data.w*data.y;
-		float wz = data.w*data.z;
+		float wx = data.w*-data.x;
+		float wy = data.w*-data.y;
+		float wz = data.w*-data.z;
 		
 		return new Mat3( 1.0f - 2.0f * (y2 + z2), 2.0f * (xy - wz), 2.0f * (xz + wy),
 						2.0f * (xy + wz), 1.0f - 2.0f * (x2 + z2), 2.0f * (yz - wx),

@@ -10,20 +10,20 @@ public class SpotLight extends Light {
 	private float radius, length, cutoff;
 	public final static Cone volume = new Cone(1, 1, VOLUME_FINENESS, false, RenderMode.TRIANGLES, RenderMode.LINES);
 	
-	public SpotLight(float radius, float length, Vec3 position, Vec3 color, float intensity, float attenLin, float attenQuad) {
-		this(radius, length, position.x, position.y, position.z, color.x, color.y, color.z, intensity, attenLin, attenQuad);
+	public SpotLight(float radius, float length, Vec3 position, Vec3 color, float intensity, float attenLin) {
+		this(radius, length, position.x, position.y, position.z, color.x, color.y, color.z, intensity, attenLin);
 	}
 
-	public SpotLight(float radius, float length, float xpos, float ypos, float zpos, Vec3 color, float intensity, float attenLin, float attenQuad) {
-		this(radius, length, xpos, ypos, zpos, color.x, color.y, color.z, intensity, attenLin, attenQuad);
+	public SpotLight(float radius, float length, float xpos, float ypos, float zpos, Vec3 color, float intensity, float attenLin) {
+		this(radius, length, xpos, ypos, zpos, color.x, color.y, color.z, intensity, attenLin);
 	}
 
-	public SpotLight(float radius, float length, Vec3 position, float r, float g, float b, float intensity, float attenLin, float attenQuad) {
-		this(radius, length, position.x, position.y, position.z, r, g, b, intensity, attenLin, attenQuad);
+	public SpotLight(float radius, float length, Vec3 position, float r, float g, float b, float intensity, float attenLin) {
+		this(radius, length, position.x, position.y, position.z, r, g, b, intensity, attenLin);
 	}
 
-	public SpotLight(float radius, float length, float xpos, float ypos, float zpos, float r, float g, float b, float intensity, float attenLin, float attenQuad) {
-		super(xpos, ypos, zpos, r, g, b, intensity, attenLin, attenQuad);
+	public SpotLight(float radius, float length, float xpos, float ypos, float zpos, float r, float g, float b, float intensity, float attenLin) {
+		super(xpos, ypos, zpos, r, g, b, intensity, attenLin);
 		this.radius = Math.abs(radius);
 		this.length = Math.abs(length);
 		Vec3 lengthVec = new Vec3(0, this.length, 0);

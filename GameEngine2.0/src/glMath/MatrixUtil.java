@@ -236,10 +236,10 @@ public abstract class MatrixUtil {
 	public static Mat4 getPerspective(float fovy, float aspect, float zNear, float zFar){
 		float f = 1/(float)Math.tan(Math.toRadians(fovy/2f));
 		 return new Mat4(
-				new Vec4(f/aspect,0,0,0),
-				new Vec4(0,f,0,0),
-				new Vec4(0,0,(zFar+zNear)/(zNear-zFar),-1),
-				new Vec4(0,0,(2*zFar*zNear)/(zNear-zFar),0)
+				f/aspect,0,0,0,
+				0,f,0,0,
+				0,0,(zFar+zNear)/(zNear-zFar),-1,
+				0,0,(2*zFar*zNear)/(zNear-zFar),0
 		);
 	}
 	
@@ -258,10 +258,10 @@ public abstract class MatrixUtil {
 	public static Mat4 getOrtho(float left, float right, float bottom, float top, float zNear, float zFar){
 		
 		return new Mat4(
-				new Vec4(2/(right-left),0,0,0),
-				new Vec4(0,2/(top-bottom),0,0),
-				new Vec4(0,0,1/(zFar-zNear),0),
-				new Vec4(-((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -(zNear/(zFar-zNear)), 1)
+				2/(right-left),0,0,0,
+				0,2/(top-bottom),0,0,
+				0,0,1/(zFar-zNear),0,
+				-((right+left)/(right-left)), -((top+bottom)/(top-bottom)), -(zNear/(zFar-zNear)), 1
 				);
 	}
 }

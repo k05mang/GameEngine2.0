@@ -17,6 +17,10 @@ public final class Torus extends Mesh {
 	
 	private float tubeRadius, radius;
 
+	public Torus(float radius, float tubeRadius, int segments, RenderMode... modes){
+		this(radius, tubeRadius, segments, segments, modes);
+	}
+	
 	/**
 	 * Constructs a torus with the given radius, and tube radius, with the specified number of rings each with the given number of
 	 * segments per ring. The torus will be constructed such that it is compatible with the give RenderModes
@@ -62,7 +66,6 @@ public final class Torus extends Mesh {
 				
 				Vertex vert = new Vertex(x, y, z,  normX, y, normZ, u, v);
 				geometry.add(vert);
-//				vert.addTo(vbo);
 
 				//prevent generating faces on the last loop since the faces need for the end of the
 				//torus has already been generated

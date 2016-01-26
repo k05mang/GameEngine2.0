@@ -10,12 +10,12 @@ import renderers.RenderMode;
 import shaders.ShaderProgram;
 import core.Resource;
 
-public class Arrow implements Resource{
+public class Arrow{
 	
-	private Cylinder shaft;
-	private Cone tip;
-	private static final int TIP_LENGTH = 10;
-	private float length;
+	public static Cylinder shaft = new Cylinder(1, 1, 10, RenderMode.TRIANGLES);
+	public static Cone tip = new Cone(1, 1, 10, false, RenderMode.TRIANGLES);
+	private Transform shaftTrans, tipTrans;
+	private float length, tipLength;
 	private Vec3 direction, position;
 	
 	public Arrow(float length, Vec3 position, Vec3 direction){
@@ -24,51 +24,47 @@ public class Arrow implements Resource{
 	
 	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz){
 		this.length = length;
+		tipLength = 2.5f;
 		position = new Vec3(posx, posy, posz);
 		direction = new Vec3(dirx, diry, dirz);
 		direction.normalize();
-		shaft = new Cylinder(1, length, 10, RenderMode.TRIANGLES);
-		tip = new Cone(2, TIP_LENGTH, 10, false, RenderMode.TRIANGLES);
-		Transform trans = new Transform();
+		//create the initial transforms for the shaft and tip
+		shaftTrans = new Transform().scale(.5f,length/2, .5f);
+		tipTrans = new Transform().scale(1,tipLength, 1);
 		//first orient the meshes
-		Vec3 axis = direction.cross(VecUtil.yAxis);
+		Vec3 axis = VecUtil.yAxis.cross(direction);
 		float angle = (float)(Math.acos(VecUtil.yAxis.dot(direction))*180/Math.PI);
-		trans.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
+		shaftTrans.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
+		tipTrans.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
 		//translate the cylinder
 		float halfLength = length/2;
-		trans.translate(halfLength*direction.x, halfLength*direction.y, halfLength*direction.z);
-		shaft.transform(trans);
+		shaftTrans.translate(halfLength*direction.x, halfLength*direction.y, halfLength*direction.z);
 		//translate the tip
-		trans.translate(
-				halfLength*direction.x+Math.signum(direction.x)*(TIP_LENGTH/2), 
-				halfLength*direction.y+Math.signum(direction.y)*(TIP_LENGTH/2), 
-				halfLength*direction.z+Math.signum(direction.z)*(TIP_LENGTH/2));
-		tip.transform(trans);
+		tipTrans.translate(
+				length*direction.x+Math.signum(direction.x)*(tipLength/2), 
+				length*direction.y+Math.signum(direction.y)*(tipLength/2), 
+				length*direction.z+Math.signum(direction.z)*(tipLength/2));
 		
 		//translate both to the position
-		Transform posTrans = new Transform().translate(position);
-		shaft.transform(posTrans);
-		tip.transform(posTrans);
+		shaftTrans.translate(position);
+		tipTrans.translate(position);
 		
 	}
 	
 	public void render(ShaderProgram program){
-		program.setUniform("model", shaft.getModelView());
+		program.setUniform("model", shaftTrans.getTransform());
 		shaft.render();
-		program.setUniform("model", tip.getModelView());
+		program.setUniform("model", tipTrans.getTransform());
 		tip.render();
 	}
 	
 	public void setLength(float length){
 		float scale = length/this.length;//calculate how much to scale the cylinder by
-		Transform trans = new Transform().scale(1, scale, 1);
+		shaftTrans.scale(1, scale, 1);
 		Vec3 translation = new Vec3(direction);
 		translation.scale((length-this.length)/2);
-		trans.translate(translation);
-		shaft.transform(trans);
-		trans.setScale(1);
-		trans.translate(translation);
-		tip.transform(trans);
+		shaftTrans.translate(translation);
+		tipTrans.translate(translation.scale(2));
 		this.length = length;
 	}
 	
@@ -77,9 +73,8 @@ public class Arrow implements Resource{
 	}
 	
 	public void translate(float x, float y, float z){
-		Transform trans = new Transform().translate(x, y, z);
-		shaft.transform(trans);
-		tip.transform(trans);
+		shaftTrans.translate(x, y, z);
+		tipTrans.translate(x, y, z);
 		position.add(x, y, z);
 	}
 	
@@ -88,36 +83,56 @@ public class Arrow implements Resource{
 	}
 	
 	public void rotate(float x, float y, float z, float angle){
-		Transform orient = new Transform().rotate(x, y, z, -angle);
 		//orient the models
-		shaft.transform(orient);
-		tip.transform(orient);
+		shaftTrans.rotate(x, y, z, angle);
+		tipTrans.rotate(x, y, z, angle);
 		//translate the models 
 		Quaternion rotation = Quaternion.fromAxisAngle(x, y, z, angle);
 		//compute the center points of the shaft and tip relative to the origin
-		Vec3 shaftOrigin = VecUtil.subtract(shaft.getPos(), position);
-		Vec3 tipOrigin = VecUtil.subtract(tip.getPos(), position);
+		Vec3 shaftOrigin = VecUtil.subtract(shaftTrans.getTranslation(), position);
+		Vec3 tipOrigin = VecUtil.subtract(tipTrans.getTranslation(), position);
 		//compute the center points after rotating them
 		Vec3 shaftPoint = rotation.multVec(shaftOrigin);
 		Vec3 tipPoint = rotation.multVec(tipOrigin);
 		//translate the shaft based on the vector from the shaft origin to the new shaft point
-		Transform trans = new Transform().translate(VecUtil.subtract(shaftPoint, shaftOrigin));
-		shaft.transform(trans);
+		shaftTrans.translate(VecUtil.subtract(shaftPoint, shaftOrigin));
 		//translate the tip using the same process as the shaft
-		trans.setTranslation(0, 0, 0);
-		trans.translate(VecUtil.subtract(tipPoint, tipOrigin));
-		tip.transform(trans);
+		tipTrans.translate(VecUtil.subtract(tipPoint, tipOrigin));
 		//store the new direction of the vector
 		direction.set(shaftPoint);
 		direction.normalize();
 	}
 	
+	public void setPos(Vec3 pos){
+		setPos(pos.x, pos.y, pos.z);
+	}
+	
+	public void setPos(float x, float y, float z){
+		translate(x-position.x, y-position.y, z-position.z);
+	}
+	
+	public Vec3 getPos(){
+		return position;
+	}
+	
 	public void rotate(Vec3 axis, float angle){
 		rotate(axis.x, axis.y, axis.z, angle);
 	}
+	
+	public void scale(float scale){
+		//perform the uniform scaling
+		shaftTrans.scale(scale);
+		tipTrans.scale(scale);
+		float newLength = scale*length;
+		float newTipLength = scale*tipLength;
+		//translate the meshes to maintain the position
+		shaftTrans.translate((newLength-length)/2*direction.x, (newLength-length)/2*direction.y, (newLength-length)/2*direction.z);
+		tipTrans.translate((newLength-length+(newTipLength-tipLength)/2)*direction.x, (newLength-length+(newTipLength-tipLength)/2)*direction.y, (newLength-length+(newTipLength-tipLength)/2)*direction.z);
+		length = newLength;
+		tipLength = newTipLength;
+	}
 
-	@Override
-	public void delete() {
+	public static void delete() {
 		shaft.delete();
 		tip.delete();
 	}

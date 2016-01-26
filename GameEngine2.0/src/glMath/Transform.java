@@ -100,7 +100,7 @@ public class Transform {
 	 * @return This transform object
 	 */
 	public Transform rotate(float x, float y, float z, float theta){
-		orientation.set(orientation.mult(Quaternion.fromAxisAngle(x, y, z, theta)));
+		orientation.set(Quaternion.fromAxisAngle(x, y, z, theta).mult(orientation));
 		return this;
 	} 
 	
@@ -112,7 +112,7 @@ public class Transform {
 	 * @return This transform object
 	 */
 	public Transform rotate(Vec3 axis, float theta){
-		orientation.set(orientation.mult(Quaternion.fromAxisAngle(axis, theta)));
+		orientation.set(Quaternion.fromAxisAngle(axis, theta).mult(orientation));
 		return this;
 	}
 	
@@ -131,7 +131,7 @@ public class Transform {
 	 * @return This object after transformation
 	 */
 	public Transform transform(Transform value){
-		orientation = Quaternion.multiply(orientation, value.orientation);
+		orientation = Quaternion.multiply(value.orientation, orientation);
 		position.add(value.position);
 		scale.set(scale.x*value.scale.x, scale.y*value.scale.y, scale.z*value.scale.z);
 		
