@@ -1,8 +1,11 @@
 package renderers;
 
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glDisable;
 
 import java.util.ArrayList;
 
@@ -27,16 +30,11 @@ public class DeferredRenderer {
 	private Gbuffer gbuffer;
 	private ShaderProgram geoPass, stencilPass, lightPass, finalPass;
 	private Camera main;
-	private static Plane quad = new Plane(2,2,RenderMode.TRIANGLES);
-	private TransformControl control, control2;
-	private Vec3 prevEye;
+	public static final Plane quad = new Plane(2,2,RenderMode.TRIANGLES);
 	
 	public DeferredRenderer(int width, int height, Camera cam){
 		main = cam;
-		prevEye = new Vec3(0,0,100);//number is relative to the size of the Transform control
 		gbuffer = new Gbuffer(width, height);
-		control = new TransformControl(0, 0, 0);
-		control2 = new TransformControl(0, 0, -512);
 		Shader geoVert = new Shader("shaders/geoPass/geoVert.glsl", ShaderStage.VERTEX);
 		Shader geoFrag = new Shader("shaders/geoPass/geoFrag.glsl", ShaderStage.FRAG);
 
@@ -100,7 +98,6 @@ public class DeferredRenderer {
 		if(!finalPass.link()){
 			System.out.println(finalPass.getInfoLog());
 		}
-		
 
 		lightPass.setUniform("screenSpace", width, height);
 		setupUniforms();
@@ -148,20 +145,19 @@ public class DeferredRenderer {
 			mat.bind(geoPass);
 			castMesh.render();
 		}
-		float scale = VecUtil.subtract(main.getEye(), control.getPos()).length()/VecUtil.subtract(prevEye, control.getPos()).length();
-		control.scale(scale);
-		control.render(geoPass);
-		scale = VecUtil.subtract(main.getEye(), control2.getPos()).length()/VecUtil.subtract(prevEye, control2.getPos()).length();
-		control2.scale(scale);
-		control2.render(geoPass);
+		glDisable(GL_CULL_FACE);
+		geoPass.setUniform("color", 1,0,0);
+		Mesh mesh = lights.get(0).getVolume();
+		geoPass.setUniform("model", mesh.getModelView());
+		mesh.render();
+		glEnable(GL_CULL_FACE);
 		geoPass.unbind();
-		prevEye.set(main.getEye());
 		
 		gbuffer.setupLightingPass();
 		
 		for(Light light : lights){
 			stencilPass.bind();
-			Mesh mesh = light.getVolume();
+			mesh = light.getVolume();
 			gbuffer.stencilPass();
 			//render the light volume for stenciling
 			stencilPass.setUniform("model", mesh.getModelView());
@@ -171,7 +167,7 @@ public class DeferredRenderer {
 			lightPass.bind();
 			//render the volume for calculation
 			gbuffer.lightPass();
-			light.setUniforms(lightPass);
+			light.bind(lightPass);
 			mesh.render();
 			lightPass.unbind();
 		}

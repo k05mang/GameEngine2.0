@@ -32,7 +32,7 @@ public interface Vector {
 	 * 
 	 * @return This vector post operation
 	 */
-	public float normalize();
+	public Vector normalize();
 	
 	/**
 	 * Adds the given vector to this vector

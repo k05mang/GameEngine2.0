@@ -127,7 +127,7 @@ public class Vec3 implements Vector {
 	}
 
 	@Override
-	public float normalize() {
+	public Vec3 normalize() {
 		float len = (float)Math.sqrt(x*x+y*y+z*z);
 		if(len != 0){
 			x /= len;
@@ -135,7 +135,7 @@ public class Vec3 implements Vector {
 			z /= len;
 			trunc();
 		}
-		return len;
+		return this;
 	}
 
 	@Override

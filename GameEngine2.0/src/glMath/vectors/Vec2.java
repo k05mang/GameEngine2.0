@@ -87,14 +87,14 @@ public class Vec2 implements Vector {
 	}
 
 	@Override
-	public float normalize() {
+	public Vec2 normalize() {
 		float len = (float)Math.sqrt(x*x+y*y);
 		if(len != 0){
 			x /= len;
 			y /= len;
 			trunc();
 		}
-		return len;
+		return this;
 	}
 
 	@Override

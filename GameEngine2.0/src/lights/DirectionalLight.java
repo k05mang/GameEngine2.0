@@ -3,6 +3,9 @@ package lights;
 import mesh.Mesh;
 import mesh.primitives.geometry.Plane;
 import renderers.RenderMode;
+import shaders.ShaderProgram;
+import glMath.Transform;
+import glMath.VecUtil;
 import glMath.vectors.Vec3;
 
 public class DirectionalLight extends Light {
@@ -27,5 +30,21 @@ public class DirectionalLight extends Light {
 	public Mesh getVolume(){
 		volume.setTransform(trans);
 		return volume;
+	}
+	
+	@Override
+	public void transform(Transform transform){
+		
+		trans.transform(transform);
+	}
+	
+	@Override
+	public void bind(ShaderProgram shader){
+		shader.setUniform("dLight.direction", trans.getTranslation());
+		shader.setUniform("dLight.color", color);
+		shader.setUniform("dLight.intensity", intensity);
+		shader.setUniform("isPoint", false);
+		shader.setUniform("isSpot", false);
+		shader.setUniform("model", trans.getTransform());
 	}
 }

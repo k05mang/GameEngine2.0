@@ -12,19 +12,20 @@ import core.Resource;
 
 public class Arrow{
 	
-	public static Cylinder shaft = new Cylinder(1, 1, 10, RenderMode.TRIANGLES);
-	public static Cone tip = new Cone(1, 1, 10, false, RenderMode.TRIANGLES);
+	public static final Cylinder shaft = new Cylinder(1, 1, 10, RenderMode.TRIANGLES);
+	public static final Cone tip = new Cone(1, 1, 10, false, RenderMode.TRIANGLES);
 	private Transform shaftTrans, tipTrans;
 	private float length, tipLength;
-	private Vec3 direction, position;
+	private Vec3 direction, position, color;
 	
-	public Arrow(float length, Vec3 position, Vec3 direction){
-		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z);
+	public Arrow(float length, Vec3 position, Vec3 direction, Vec3 color){
+		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, color.x, color.y, color.z);
 	}
 	
-	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz){
+	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz, float r, float g, float b){
 		this.length = length;
 		tipLength = 2.5f;
+		color = new Vec3(r, g, b);
 		position = new Vec3(posx, posy, posz);
 		direction = new Vec3(dirx, diry, dirz);
 		direction.normalize();
@@ -53,8 +54,10 @@ public class Arrow{
 	
 	public void render(ShaderProgram program){
 		program.setUniform("model", shaftTrans.getTransform());
+		program.setUniform("color", color);
 		shaft.render();
 		program.setUniform("model", tipTrans.getTransform());
+		program.setUniform("color", color);
 		tip.render();
 	}
 	
@@ -127,9 +130,25 @@ public class Arrow{
 		float newTipLength = scale*tipLength;
 		//translate the meshes to maintain the position
 		shaftTrans.translate((newLength-length)/2*direction.x, (newLength-length)/2*direction.y, (newLength-length)/2*direction.z);
-		tipTrans.translate((newLength-length+(newTipLength-tipLength)/2)*direction.x, (newLength-length+(newTipLength-tipLength)/2)*direction.y, (newLength-length+(newTipLength-tipLength)/2)*direction.z);
+		tipTrans.translate(
+				(newLength-length+(newTipLength-tipLength)/2)*direction.x, 
+				(newLength-length+(newTipLength-tipLength)/2)*direction.y, 
+				(newLength-length+(newTipLength-tipLength)/2)*direction.z
+				);
 		length = newLength;
 		tipLength = newTipLength;
+	}
+	
+	public void setColor(float r, float g, float b){
+		color.set(r, g, b);
+	}
+	
+	public void setColor(Vec3 color){
+		setColor(color.x, color.y, color.z);
+	}
+	
+	public Vec3 getColor(){
+		return color;
 	}
 
 	public static void delete() {
