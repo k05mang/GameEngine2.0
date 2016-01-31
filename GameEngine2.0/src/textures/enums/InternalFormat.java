@@ -214,7 +214,7 @@ public enum InternalFormat {
 	 * @return True if it is a color format false otherwise
 	 */
 	public boolean isColorFormat(){
-		if(
+		return
 			value == GL_R8 || 
 			value == GL_R8_SNORM || 
 			value == GL_R16 || 
@@ -278,12 +278,7 @@ public enum InternalFormat {
 			value == GL_RGBA16I || 
 			value == GL_RGBA16UI || 
 			value == GL_RGBA32I || 
-			value == GL_RGBA32UI		
-		){
-			return true;
-		}else{
-			return false;
-		}
+			value == GL_RGBA32UI;
 	}
 	
 	/**
@@ -292,18 +287,13 @@ public enum InternalFormat {
 	 * @return True if it is a depth format, false otherwise
 	 */
 	public boolean isDepthFormat(){
-		if(
+		return
 			value == GL_DEPTH_COMPONENT16 || 
 			value == GL_DEPTH_COMPONENT24 || 
 			value == GL_DEPTH_COMPONENT32 || 
 			value == GL_DEPTH_COMPONENT32F ||
 			value == GL_DEPTH24_STENCIL8 || 
-			value == GL_DEPTH32F_STENCIL8
-		){
-			return true;
-		}else{
-			return false;
-		}
+			value == GL_DEPTH32F_STENCIL8;
 	}
 	
 	/**
@@ -312,18 +302,13 @@ public enum InternalFormat {
 	 * @return True if it is a stencil format, false otherwise
 	 */
 	public boolean isStencilFormat(){
-		if(
+		return
 			value == GL_STENCIL_INDEX1 || 
 			value == GL_STENCIL_INDEX4 || 
 			value == GL_STENCIL_INDEX8 || 
 			value == GL_STENCIL_INDEX16 ||
 			value == GL_DEPTH24_STENCIL8 || 
-			value == GL_DEPTH32F_STENCIL8
-		){
-			return true;
-		}else{
-			return false;
-		}
+			value == GL_DEPTH32F_STENCIL8;
 	}
 
 	/**
@@ -332,14 +317,9 @@ public enum InternalFormat {
 	 * @return True if it is a depth, stencil format, false otherwise
 	 */
 	public boolean isDepthStencil(){
-		if(
+		return
 			value == GL_DEPTH24_STENCIL8 || 
-			value == GL_DEPTH32F_STENCIL8
-		){
-			return true;
-		}else{
-			return false;
-		}
+			value == GL_DEPTH32F_STENCIL8;
 	}
 	
 	/**
@@ -348,7 +328,7 @@ public enum InternalFormat {
 	 * @return True if it is a compressed format false otherwise
 	 */
 	public boolean isCompressedFormat(){
-		if(
+		return
 			value == GL_COMPRESSED_RED || 
 			value == GL_COMPRESSED_RG || 
 			value == GL_COMPRESSED_RGB || 
@@ -372,11 +352,6 @@ public enum InternalFormat {
 			value == GL_COMPRESSED_R11_EAC || 
 			value == GL_COMPRESSED_SIGNED_R11_EAC || 
 			value == GL_COMPRESSED_RG11_EAC || 
-			value == GL_COMPRESSED_SIGNED_RG11_EAC		
-		){
-			return true;
-		}else{
-			return false;
-		}
+			value == GL_COMPRESSED_SIGNED_RG11_EAC;
 	}
 }

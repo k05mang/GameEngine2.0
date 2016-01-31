@@ -17,201 +17,19 @@ import org.lwjgl.system.Configuration;
 import gldata.BufferObject;
 
 public class Uniform {
-	private String name, typeName;
-	private int location, type, size;
-	public static final int 
-		UNKNOWN = 0,
-		BLOCK = 1,
-		FLOAT = 2,
-		INT = 3,
-		BOOL = 4,
-		MAT2 = 5,
-		MAT2X3 = 6,
-		MAT2X4 = 7,
-		MAT3 = 8,
-		MAT3X2 = 9,
-		MAT3X4 = 10,
-		MAT4 = 11,
-		MAT4X2 = 12,
-		MAT4X3 = 13
-		;
+	private int location, size;
+	public UniformType type;
 	private ByteBuffer dataBuffer;
 	
-	/**
-	 * Constructs a uniform object with a name and a type given as strings, if the type given is null
-	 * then the uniform will be considered a block uniform
-	 * 
-	 * @param name Name of the uniform in the shader program
-	 * @param type String identifying what type of uniform variable this will represent
-	 */
-	public Uniform(String name, String type){
-		this.name = name;
-		if(type != null){
-			if(type.contains("sampler") || type.contains("image")){
-				this.type = INT;
-				size = 1;
-			}else{
-				switch(type){
-					case "float":
-						this.type = FLOAT;
-						size = 1;
-						break;
-					case "int":
-						this.type = INT;
-						size = 1;
-						break;
-					case "uint":
-						this.type = INT;
-						size = 1;
-						break;
-					case "bool":
-						this.type = BOOL;
-						size = 1;
-						break;
-						
-					case "vec2":
-						this.type = FLOAT;
-						size = 2;
-						break;
-					case "ivec2":
-						this.type = INT;
-						size = 2;
-						break;
-					case "uvec2":
-						this.type = INT;
-						size = 2;
-						break;
-					case "bvec2":
-						this.type = BOOL;
-						size = 2;
-						break;
-						
-					case "vec3":
-						this.type = FLOAT;
-						size = 3;
-						break;
-					case "ivec3":
-						this.type = INT;
-						size = 3;
-						break;
-					case "uvec3":
-						this.type = INT;
-						size = 3;
-						break;
-					case "bvec3":
-						this.type = BOOL;
-						size = 3;
-						break;
-						
-					case "vec4":
-						this.type = FLOAT;
-						size = 4;
-						break;
-					case "ivec4":
-						this.type = INT;
-						size = 4;
-						break;
-					case "uvec4":
-						this.type = INT;
-						size = 4;
-						break;
-					case "bvec4":
-						this.type = BOOL;
-						size = 4;
-						break;
-						
-					case "mat2":
-						this.type = MAT2;
-						size = 4;
-						break;
-					case "mat2x2":
-						this.type = MAT2;
-						size = 4;
-						break;
-					case "mat2x3":
-						this.type = MAT2X3;
-						size = 6;
-						break;
-					case "mat2x4":
-						this.type = MAT2X4;
-						size = 8;
-						break;
-						
-					case "mat3":
-						this.type = MAT3;
-						size = 9;
-						break;
-					case "mat3x3":
-						this.type = MAT3;
-						size = 9;
-						break;
-					case "mat3x2":
-						this.type = MAT3X2;
-						size = 6;
-						break;
-					case "mat3x4":
-						this.type = MAT3X4;
-						size = 12;
-						break;
-						
-					case "mat4":
-						this.type = MAT4;
-						size = 16;
-						break;
-					case "mat4x4":
-						this.type = MAT4;
-						size = 16;
-						break;
-					case "mat4x2":
-						this.type = MAT4X2;
-						size = 8;
-						break;
-					case "mat4x3":
-						this.type = MAT4X3;
-						size = 12;
-						break;
-					default:
-						this.type = UNKNOWN;
-						size = 0;
-						break;
-				}
-			}
-		}else{
-			this.type = BLOCK;
-		}
-		location = -1;
-		this.typeName = type;
+	public Uniform(UniformType type, int location){
+		this(type, location, type.getSize());
 	}
 	
-	/**
-	 * Copies the given uniform, the location variable is the only variable not copied and must be given a new value
-	 * with the @link{#getBinding(int) getBinding} function.
-	 * 
-	 * @param copy Uniform variable to copy
-	 */
-	public Uniform(Uniform copy){
-		name = copy.name; 
-		typeName = copy.typeName;
-		location = 0; 
-		type = copy.type; 
-		size = copy.size;
-	}
-	
-	/**
-	 * Gets the uniform binding index from the GPU, this is used to index the variable for updating
-	 * 
-	 * @param program Program to search for the variable binding
-	 * @return The location of this uniform object binding in the given program object
-	 */
-	public int getBinding(int program){
-		if(type == BLOCK){
-			location = glGetUniformBlockIndex(program, name);
-			size = glGetActiveUniformBlocki(program, location, GL_UNIFORM_BLOCK_DATA_SIZE);
-		}else{
-			location = glGetUniformLocation(program, name);
-		}
-		dataBuffer = BufferUtils.createByteBuffer(size*4);
-		return location;
+	public Uniform(UniformType type, int location, int size){
+		this.type = type;
+		this.location = location;
+		this.size = size;
+		dataBuffer = BufferUtils.createByteBuffer(4*size);
 	}
 	
 	/**
@@ -224,30 +42,12 @@ public class Uniform {
 	}
 	
 	/**
-	 * Gets the name of this uniform variable
-	 * 
-	 * @return String containing the name of this uniform variable
-	 */
-	public String getName(){
-		return name;
-	}
-	
-	/**
 	 * Gets the type that this uniform is associated with
 	 * 
 	 * @return The integral constant representing this uniform variables type
 	 */
-	public int getType(){
+	public UniformType getType(){
 		return type;
-	}
-	
-	/**
-	 * Gets the string representing the type of variable this uniform is associated
-	 * 
-	 * @return Null if this uniform represents a block interface, otherwise a string containing the type of this uniform 
-	 */
-	public String getTypeName(){
-		return typeName;
 	}
 	
 	/**
@@ -257,7 +57,7 @@ public class Uniform {
 	 * @return True if the variable could be set false otherwise
 	 */
 	private boolean set(int program, boolean transpose){
-		if(type == FLOAT){
+		if(type.isFloat()){
 			switch(size){
 				case 1:
 					glProgramUniform1fv(program, location, 1, dataBuffer);
@@ -273,9 +73,9 @@ public class Uniform {
 					break;
 			}
 			return true;
-		}else if(type >= MAT2){
+		}else if(type.isMatrix()){
 			return this.setMat(program, transpose);
-		}else if(type == INT || type == BOOL){
+		}else if(type.isInt()){
 			switch(size){
 				case 1:
 					glProgramUniform1iv(program, location, 1, dataBuffer);
@@ -291,10 +91,8 @@ public class Uniform {
 					break;
 			}
 			return true;
-		}else{
-			System.err.println("Types do not match, FloatBuffers can only be used with uniforms that are of type float or mat in GLSL");
-			return false;
 		}
+		return false;
 	}
 	
 	public boolean set(int program, boolean transpose, float... variables){
@@ -304,7 +102,7 @@ public class Uniform {
 		if (variables.length >= size) {
 			for (int insert = 0; insert < size; insert++) {
 				//determine if the type of the uniform is mismatched and convert to the needed type
-				if (type == FLOAT || type >= MAT2){
+				if (type.isFloat() || type.isMatrix()){
 					dataBuffer.putFloat(variables[insert]);
 				}else{
 					dataBuffer.putInt((int)variables[insert]);
@@ -314,7 +112,7 @@ public class Uniform {
 			//get the dataBuffer that we can from the passed values
 			for (int insert = 0; insert < variables.length; insert++) {
 				//determine if the type of the uniform is mismatched and convert to the needed type
-				if (type == FLOAT || type >= MAT2){
+				if (type.isFloat() || type.isMatrix()){
 					dataBuffer.putFloat(variables[insert]);
 				}else{
 					dataBuffer.putInt((int)variables[insert]);
@@ -324,7 +122,7 @@ public class Uniform {
 			//pad the remaining space needed for the buffer with 0's
 			for (int remaining = size - variables.length; remaining < size; remaining++) {
 				//determine if the type of the uniform is mismatched and put the appropriate padding
-				if (type == FLOAT || type >= MAT2){
+				if (type.isFloat() || type.isMatrix()){
 					dataBuffer.putFloat(0.0f);
 				}else{
 					dataBuffer.putInt(0);
@@ -342,7 +140,7 @@ public class Uniform {
 		if (variables.length >= size) {
 			for (int insert = 0; insert < size; insert++) {
 				//determine if the type of the uniform is mismatched and convert to the needed type
-				if (type == FLOAT || type >= MAT2){
+				if (type.isFloat() || type.isMatrix()){
 					dataBuffer.putFloat((float)variables[insert]);
 				}else{
 					dataBuffer.putInt(variables[insert]);
@@ -352,7 +150,7 @@ public class Uniform {
 			//get the dataBuffer that we can from the passed values
 			for (int insert = 0; insert < variables.length; insert++) {
 				//determine if the type of the uniform is mismatched and convert to the needed type
-				if (type == FLOAT || type >= MAT2){
+				if (type.isFloat() || type.isMatrix()){
 					dataBuffer.putFloat((float)variables[insert]);
 				}else{
 					dataBuffer.putInt(variables[insert]);
@@ -362,7 +160,7 @@ public class Uniform {
 			//pad the remaining space needed for the buffer with 0's
 			for (int remaining = size - variables.length; remaining < size; remaining++) {
 				//determine if the type of the uniform is mismatched and put the appropriate padding
-				if (type == FLOAT || type >= MAT2){
+				if (type.isFloat() || type.isMatrix()){
 					dataBuffer.putFloat(0.0f);
 				}else{
 					dataBuffer.putInt(0);
@@ -374,7 +172,7 @@ public class Uniform {
 	}
 
 	public boolean set(int program, boolean... variables){
-		if (type == BOOL) {
+		if (type.isInt()) {
 			dataBuffer.position(0);
 			//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
 			//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
@@ -395,10 +193,8 @@ public class Uniform {
 			}
 			dataBuffer.flip();//move the writer position back to the start of the buffer for reads
 			return this.set(program, false);
-		}else{
-			System.err.println("Types do not match, this uniform is not of type bool");
-			return false;
 		}
+		return false;
 	}
 	
 	/**
@@ -408,7 +204,7 @@ public class Uniform {
 	 * @return True if the variable could be set false otherwise
 	 */
 	private boolean setMat(int program, boolean transpose){
-		if(type >= MAT2){
+		if(type.isMatrix()){
 			switch (type) {
 				case MAT2:
 					glProgramUniformMatrix2fv(program, location, 1, transpose, dataBuffer);
@@ -439,10 +235,8 @@ public class Uniform {
 					break;
 			}
 			return true;
-		}else{
-			System.err.println("Types do not match, this uniform is not a matrix type");
-			return false;
 		}
+		return false;
 	}
 	
 	/**
@@ -451,47 +245,47 @@ public class Uniform {
 	 * @param buffer Buffer to bind to this uniform interface block
 	 * @return True if the variable could be set false otherwise
 	 */
-	public boolean bindBuffer(BufferObject buffer){
-		if(type == BLOCK){
-			glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.getId());
-			return true;
-		}else{
-			return false;
-		}
-	}
-	
-	/**
-	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values, 
-	 * the buffer is read starting from the given index up through the uniform blocks total size
-	 *  
-	 * @param buffer Buffer to bind to the uniform interface block
-	 * @param offset Offset into the buffer to start reading data from
-	 * @return True if the variable could be set false otherwise
-	 */
-	public boolean bindBuffer(BufferObject buffer, int offset){
-		if(type == BLOCK){
-			glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.getId(), offset, size);
-			return true;
-		}else{
-			return false;
-		}
-	}
-	
-	/**
-	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values, 
-	 * the buffer is read starting from the given index up through the dataSize given to this function
-	 * 
-	 * @param buffer Buffer to bind to the uniform interface block
-	 * @param offset Offset into the buffer to start reading data from
-	 * @param dataSize Size of the buffer to read for this uniform object
-	 * @return True if the variable could be set false otherwise
-	 */
-	public boolean bindBuffer(BufferObject buffer, int offset, int dataSize){
-		if(type == BLOCK){
-			glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.getId(), offset, dataSize);
-			return true;
-		}else{
-			return false;
-		}
-	}
+//	public boolean bindBuffer(BufferObject buffer){
+//		if(type == BLOCK){
+//			glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.getId());
+//			return true;
+//		}else{
+//			return false;
+//		}
+//	}
+//	
+//	/**
+//	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values, 
+//	 * the buffer is read starting from the given index up through the uniform blocks total size
+//	 *  
+//	 * @param buffer Buffer to bind to the uniform interface block
+//	 * @param offset Offset into the buffer to start reading data from
+//	 * @return True if the variable could be set false otherwise
+//	 */
+//	public boolean bindBuffer(BufferObject buffer, int offset){
+//		if(type == BLOCK){
+//			glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.getId(), offset, size);
+//			return true;
+//		}else{
+//			return false;
+//		}
+//	}
+//	
+//	/**
+//	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values, 
+//	 * the buffer is read starting from the given index up through the dataSize given to this function
+//	 * 
+//	 * @param buffer Buffer to bind to the uniform interface block
+//	 * @param offset Offset into the buffer to start reading data from
+//	 * @param dataSize Size of the buffer to read for this uniform object
+//	 * @return True if the variable could be set false otherwise
+//	 */
+//	public boolean bindBuffer(BufferObject buffer, int offset, int dataSize){
+//		if(type == BLOCK){
+//			glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.getId(), offset, dataSize);
+//			return true;
+//		}else{
+//			return false;
+//		}
+//	}
 }

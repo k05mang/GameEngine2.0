@@ -4,21 +4,26 @@ import static org.lwjgl.opengl.GL20.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.File;
+import java.io.IOException;
 
 public class Shader {
 	private int shaderId;
 	private ShaderStage type;
-	private ShaderParser parser;
 	private String fileName;
 	
 	public Shader(String fileName, ShaderStage shaderType){
+		this(new File(fileName), shaderType);
+	}
+	
+	public Shader(File file, ShaderStage shaderType){
 		type = shaderType;
-		this.fileName = fileName;
-		File shaderFile = new File(fileName);
-		parser = new ShaderParser(shaderFile);
+		fileName = file.getName();
 		shaderId = glCreateShader(type.type);
-		glShaderSource(shaderId, parser.getSource());
+		glShaderSource(shaderId, Shader.getSource(file));
 	}
 	
 	/**
@@ -84,24 +89,6 @@ public class Shader {
 		return fileName+"\n"+glGetShaderInfoLog(shaderId);
 	}
 	
-	/**
-	 * Gets the list of uniforms associated with this shader
-	 * 
-	 * @return List of the uniforms found while parsing this shader
-	 */
-	public ArrayList<Uniform> getUniforms(){
-		return parser.getUniforms();
-	}
-	
-	/**
-	 * Gets the structs associated with this shader object
-	 * 
-	 * @return Hashmap containing a map of this shaders structs with their type names as keys
-	 */
-	protected HashMap<String, ShaderStruct> getStructs(){
-		return parser.getStructs();
-	}
-	
 	@Override
 	public boolean equals(Object shader){
 		if(shader instanceof Shader){
@@ -109,5 +96,23 @@ public class Shader {
 		}else{
 			return false;
 		}
+	}
+	
+	public static String getSource(File file){
+		StringBuilder source = new StringBuilder();
+		try{
+			Scanner shaderParser = new Scanner(file);
+			String line;
+			while(shaderParser.hasNextLine()){
+				line = shaderParser.nextLine();
+				//add source code line to stringBuilder
+				source.append(line+"\n");
+			}
+			shaderParser.close();
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(0);
+		}
+		return source.toString();
 	}
 }

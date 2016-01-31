@@ -1,13 +1,10 @@
 package lights;
 
-import glMath.Quaternion;
 import glMath.Transform;
-import glMath.VecUtil;
 import glMath.vectors.Vec3;
 import mesh.Mesh;
 import mesh.primitives.geometry.Cone;
 import renderers.RenderMode;
-import shaders.ShaderProgram;
 
 public class SpotLight extends Light {
 
@@ -30,18 +27,14 @@ public class SpotLight extends Light {
 		super(xpos, ypos, zpos, r, g, b, intensity, attenLin);
 		this.radius = Math.abs(radius);
 		this.length = Math.abs(length);
-		Vec3 lengthVec = new Vec3(0, 1, 0);
-		Vec3 maxVec = new Vec3(this.radius, 1, 0);
-		//rotation for the next point on the volume
-		Quaternion volumeRot = Quaternion.fromAxisAngle(0, 1, 0, 360/VOLUME_FINENESS);
-		//compute the cutoff such that it is retained inside the volume as a smooth circle
-		//this prevents the jagged simple volume from being seen
-		maxVec = VecUtil.add(maxVec, VecUtil.subtract(volumeRot.multVec(maxVec), maxVec).scale(.5f)).normalize();//maxVec+(rotVec-maxVec)/2
-		//normalize the vector
+		Vec3 lengthVec = new Vec3(0, this.length, 0);
+		Vec3 maxVec = new Vec3(this.radius, this.length, 0);
+		//normalize the vectors
+		lengthVec.normalize();
 		maxVec.normalize();
 		//get the dot product of the vector from the middle of the light to the farthest edge of the light
 		//this gets the cutoff
-		cutoff = lengthVec.dot(maxVec);
+		cutoff = lengthVec.dot(maxVec);//result is in radians
 		trans.scale(this.radius, this.length, this.radius);
 	}
 	
@@ -53,42 +46,14 @@ public class SpotLight extends Light {
 		return length;
 	}
 	
-	public Mesh getVolume(){
-		volume.setTransform(trans);
-		return volume;
-	}
-	
-	@Override
 	public void transform(Transform transform){
-		Vec3 scale = transform.getScalars();
-		//compute new radius and length
-		radius *= scale.x;
-		length *= scale.y;
-		//compute the new cutoff
-		Vec3 lengthVec = new Vec3(0, 1, 0);
-		Vec3 maxVec = new Vec3(this.radius, 1, 0);
-		//compute the cutoff such that it is retained inside the volume as a smooth circle
-		//this prevents the jagged simple volume from being seen
-		maxVec = VecUtil.add(maxVec, VecUtil.subtract(volumeRot.multVec(maxVec), maxVec).scale(.5f)).normalize();//maxVec+(rotVec-maxVec)/2
-		//normalize the vector
-		maxVec.normalize();
-		//get the dot product of the vector from the middle of the light to the farthest edge of the light
-		//this gets the cutoff
-		cutoff = lengthVec.dot(maxVec);
-		
-		//lastly transform the volume mesh
+		radius *= transform.getScalars().x;
+		length *= transform.getScalars().y;
 		trans.transform(transform);
 	}
 	
-	@Override
-	public void bind(ShaderProgram shader){
-		shader.setUniform("sLight.pos", trans.getTranslation());
-		shader.setUniform("sLight.color", color);
-		shader.setUniform("sLight.intensity", intensity);
-		shader.setUniform("sLight.cutOff", cutoff);
-		shader.setUniform("sLight.attenLinear", attenLinear);
-		shader.setUniform("isPoint", false);
-		shader.setUniform("isSpot", true);
-		shader.setUniform("model", trans.getTransform());
+	public Mesh getVolume(){
+		volume.setTransform(trans);
+		return volume;
 	}
 }

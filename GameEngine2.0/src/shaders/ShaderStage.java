@@ -39,4 +39,15 @@ public enum ShaderStage {
 			
 		}
 	}
+	
+	/**
+	 * Gets the shader stage enums associated with the bitmask {@code useBits}
+	 * 
+	 * @param useBits Bitmask of bits corresponding to different shader stages
+	 * 
+	 * @return Array containing all the shader stages specified by the bitmask useBits
+	 */
+//	public static ShaderStage[] getStages(int useBits){
+//		
+//	}
 }

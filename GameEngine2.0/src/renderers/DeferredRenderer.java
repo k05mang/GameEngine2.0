@@ -145,19 +145,19 @@ public class DeferredRenderer {
 			mat.bind(geoPass);
 			castMesh.render();
 		}
-		glDisable(GL_CULL_FACE);
-		geoPass.setUniform("color", 1,0,0);
-		Mesh mesh = lights.get(0).getVolume();
-		geoPass.setUniform("model", mesh.getModelView());
-		mesh.render();
-		glEnable(GL_CULL_FACE);
+//		glDisable(GL_CULL_FACE);
+//		geoPass.setUniform("color", 1,0,0);
+//		Mesh mesh = lights.get(0).getVolume();
+//		geoPass.setUniform("model", mesh.getModelView());
+//		mesh.render();
+//		glEnable(GL_CULL_FACE);
 		geoPass.unbind();
 		
 		gbuffer.setupLightingPass();
 		
 		for(Light light : lights){
 			stencilPass.bind();
-			mesh = light.getVolume();
+			Mesh mesh = light.getVolume();
 			gbuffer.stencilPass();
 			//render the light volume for stenciling
 			stencilPass.setUniform("model", mesh.getModelView());
