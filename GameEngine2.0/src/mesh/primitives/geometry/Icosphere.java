@@ -17,6 +17,11 @@ import renderers.RenderMode;
 
 public final class Icosphere extends Mesh {
 	private float radius;
+	private static final Vec2 uv = new Vec2();
+	
+	public Icosphere(float radius, int order){
+		this(radius, order, SOLID_MODE);
+	}
 	
 	/**
 	 * Constructs an icosphere, which is defined to be a an icosahedron subdivided where all points are equadistant from the center.
@@ -29,16 +34,24 @@ public final class Icosphere extends Mesh {
 	 * 
 	 * @param radius Radius of the sphere
 	 * @param order Order of magnitude of recursive subdivisions
-	 * @param modes RenderModes this Icosphere should be compatible with, the first mode is the initial mode
-	 * for the Icosphere to render with
 	 */
-	public Icosphere(float radius, int order, RenderMode... modes){
+	public Icosphere(float radius, int order, String defaultMode){
 		super();
 		this.radius = Math.abs(radius);
 		int clampedOrder = Math.max(0,  order);
 		int lastIndex = 11+((1 << (clampedOrder << 1))-1)*10;//11+(2^(clampedOrder*2)-1)*10
 		
 		IndexBuffer.IndexType dataType = getIndexType(lastIndex);
+		
+		//create index buffers
+		IndexBuffer solidIbo = new IndexBuffer(dataType);
+		IndexBuffer edgeIbo = new IndexBuffer(dataType);
+		//add index buffers to mesh list
+		ibos.add(solidIbo);
+		ibos.add(edgeIbo);
+		//add index buffers to vertex array
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
+		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
@@ -160,18 +173,16 @@ public final class Icosphere extends Mesh {
 
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
+
+		solidIbo.flush(BufferUsage.STATIC_DRAW);
+		edgeIbo.flush(BufferUsage.STATIC_DRAW);
 		
-		//check if there are additional modes that need to be accounted for
-		if(modes.length > 0){
-			for(RenderMode curMode : modes){
-				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
-				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
-				ibos.add(modeBuffer);
-			}
-			vao.setIndexBuffer(modes[0].toString());
+		if(defaultMode.equals(SOLID_MODE) || defaultMode.equals(EDGE_MODE)){
+			vao.setIndexBuffer(defaultMode);
+		}else{
+			vao.setIndexBuffer(SOLID_MODE);
 		}
+		
 		//specify the attributes for the vertex array
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
 		vao.addAttrib(AttribType.VEC3, false, 0);//normal
@@ -203,10 +214,18 @@ public final class Icosphere extends Mesh {
 		//if we are at the lowest order then add the face to the mesh
 		if(order == 0){
 			geometry.add(base);
-		}else{//otherwise subdivide it and recurse
+			base.insertPrim(ibos.get(0));//solidIbo
 			
-			//keep a general UV value for reuse
-			Vec2 uv = new Vec2();
+			//edgeIbo
+			ibos.get(0).add(base.he1.sourceVert);
+			ibos.get(0).add(base.he2.sourceVert);
+
+			ibos.get(0).add(base.he2.sourceVert);
+			ibos.get(0).add(base.he3.sourceVert);
+
+			ibos.get(0).add(base.he3.sourceVert);
+			ibos.get(0).add(base.he1.sourceVert);
+		}else{//otherwise subdivide it and recurse
 			
 			Vec3 halfPoint = genVert(base.he1.sourceVert, base.he2.sourceVert);
 			Vertex edge1 = new Vertex(halfPoint, halfPoint, uv);

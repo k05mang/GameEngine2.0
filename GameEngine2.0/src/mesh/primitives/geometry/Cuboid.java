@@ -14,16 +14,18 @@ import renderers.RenderMode;
 public final class Cuboid extends Mesh {
 	private Vec3 halfDimensions;
 	
+	public Cuboid(float width, float height, float depth){
+		this(width, height, depth, SOLID_MODE);
+	}
+	
 	/**
 	 * Constructs a cuboid with the given width, height, and depth while also being compatible with the given RenderModes
 	 * 
 	 * @param width X dimension of the cuboid
 	 * @param height Y dimension of the cuboid
 	 * @param depth Z dimension of the cuboid
-	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
-	 * for the Cuboid to render with
 	 */
-	public Cuboid(float width, float height, float depth, RenderMode... modes){
+	public Cuboid(float width, float height, float depth, String defaultMode){
 		super();
 		
 		halfDimensions = new Vec3(Math.abs(width)/2.0f, Math.abs(height)/2.0f, Math.abs(depth)/2.0f);
@@ -208,6 +210,56 @@ public final class Cuboid extends Mesh {
 				0,1,0	
 				));
 
+		//create index buffers
+		IndexBuffer solidIbo = new IndexBuffer(IndexBuffer.IndexType.BYTE);
+		IndexBuffer edgeIbo = new IndexBuffer(IndexBuffer.IndexType.BYTE);
+		//add index buffers to mesh list
+		ibos.add(solidIbo);
+		ibos.add(edgeIbo);
+		//xpos face of the edges
+			//zpos edge
+			edgeIbo.add(0);
+			edgeIbo.add(1);
+			//yneg edge
+			edgeIbo.add(1);
+			edgeIbo.add(3);
+			//zneg
+			edgeIbo.add(2);
+			edgeIbo.add(3);
+			//ypos
+			edgeIbo.add(2);
+			edgeIbo.add(0);
+		//bridge edges
+			//zpos
+				//ypos
+				edgeIbo.add(0);
+				edgeIbo.add(6);
+				//yneg
+				edgeIbo.add(1);
+				edgeIbo.add(7);
+			//zneg
+				//ypos
+				edgeIbo.add(2);
+				edgeIbo.add(4);
+				//yneg
+				edgeIbo.add(5);
+				edgeIbo.add(3);
+		//xneg face
+			//zpos edge
+			edgeIbo.add(6);
+			edgeIbo.add(7);
+			//yneg edge
+			edgeIbo.add(7);
+			edgeIbo.add(5);
+			//zneg
+			edgeIbo.add(5);
+			edgeIbo.add(4);
+			//ypos
+			edgeIbo.add(4);
+			edgeIbo.add(6);
+		//add index buffers to the vertex array
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
+		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
 		//generate the face indices
 		for (int face = 0; face < 6; face++) {
 			geometry.add(new Face(
@@ -224,20 +276,19 @@ public final class Cuboid extends Mesh {
 		transforms.scale(halfDimensions);
 
 		geometry.insertVertices(vbo);
+		geometry.insertIndices(solidIbo, RenderMode.TRIANGLES);
+		//buffer index buffers to gpu
+		edgeIbo.flush(BufferUsage.STATIC_DRAW);
+		solidIbo.flush(BufferUsage.STATIC_DRAW);
 		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
-		//check if there are additional modes that need to be accounted for
-		if(modes.length > 0){
-			for(RenderMode curMode : modes){
-				IndexBuffer modeBuffer = new IndexBuffer(IndexBuffer.IndexType.BYTE);
-				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
-				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
-				ibos.add(modeBuffer);
-			}
-			vao.setIndexBuffer(modes[0].toString());
+		
+		if(defaultMode.equals(SOLID_MODE) || defaultMode.equals(EDGE_MODE)){
+			vao.setIndexBuffer(defaultMode);
+		}else{
+			vao.setIndexBuffer(SOLID_MODE);
 		}
 
 		//specify the attributes for the vertex array
@@ -277,8 +328,12 @@ public final class Cuboid extends Mesh {
 	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
 	 * for the Cone to render with
 	 */
-	public Cuboid(Vec3 dimensions, RenderMode... modes){
-		this(dimensions.x, dimensions.y, dimensions.z, modes);
+	public Cuboid(Vec3 dimensions, String defaultMode){
+		this(dimensions.x, dimensions.y, dimensions.z, defaultMode);
+	}
+	
+	public Cuboid(Vec3 dimensions){
+		this(dimensions, SOLID_MODE);
 	}
 	
 	/**
@@ -289,8 +344,12 @@ public final class Cuboid extends Mesh {
 	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
 	 * for the Cone to render with
 	 */
-	public Cuboid(float scale, RenderMode... modes){
-		this(scale, scale, scale, modes);
+	public Cuboid(float scale, String defaultMode){
+		this(scale, scale, scale, defaultMode);
+	}
+	
+	public Cuboid(float scale){
+		this(scale, SOLID_MODE);
 	}
 	
 	/**

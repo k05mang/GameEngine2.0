@@ -12,8 +12,8 @@ import core.Resource;
 
 public class Arrow{
 	
-	public static final Cylinder shaft = new Cylinder(1, 1, 10, RenderMode.TRIANGLES);
-	public static final Cone tip = new Cone(1, 1, 10, false, RenderMode.TRIANGLES);
+	public static final Cylinder shaft = new Cylinder(1, 1, 10);
+	public static final Cone tip = new Cone(1, 1, 10, false);
 	private Transform shaftTrans, tipTrans;
 	private float length, tipLength;
 	private Vec3 direction, position, color;

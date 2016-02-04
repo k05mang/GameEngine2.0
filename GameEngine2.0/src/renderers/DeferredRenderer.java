@@ -30,7 +30,7 @@ public class DeferredRenderer {
 	private Gbuffer gbuffer;
 	private ShaderProgram geoPass, stencilPass, lightPass, finalPass;
 	private Camera main;
-	public static final Plane quad = new Plane(2,2,RenderMode.TRIANGLES);
+	public static final Plane quad = new Plane(2);
 	
 	public DeferredRenderer(int width, int height, Camera cam){
 		main = cam;

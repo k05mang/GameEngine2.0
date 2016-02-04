@@ -1,5 +1,6 @@
 package lights;
 
+import glMath.Quaternion;
 import glMath.Transform;
 import glMath.vectors.Vec3;
 import mesh.Mesh;
@@ -11,6 +12,8 @@ public abstract class Light {
 	protected Transform trans;
 	protected float intensity, attenLinear;
 	protected static final int VOLUME_FINENESS = 10;
+	//rotation for the next point on the volume
+	protected static final Quaternion volumeRot = Quaternion.fromAxisAngle(0, 1, 0, 360/VOLUME_FINENESS);
 
 	/**
 	 * Constructs a light with the given {@code position}, or direction in the case of a point light,
@@ -182,13 +185,7 @@ public abstract class Light {
 	 * 
 	 * @param shader Shader Program to set the uniforms of
 	 */
-	public void bind(ShaderProgram shader){
-		shader.setUniform("light.pos", trans.getTranslation());
-		shader.setUniform("light.color", color);
-		shader.setUniform("light.intensity", intensity);
-		shader.setUniform("light.attenLinear", attenLinear);
-		shader.setUniform("model", trans.getTransform());
-	}
+	public abstract void bind(ShaderProgram shader);
 	
 	/**
 	 * Gets the transformed mesh volume of this light

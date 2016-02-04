@@ -20,6 +20,7 @@ public abstract class Mesh implements Resource{
 	protected ArrayList<BufferObject> vbos;
 	protected ArrayList<IndexBuffer> ibos;
 	protected String material;
+	public static final String SOLID_MODE = "solid", EDGE_MODE = "edges";
 	
 	/**
 	 * Constructs a Renderable with a VertexArray, Mesh, Transform, and array of BufferObjects and IndexBuffers
@@ -46,9 +47,11 @@ public abstract class Mesh implements Resource{
 	 */
 	public Mesh(Mesh copy){
 		vao = copy.vao;
+		vbos = copy.vbos;
+		ibos = copy.ibos;
 		geometry = copy.geometry;//new Geometry(copy.geometry);
 		transforms = new Transform(copy.transforms);
-		material = copy.material;
+		material = new String(copy.material);
 	}
 	
 	/**
@@ -100,19 +103,7 @@ public abstract class Mesh implements Resource{
 		return transforms.getTranslation();
 	}
 	
-	/**
-	 * Sets the IndexBuffer for this Renderable to use, this will decide the RenderMode for the Renderable as well
-	 * 
-	 * @param buffer IndexBuffer to use
-	 * @return True if the IndexBuffer exists in this Renderable
-	 */
-	public boolean setIndexBuffer(String buffer){
-		return vao.setIndexBuffer(buffer);
-	}
-	
-	/**
-	 * Deletes all data from the GPU related to this Renderable object
-	 */
+	@Override
 	public void delete(){
 		vao.delete();
 		for(BufferObject buffer : vbos){
@@ -179,5 +170,9 @@ public abstract class Mesh implements Resource{
 	 */
 	public String getMaterial(){
 		return material;
+	}
+	
+	public void setRenderMode(String mode){
+		vao.setIndexBuffer(mode);
 	}
 }

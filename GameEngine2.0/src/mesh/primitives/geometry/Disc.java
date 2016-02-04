@@ -17,19 +17,31 @@ public final class Disc extends Mesh {
 
 	private float radius;
 	
+	public Disc(float radius, int segments){
+		this(radius, segments, SOLID_MODE);
+	}
+	
 	/**
 	 * Constructs a disc with the given radius and number of segments
 	 * 
 	 * @param radius Radius of the disc
 	 * @param segments Fineness of the disc
-	 * @param modes RenderModes this Disc should be compatible with, the first mode is the initial mode
-	 * for the Disc to render with
 	 */
-	public Disc(float radius, int segments, RenderMode... modes){
+	public Disc(float radius, int segments, String defaultMode){
 		this.radius = Math.abs(radius);
 		
 		int maxSegment = Math.max(3, segments);
 		IndexBuffer.IndexType dataType = getIndexType(maxSegment-1);
+
+		//create index buffers
+		IndexBuffer solidIbo = new IndexBuffer(dataType);
+		IndexBuffer edgeIbo = new IndexBuffer(dataType);
+		//add index buffers to mesh list
+		ibos.add(solidIbo);
+		ibos.add(edgeIbo);
+		//add index buffer to vertex array
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
+		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINE_LOOP, edgeIbo);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
@@ -48,18 +60,20 @@ public final class Disc extends Mesh {
 			geometry.add(curVert);
 			
 			curVert.addTo(vbo);
-			
+			edgeIbo.add(segment);
 			int nextSeg = (segment+1)%maxSegment;//due to constantly computing this value cache it for reuse
 			
 			//only compute the indices if we are 3 or more segments from the end
 			//since we are generating indices two segments ahead of the current one
 			//this will prevent redundant face generation at the end
 			if(segment < maxSegment-2){
-				geometry.add(new Face(
+				Face face = new Face(
 						0,//base vert
 						(segment+2)%maxSegment,//vert that is the second next segment
 						nextSeg//vert that is the next segment
-						));
+						);
+				geometry.add(face);
+				face.insertPrim(solidIbo);
 			}
 		}
 
@@ -67,16 +81,13 @@ public final class Disc extends Mesh {
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
-		//check if there are additional modes that need to be accounted for
-		if(modes.length > 0){
-			for(RenderMode curMode : modes){
-				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
-				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
-				ibos.add(modeBuffer);
-			}
-			vao.setIndexBuffer(modes[0].toString());
+		solidIbo.flush(BufferUsage.STATIC_DRAW);
+		edgeIbo.flush(BufferUsage.STATIC_DRAW);
+		
+		if(defaultMode.equals(SOLID_MODE) || defaultMode.equals(EDGE_MODE)){
+			vao.setIndexBuffer(defaultMode);
+		}else{
+			vao.setIndexBuffer(SOLID_MODE);
 		}
 		//specify the attributes for the vertex array
 		vao.addAttrib(AttribType.VEC3, false, 0);//position

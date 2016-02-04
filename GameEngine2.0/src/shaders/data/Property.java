@@ -1,4 +1,4 @@
-package shaders.introspection;
+package shaders.data;
 import static org.lwjgl.opengl.GL40.*;
 import static org.lwjgl.opengl.GL43.*;
 import static org.lwjgl.opengl.GL44.*;

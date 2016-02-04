@@ -23,13 +23,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import shaders.introspection.ShaderIntrospector;
+import shaders.data.ShaderData;
 
 public class ShaderProgram {
 	private int programId, stageBits;
 	private ArrayList<Shader> shaders;
 	private boolean isSeparable;
-	private ShaderIntrospector shaderData;
+	private ShaderData shaderData;
 
 	public ShaderProgram(String file, ShaderStage stage){
 		this(new File(file), stage);
@@ -38,7 +38,7 @@ public class ShaderProgram {
 	public ShaderProgram(File file, ShaderStage stage){
 		shaders = new ArrayList<Shader>();
 		programId = glCreateShaderProgramv(stage.type, Shader.getSource(file));
-		shaderData = new ShaderIntrospector(programId);
+		shaderData = new ShaderData(programId);
 		shaderData.introspect();
 		isSeparable = true;
 		stageBits = stage.getUseBit();
@@ -50,7 +50,7 @@ public class ShaderProgram {
 	public ShaderProgram(){
 		shaders = new ArrayList<Shader>();
 		programId = glCreateProgram();
-		shaderData = new ShaderIntrospector(programId);
+		shaderData = new ShaderData(programId);
 		isSeparable = false;
 		stageBits = 0;
 	}

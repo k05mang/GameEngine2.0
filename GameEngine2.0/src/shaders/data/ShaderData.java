@@ -1,4 +1,4 @@
-package shaders.introspection;
+package shaders.data;
 
 import static org.lwjgl.opengl.GL43.*;
 
@@ -11,12 +11,12 @@ import org.lwjgl.BufferUtils;
 import shaders.Uniform;
 import shaders.UniformType;
 
-public class ShaderIntrospector {
+public class ShaderData {
 
 	private int program;
 	private HashMap<String, Uniform> uniforms;
 	
-	public ShaderIntrospector(int program){
+	public ShaderData(int program){
 		this.program = program;
 		uniforms = new HashMap<String, Uniform>();
 	}

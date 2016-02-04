@@ -12,6 +12,18 @@ import renderers.RenderMode;
 
 public final class Plane extends Mesh{
 	float width, length;
+
+	public Plane(float sideLength){
+		this(sideLength, sideLength, SOLID_MODE);
+	}
+
+	public Plane(float width, float length){
+		this(width, length, SOLID_MODE);
+	}
+
+	public Plane(float sideLength, String defaultMode){
+		this(sideLength, sideLength, defaultMode);
+	}
 	
 	/**
 	 * Constructs a plane with the given width being the dimension along the x axis, and length
@@ -19,13 +31,17 @@ public final class Plane extends Mesh{
 	 * 
 	 * @param width Width of this plane along the x axis
 	 * @param length Length of this plane along the z axis
-	 * @param modes RenderModes this Plane should be compatible with, the first mode is the initial mode
-	 * for the Plane to render with
 	 */
-	public Plane(float width, float length, RenderMode... modes){
+	public Plane(float width, float length, String defaultMode){
 		super();
 		this.width = Math.abs(width);
 		this.length = Math.abs(length);
+		IndexBuffer solidIbo = new IndexBuffer(IndexBuffer.IndexType.BYTE);
+		IndexBuffer edgeIbo = new IndexBuffer(IndexBuffer.IndexType.BYTE);
+		ibos.add(solidIbo);
+		ibos.add(edgeIbo);
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
+		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
@@ -47,21 +63,41 @@ public final class Plane extends Mesh{
 		
 		geometry.add(new Face(0,1,2));
 		geometry.add(new Face(2,1,3));
+
+		//solid ibo
+		solidIbo.add(0);
+		solidIbo.add(1);
+		solidIbo.add(2);
+		
+		solidIbo.add(2);
+		solidIbo.add(1);
+		solidIbo.add(3);
+
+		//edge ibo
+		edgeIbo.add(0);
+		edgeIbo.add(1);
+		
+		edgeIbo.add(1);
+		edgeIbo.add(3);
+		
+		edgeIbo.add(3);
+		edgeIbo.add(2);
+		
+		edgeIbo.add(2);
+		edgeIbo.add(0);
 		
 		transforms.scale(Math.abs(width)/2.0f, 1, Math.abs(length)/2.0f);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
-		//check if there are additional modes that need to be accounted for
-		if(modes.length > 0){
-			for(RenderMode curMode : modes){
-				IndexBuffer modeBuffer = new IndexBuffer(IndexBuffer.IndexType.BYTE);
-				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
-				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
-				ibos.add(modeBuffer);
-			}
-			vao.setIndexBuffer(modes[0].toString());
+		//buffer index buffers to the gpu
+		solidIbo.flush(BufferUsage.STATIC_DRAW);
+		edgeIbo.flush(BufferUsage.STATIC_DRAW);
+		
+		if(defaultMode.equals(SOLID_MODE) || defaultMode.equals(EDGE_MODE)){
+			vao.setIndexBuffer(defaultMode);
+		}else{
+			vao.setIndexBuffer(SOLID_MODE);
 		}
 		//specify the attributes for the vertex array
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
@@ -86,18 +122,6 @@ public final class Plane extends Mesh{
 		vao.enableAttribute(2);
 		vao.enableAttribute(3);
 		vao.enableAttribute(4);
-	}
-	
-	/**
-	 * Constructs a plane with the given length defining the dimensions of the plane, this
-	 * effectively makes the plane square.
-	 * 
-	 * @param sideLength Length to set for the width and height of the plane
-	 * @param modes RenderModes this Plane should be compatible with, the first mode is the initial mode
-	 * for the Cone to render with
-	 */
-	public Plane(float sideLength, RenderMode... modes){
-		this(sideLength, sideLength, modes);
 	}
 
 	/**

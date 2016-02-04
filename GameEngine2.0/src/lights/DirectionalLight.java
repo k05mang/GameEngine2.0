@@ -1,13 +1,13 @@
 package lights;
 
-import mesh.Mesh;
-import mesh.primitives.geometry.Plane;
-import renderers.RenderMode;
 import glMath.Transform;
 import glMath.vectors.Vec3;
+import mesh.Mesh;
+import mesh.primitives.geometry.Plane;
+import shaders.ShaderProgram;
 
 public class DirectionalLight extends Light {
-	public final static Plane volume = new Plane(1, 1, RenderMode.TRIANGLES, RenderMode.LINES);
+	public final static Plane volume = new Plane(2);
 
 	public DirectionalLight(Vec3 direction, Vec3 color, float intensity) {
 		super(direction, color, intensity, 0);
@@ -32,5 +32,15 @@ public class DirectionalLight extends Light {
 	
 	public void transform(Transform transform){
 		trans.transform(transform);
+	}
+	
+	@Override
+	public void bind(ShaderProgram shader){
+		shader.setUniform("dLight.direction", trans.getTranslation());
+		shader.setUniform("dLight.color", color);
+		shader.setUniform("dLight.intensity", intensity);
+		shader.setUniform("isPoint", false);
+		shader.setUniform("isSpot", false);
+		shader.setUniform("model", trans.getTransform());
 	}
 }

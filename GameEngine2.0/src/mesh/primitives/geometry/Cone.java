@@ -18,6 +18,10 @@ public final class Cone extends Mesh {
 
 	private float length, radius;
 	
+	public Cone(float radius, float length, int slices, boolean centered){
+		this(radius, length, slices, centered, SOLID_MODE);
+	}
+	
 	/**
 	 * Constructs a cone primitive with the given radius, length, and subdivisions while making
 	 * it compatible with the given RenderModes.
@@ -28,10 +32,8 @@ public final class Cone extends Mesh {
 	 * @param length Length of the cone from the base to the tip
 	 * @param slices Number of subdivisions to make for the cone
 	 * @param centered Whether the cone should start with its center at the middle of the cone or at the tip of the cone
-	 * @param modes RenderModes this Cone should be compatible with, the first mode is the initial mode
-	 * for the Cone to render with
 	 */
-	public Cone(float radius, float length, int slices, boolean centered, RenderMode... modes){
+	public Cone(float radius, float length, int slices, boolean centered, String defaultMode){
 		super();
 		
 		//check and restrict the values passed to the constructor if they do not meet minimum requirements
@@ -40,7 +42,19 @@ public final class Cone extends Mesh {
 		this.length = Math.abs(length);
 		
 		IndexBuffer.IndexType dataType = getIndexType(subdiv);
+
+		//create the index buffers
+		IndexBuffer solidIbo = new IndexBuffer(dataType);
+		IndexBuffer edgeIbo = new IndexBuffer(dataType);
+		//add them to the mesh list
+		ibos.add(solidIbo);
+		ibos.add(edgeIbo);
 		
+		//add the ibos to the vertex array
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
+		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINE_STRIP, edgeIbo);
+		
+		//create the vertex buffer
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
@@ -63,7 +77,9 @@ public final class Cone extends Mesh {
 					segment
 					);
 			geometry.add(side);
-			
+			side.insertPrim(edgeIbo);
+			side.insertPrim(solidIbo);
+			//generate faces for the bottom cap, only when on the third to last vertex
 			if(segment < subdiv-1){
 				Face bottom = new Face(
 						1,			//the first bottom vertex
@@ -71,80 +87,28 @@ public final class Cone extends Mesh {
 						segment+2   //the vertex that is segment+2 of the bottom ring
 						);
 				geometry.add(bottom);
+				bottom.insertPrim(solidIbo);
 			}
 		}
-//		for(int segment = 0; segment < subdiv+1; segment++){
-//			
-//			float bottomu = segment/(float)subdiv;
-//			double theta = 2*PI*bottomu;
-//			
-//			float capu = (float)cos(theta);
-//			float capv =(float)sin(theta);
-//			
-//			float x = capu;
-//			float z = capv;
-//			
-//			if(segment < subdiv){
-//				float topu = (segment+.5f)/(float)subdiv;
-//				float topx = (float)cos(2*PI*topu);
-//				float topz = (float)sin(2*PI*topu);
-//				Vertex top = new Vertex(0, vertOffset, 0,  x, this.radius/this.length, z, topu,1);
-//				mesh.add(top);
-//				top.addTo(vbo);
-//			}
-//			
-//			Vertex bottomVert = new Vertex(x, -vertOffset, z,  x, this.radius/this.length, z, bottomu,0);
-//			mesh.add(bottomVert);
-//			bottomVert.addTo(vbo);
-//			
-//			//vertex for the cap of the cone 
-//			Vertex cap = new Vertex(x, -vertOffset, z,  0,-1,0, capu/2+.5f, -capv/2+.5f);
-//			mesh.add(cap);
-//			cap.addTo(vbo);
-//			
-//			int nextSeg = (segment+1)%(subdiv+1);//due to constantly computing this value cache it for reuse
-//			if(segment < subdiv){
-//				//side face
-//				mesh.add(new Face(
-//						segment*3,//current segment top
-//						(segment+1)*3+1,//next segment bottom right
-//						segment*3+1//current segment bottom left
-//						));
-//			}
-//			
-//			//only compute the cap indices if we are 3 or more segments from the end
-//			//since the cap is generated with indices two segments ahead of the current one
-//			//this will prevent redundant face generation at the end
-//			if(segment < subdiv-2){
-//				//top cap face
-//				mesh.add(new Face(
-//						2,//base bottom cap vert which is 2 (3rd index)
-//						nextSeg*3+2,//vert that is the next segment
-//						((segment+2)%(subdiv+1))*3+2//vert that is the second next segment
-//						));
-//			}
-//		}
 
 		if(centered){
 			transforms.translate(0, this.length/2.0f, 0);
 		}
 		
 		transforms.scale(this.radius, this.length, this.radius);
-		
+		//flush the index buffers
+		solidIbo.flush(BufferUsage.STATIC_DRAW);
+		edgeIbo.flush(BufferUsage.STATIC_DRAW);
+		//flush the vertex buffer
 		vbo.flush(BufferUsage.STATIC_DRAW);
+		//add the vertex buffer to the vertex array
 		vao.addVertexBuffer("default", vbo);
-		
-		//check if there are additional modes that need to be accounted for
-		if(modes.length > 0){
-			for(RenderMode curMode : modes){
-				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
-				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
-				ibos.add(modeBuffer);
-			}
-			vao.setIndexBuffer(modes[0].toString());
+		if(defaultMode.equals(SOLID_MODE) || defaultMode.equals(EDGE_MODE)){
+			vao.setIndexBuffer(defaultMode);
+		}else{
+			vao.setIndexBuffer(SOLID_MODE);
 		}
+		
 		//specify the attributes for the vertex array
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
 		vao.addAttrib(AttribType.VEC3, false, 0);//normal

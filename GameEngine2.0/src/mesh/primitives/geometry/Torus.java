@@ -16,9 +16,20 @@ import renderers.RenderMode;
 public final class Torus extends Mesh {
 	
 	private float tubeRadius, radius;
+	public static final String 
+		TUBE_RINGS = "rings",
+		FULL_TUBE_RINGS = "full_rings";
 
-	public Torus(float radius, float tubeRadius, int segments, RenderMode... modes){
-		this(radius, tubeRadius, segments, segments, modes);
+	public Torus(float radius, float tubeRadius, int segments){
+		this(radius, tubeRadius, segments, segments, SOLID_MODE);
+	}
+	
+	public Torus(float radius, float tubeRadius, int rings, int ringSegs){
+		this(radius, tubeRadius, rings, ringSegs, SOLID_MODE);
+	}
+	
+	public Torus(float radius, float tubeRadius, int segments, String defaultMode){
+		this(radius, tubeRadius, segments, segments, defaultMode);
 	}
 	
 	/**
@@ -31,16 +42,31 @@ public final class Torus extends Mesh {
 	 * @param tubeRadius Radius of the tube of the torus
 	 * @param rings Number of vertical segments defining the smoothness of the ring of the torus
 	 * @param ringSegs Number of horizontal segments defining the smoothness of the torus tube
-	 * @param modes RenderModes this Torus should be compatible with, the first mode is the initial mode
-	 * for the Torus to render with
 	 */
-	public Torus(float radius, float tubeRadius, int rings, int ringSegs, RenderMode... modes){
+	public Torus(float radius, float tubeRadius, int rings, int ringSegs, String defaultMode){
 		super();
 		
 		this.radius = Math.abs(radius);
 		this.tubeRadius = Math.abs(tubeRadius);
 		int maxRing = Math.max(3, rings);
 		int maxRingSeg = Math.max(3, ringSegs);
+
+		IndexBuffer.IndexType dataType = getIndexType((maxRing+1)*(maxRingSeg+1));
+		//create index buffers
+		IndexBuffer solidIbo = new IndexBuffer(dataType);
+		IndexBuffer edgeIbo = new IndexBuffer(dataType);
+		IndexBuffer tubeRingIbo = new IndexBuffer(dataType);
+		IndexBuffer fullTubeIbo = new IndexBuffer(dataType);
+		//add index buffers to mesh list
+		ibos.add(solidIbo);
+		ibos.add(edgeIbo);
+		ibos.add(tubeRingIbo);
+		ibos.add(fullTubeIbo);
+		//add index buffers to vertex array
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
+		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
+		vao.addIndexBuffer(TUBE_RINGS, RenderMode.LINES, tubeRingIbo);
+		vao.addIndexBuffer(FULL_TUBE_RINGS, RenderMode.LINES, fullTubeIbo);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
@@ -69,40 +95,70 @@ public final class Torus extends Mesh {
 
 				//prevent generating faces on the last loop since the faces need for the end of the
 				//torus has already been generated
-				if(curRing < maxRing || ringSeg < maxRingSeg){
-					geometry.add(new Face(
-							ringSeg+maxRingSeg*curRing,//current vertex (current segment of current rings)
-							(ringSeg+1)+maxRingSeg*(curRing+1),//next segment of next ring
-							(ringSeg+1)+maxRingSeg*curRing//next segment of current ring
-							));
+				if(curRing < maxRing && ringSeg < maxRingSeg){
+					Face left = new Face(
+							ringSeg+(maxRingSeg+1)*curRing,//current vertex (current segment of current rings)
+							(ringSeg+1)+(maxRingSeg+1)*(curRing+1),//next segment of next ring
+							(ringSeg+1)+(maxRingSeg+1)*curRing//next segment of current ring
+							);
+					geometry.add(left);
 					
-					geometry.add(new Face(
-							ringSeg+maxRingSeg*curRing,//current vertex (current segment of current rings)
-							ringSeg+maxRingSeg*(curRing+1),//current segment of next ring
-							(ringSeg+1)+maxRingSeg*(curRing+1)//next segment of next ring
-							));
+					Face right = new Face(
+							ringSeg+(maxRingSeg+1)*curRing,//current vertex (current segment of current rings)
+							ringSeg+(maxRingSeg+1)*(curRing+1),//current segment of next ring
+							(ringSeg+1)+(maxRingSeg+1)*(curRing+1)//next segment of next ring
+							);
+					geometry.add(right);
+					
+					//add values to the index buffer
+					left.insertPrim(solidIbo);
+					right.insertPrim(solidIbo);
+					
+					//edge ibo
+					edgeIbo.add(ringSeg+(maxRingSeg+1)*curRing);
+					edgeIbo.add((ringSeg+1)+(maxRingSeg+1)*curRing);
+					
+					edgeIbo.add((ringSeg+1)+(maxRingSeg+1)*curRing);
+					edgeIbo.add((ringSeg+1)+(maxRingSeg+1)*(curRing+1));
+					
+					edgeIbo.add((ringSeg+1)+(maxRingSeg+1)*(curRing+1));
+					edgeIbo.add(ringSeg+(maxRingSeg+1)*(curRing+1));
+					
+					edgeIbo.add(ringSeg+(maxRingSeg+1)*(curRing+1));
+					edgeIbo.add(ringSeg+(maxRingSeg+1)*curRing);
+					
+					//tube ring ibo
+					tubeRingIbo.add(ringSeg+(maxRingSeg+1)*curRing);
+					tubeRingIbo.add((ringSeg+1)+(maxRingSeg+1)*curRing);
+					
+					//full tube ring ibo
+					fullTubeIbo.add(ringSeg+(maxRingSeg+1)*(curRing+1));
+					fullTubeIbo.add(ringSeg+(maxRingSeg+1)*curRing);
 				}
 			}
 		}
-
+		//buffer index buffers to gpu
+		solidIbo.flush(BufferUsage.STATIC_DRAW);
+		edgeIbo.flush(BufferUsage.STATIC_DRAW);
+		tubeRingIbo.flush(BufferUsage.STATIC_DRAW);
+		fullTubeIbo.flush(BufferUsage.STATIC_DRAW);
+		
 		geometry.genTangentBitangent();
 		geometry.insertVertices(vbo);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
-		
-		IndexBuffer.IndexType dataType = getIndexType(geometry.getNumVertices());
-		
-		//check if there are additional modes that need to be accounted for
-		if(modes.length > 0){
-			for(RenderMode curMode : modes){
-				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
-				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
-				ibos.add(modeBuffer);
-			}
-			vao.setIndexBuffer(modes[0].toString());
+
+		if(
+			defaultMode.equals(SOLID_MODE) ||
+			defaultMode.equals(EDGE_MODE) ||
+			defaultMode.equals(TUBE_RINGS) ||
+			defaultMode.equals(FULL_TUBE_RINGS)
+		){
+			vao.setIndexBuffer(defaultMode);
+		}else{
+			vao.setIndexBuffer(SOLID_MODE);
 		}
+		
 		//specify the attributes for the vertex array
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
 		vao.addAttrib(AttribType.VEC3, false, 0);//normal

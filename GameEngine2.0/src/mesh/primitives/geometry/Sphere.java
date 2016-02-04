@@ -17,7 +17,22 @@ import renderers.RenderMode;
 
 public final class Sphere extends Mesh{
 	private float radius;
+	public static final String 
+	LATERAL_MODE = "lateral",
+	ORBITAL_MODE = "orbit";
 
+	public Sphere(float radius, int divisions){
+		this(radius, divisions, divisions, SOLID_MODE);
+	}
+	
+	public Sphere(float radius, int slices, int stacks){
+		this(radius, slices, stacks, SOLID_MODE);
+	}
+	
+	public Sphere(float radius, int divisions, String defaultMode){
+		this(radius, divisions, divisions, defaultMode);
+	}
+	
 	/**
 	 * Constructs a sphere primitive with the given radius, and subdivisions while making it compatible
 	 * with the given RenderModes.
@@ -29,15 +44,30 @@ public final class Sphere extends Mesh{
 	 * @param radius Radius of the sphere
 	 * @param slices Number of vertical segments
 	 * @param stacks Number of horizontal segments between the top tip and bottom tip of the sphere
-	 * @param modes RenderModes this Sphere should be compatible with, the first mode is the initial mode
-	 * for the sphere to render with
 	 */
-	public Sphere(float radius, int slices, int stacks, RenderMode... modes){
+	public Sphere(float radius, int slices, int stacks, String defaultMode){
 		super();
 		
 		int maxSlice = Math.max(3, slices);
 		int maxStack = Math.max(1, stacks);
 		this.radius = Math.abs(radius);
+		
+		IndexBuffer.IndexType dataType = getIndexType((maxSlice+1)*(maxStack+1));
+
+		IndexBuffer solidIbo = new IndexBuffer(dataType);
+		IndexBuffer edgeIbo = new IndexBuffer(dataType);
+		IndexBuffer latIbo = new IndexBuffer(dataType);
+		IndexBuffer orbIbo = new IndexBuffer(dataType);
+		
+		ibos.add(solidIbo);
+		ibos.add(edgeIbo);
+		ibos.add(latIbo);
+		ibos.add(orbIbo);
+
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
+		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
+		vao.addIndexBuffer(LATERAL_MODE, RenderMode.LINES, latIbo);
+		vao.addIndexBuffer(ORBITAL_MODE, RenderMode.LINES, orbIbo);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
@@ -64,11 +94,26 @@ public final class Sphere extends Mesh{
 					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u-uvOffset, 1-v);
 					geometry.add(vert);
 					
-					geometry.add(new Face(
-						curSlice,//current vertex index
-						nextStackIndex+1,//next slice of the next stack 
-						nextStackIndex//current slice of the next stack
-						));
+					Face top = new Face(
+							curSlice,//current vertex index
+							nextStackIndex+1,//next slice of the next stack 
+							nextStackIndex//current slice of the next stack
+							);
+					geometry.add(top);
+					
+					//add indices to index buffers
+					top.insertPrim(solidIbo);
+					
+					//edge ibo
+					edgeIbo.add(curSlice);
+					edgeIbo.add(nextStackIndex);
+					
+					//lateral ibo
+					latIbo.add(curSlice);
+					latIbo.add(nextStackIndex);
+					
+					//orbital ibo indices not needed for caps
+					
 				}else if(curStack == maxStack && curSlice < maxSlice){
 					float uvOffset = .5f/maxSlice;
 					curIndex = maxSlice+(curStack-2)*(maxSlice+1)+curSlice;//current index
@@ -76,27 +121,70 @@ public final class Sphere extends Mesh{
 					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u-uvOffset, 1-v);
 					geometry.add(vert);
 					
-					geometry.add(new Face(
-						curIndex,//current vertex index
-						curIndex+1,//next index of current stack
-						nextStackIndex//next stack next slice
-						));
+					Face bottom = new Face(
+							curIndex,//current vertex index
+							curIndex+1,//next index of current stack
+							nextStackIndex//next stack same slice
+							);
+					geometry.add(bottom);
+					
+					//add indices to index buffers
+					bottom.insertPrim(solidIbo);
+					
+					//edge ibo
+					edgeIbo.add(curIndex);
+					edgeIbo.add(nextStackIndex);
+					
+					//lateral ibo
+					latIbo.add(curIndex);
+					latIbo.add(nextStackIndex);
+					
+					//orbital ibo indices not needed for caps
+					
 				}else if(curStack > 0 && curStack < maxStack){
 					curIndex = maxSlice+(curStack-1)*(maxSlice+1)+curSlice;//current index
 					nextStackIndex = maxSlice+(curStack)*(maxSlice+1)+curSlice;//same slice next stack
 					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
 					geometry.add(vert);
 					if(curSlice < maxSlice && curStack < maxStack-1){
-						geometry.add(new Face(
-							curIndex,//current vertex index
-							nextStackIndex+1,//next slice of the next stack 
-							nextStackIndex//current slice of the next stack
-							));
-						geometry.add(new Face(
-							curIndex,//current vertex index
-							curIndex+1,//next index of current stack
-							nextStackIndex+1//next stack next slice
-							));
+						Face left = new Face(
+								curIndex,//current vertex index
+								nextStackIndex+1,//next slice of the next stack 
+								nextStackIndex//current slice of the next stack
+								);
+						geometry.add(left);
+						
+						Face right = new Face(
+								curIndex,//current vertex index
+								curIndex+1,//next index of current stack
+								nextStackIndex+1//next stack next slice
+								);
+						geometry.add(right);
+						
+						//add indices to index buffers
+						left.insertPrim(solidIbo);
+						right.insertPrim(solidIbo);
+						
+						//edge ibo
+						edgeIbo.add(curIndex);
+						edgeIbo.add(nextStackIndex);
+						
+						edgeIbo.add(nextStackIndex);
+						edgeIbo.add(nextStackIndex+1);
+						
+						edgeIbo.add(nextStackIndex+1);
+						edgeIbo.add(curIndex+1);
+						
+						edgeIbo.add(curIndex+1);
+						edgeIbo.add(curIndex);
+						
+						//lateral ibo
+						latIbo.add(curIndex);
+						latIbo.add(nextStackIndex);
+						
+						//orbital ibo
+						orbIbo.add(curIndex+1);
+						orbIbo.add(curIndex);
 					}
 				}
 			}
@@ -107,19 +195,23 @@ public final class Sphere extends Mesh{
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
-		IndexBuffer.IndexType dataType = getIndexType(geometry.getNumVertices());
+		//buffer the index buffers to the gpu
+		solidIbo.flush(BufferUsage.STATIC_DRAW);
+		edgeIbo.flush(BufferUsage.STATIC_DRAW);
+		latIbo.flush(BufferUsage.STATIC_DRAW);
+		orbIbo.flush(BufferUsage.STATIC_DRAW);
 		
-		//check if there are additional modes that need to be accounted for
-		if(modes.length > 0){
-			for(RenderMode curMode : modes){
-				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
-				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
-				ibos.add(modeBuffer);
-			}
-			vao.setIndexBuffer(modes[0].toString());
+		if(
+			defaultMode.equals(SOLID_MODE) ||
+			defaultMode.equals(EDGE_MODE) ||
+			defaultMode.equals(LATERAL_MODE) ||
+			defaultMode.equals(ORBITAL_MODE)
+		){
+			vao.setIndexBuffer(defaultMode);
+		}else{
+			vao.setIndexBuffer(SOLID_MODE);
 		}
+		
 		//specify the attributes for the vertex array
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
 		vao.addAttrib(AttribType.VEC3, false, 0);//normal
@@ -143,19 +235,6 @@ public final class Sphere extends Mesh{
 		vao.enableAttribute(2);
 		vao.enableAttribute(3);
 		vao.enableAttribute(4);
-	}
-	
-	/**
-	 * Constructs a sphere with the given radius, and subdivisions. And making it
-	 * compatible with the given RenderModes
-	 * 
-	 * @param radius Radius of the sphere
-	 * @param divisions Number of vertical and horizontal subdivisions for constructing the sphere
-	 * @param modes RenderModes this Sphere should be compatible with, the first mode is the initial mode
-	 * for the sphere to render with
-	 */
-	public Sphere(float radius, int divisions, RenderMode... modes){
-		this(radius, divisions, divisions, modes);
 	}
 	
 	/**

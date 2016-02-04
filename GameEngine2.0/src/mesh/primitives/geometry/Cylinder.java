@@ -15,6 +15,10 @@ import gldata.IndexBuffer;
 public final class Cylinder extends Mesh{
 	private float length, radius;
 	
+	public Cylinder(float radius, float length, int segments){
+		this(radius, length, segments, SOLID_MODE);
+	}
+	
 	/**
 	 * Constructs a cylinder with the given radius, length, and subdivisions while making it compatible with the
 	 * given RenderModes
@@ -24,15 +28,24 @@ public final class Cylinder extends Mesh{
 	 * @param radius Radius of the cylinder
 	 * @param length Length of the cylinder from one end to the other
 	 * @param segments Number of segments to define this cylinder
-	 * @param modes RenderModes this Cylinder should be compatible with, the first mode is the initial mode
-	 * for the Cylinder to render with
 	 */
-	public Cylinder(float radius, float length, int segments, RenderMode... modes){
+	public Cylinder(float radius, float length, int segments, String defaultMode){
 		super();
 		
 		int maxSegment = Math.max(3, segments);
 		this.length = Math.abs(length);
 		this.radius = Math.abs(radius);
+
+		IndexBuffer.IndexType dataType = getIndexType(4*maxSegment+2);
+		//create index buffers
+		IndexBuffer solidIbo = new IndexBuffer(dataType);
+		IndexBuffer edgeIbo = new IndexBuffer(dataType);
+		//add index buffers to mesh list
+		ibos.add(solidIbo);
+		ibos.add(edgeIbo);
+		//add index buffers to vertex array
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
+		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
@@ -51,19 +64,37 @@ public final class Cylinder extends Mesh{
 			geometry.add(sideBottom);
 			
 			if(segment < maxSegment){
-				//left side face
-				geometry.add(new Face(
+				Face left = new Face(
 						segment*4,//current segment top left
 						(segment+1)*4+1,//next segment bottom right
 						segment*4+1//current segment bottom left
-						));
+						);
+				//left side face
+				geometry.add(left);
 				
-				//right side face
-				geometry.add(new Face(
+				Face right = new Face(
 						segment*4,//current segment top left
 						(segment+1)*4,//next segment top right
 						(segment+1)*4+1//next segment bottom right
-						));
+						);
+				//right side face
+				geometry.add(right);
+
+				left.insertPrim(solidIbo);
+				right.insertPrim(solidIbo);
+
+				//left edge
+				edgeIbo.add(segment*4);
+				edgeIbo.add(segment*4+1);
+				//bottom edge
+				edgeIbo.add(segment*4+1);
+				edgeIbo.add((segment+1)*4+1);
+				//right edge
+				edgeIbo.add((segment+1)*4+1);
+				edgeIbo.add((segment+1)*4);
+				//top edge
+				edgeIbo.add(segment*4);
+				edgeIbo.add((segment+1)*4);
 			}
 			
 			//only compute the cap indices if we are 3 or more segments from the end
@@ -75,22 +106,30 @@ public final class Cylinder extends Mesh{
 				geometry.add(capTop);
 				geometry.add(capBottom);
 				if(segment < maxSegment-2){
-					//top cap face
-					geometry.add(new Face(
+					Face top = new Face(
 							2,//base top cap vert which is 2
 							(segment+2)*4+2,//vert that is the second next segment
 							(segment+1)*4+2//vert that is the next segment
-							));
-					
-					//bottom cap face
-					geometry.add(new Face(
+							);
+					//top cap face
+					geometry.add(top);
+
+					Face bottom = new Face(
 							3,//base bottom cap vert which is 3
 							(segment+1)*4+3,//vert that is the next segment
 							(segment+2)*4+3//vert that is the second next segment
-							));
+							);
+					//bottom cap face
+					geometry.add(bottom);
+
+					top.insertPrim(solidIbo);
+					bottom.insertPrim(solidIbo);
 				}
 			}
 		}
+		//buffer index buffers to the gpu
+		solidIbo.flush(BufferUsage.STATIC_DRAW);
+		edgeIbo.flush(BufferUsage.STATIC_DRAW);
 
 		geometry.genTangentBitangent();
 		geometry.insertVertices(vbo);
@@ -98,19 +137,11 @@ public final class Cylinder extends Mesh{
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 
-		IndexBuffer.IndexType dataType = getIndexType(geometry.getNumVertices());
-		//check if there are additional modes that need to be accounted for
-		if(modes.length > 0){
-			for(RenderMode curMode : modes){
-				IndexBuffer modeBuffer = new IndexBuffer(dataType);
-				geometry.insertIndices(modeBuffer, curMode);//add indices to match the mode
-				modeBuffer.flush(BufferUsage.STATIC_DRAW);
-				vao.addIndexBuffer(curMode.toString(), curMode, modeBuffer);
-				ibos.add(modeBuffer);
-			}
-			vao.setIndexBuffer(modes[0].toString());
+		if(defaultMode.equals(SOLID_MODE) || defaultMode.equals(EDGE_MODE)){
+			vao.setIndexBuffer(defaultMode);
+		}else{
+			vao.setIndexBuffer(SOLID_MODE);
 		}
-
 		//specify the attributes for the vertex array
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
 		vao.addAttrib(AttribType.VEC3, false, 0);//normal
