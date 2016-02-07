@@ -12,20 +12,20 @@ public class PointLight extends Light {
 	private float radius;
 	public final static Sphere volume = new Sphere(1, VOLUME_FINENESS);
 	
-	public PointLight(Vec3 position, Vec3 color, float radius, float intensity, float attenLin) {
-		this(position.x, position.y, position.z, color.x, color.y, color.z, radius, intensity, attenLin);
+	public PointLight(Vec3 position, Vec3 color, float radius, float intensity) {
+		this(position.x, position.y, position.z, color.x, color.y, color.z, radius, intensity);
 	}
 
-	public PointLight(float xpos, float ypos, float zpos, Vec3 color, float radius, float intensity, float attenLin) {
-		this(xpos, ypos, zpos, color.x, color.y, color.z, radius, intensity, attenLin);
+	public PointLight(float xpos, float ypos, float zpos, Vec3 color, float radius, float intensity) {
+		this(xpos, ypos, zpos, color.x, color.y, color.z, radius, intensity);
 	}
 
-	public PointLight(Vec3 position, float r, float g, float b, float radius, float intensity, float attenLin) {
-		this(position.x, position.y, position.z, r, g, b, radius, intensity, attenLin);
+	public PointLight(Vec3 position, float r, float g, float b, float radius, float intensity) {
+		this(position.x, position.y, position.z, r, g, b, radius, intensity);
 	}
 
-	public PointLight(float xpos, float ypos, float zpos, float r, float g, float b, float radius, float intensity, float attenLin) {
-		super(xpos, ypos, zpos, r, g, b, intensity, attenLin);
+	public PointLight(float xpos, float ypos, float zpos, float r, float g, float b, float radius, float intensity) {
+		super(xpos, ypos, zpos, r, g, b, intensity);
 		//compute the new radius
 		Vec3 maxVec = new Vec3(radius, 0, 0);
 		//compute the radius such that it is retained inside the volume as a smooth circle
@@ -42,11 +42,13 @@ public class PointLight extends Light {
 		return radius;
 	}
 	
+	@Override
 	public void transform(Transform transform){
 		radius *= transform.getScalars().x;
 		trans.transform(transform);
 	}
-	
+
+	@Override
 	public Mesh getVolume(){
 		volume.setTransform(trans);
 		return volume;
@@ -58,7 +60,6 @@ public class PointLight extends Light {
 		shader.setUniform("pLight.color", color);
 		shader.setUniform("pLight.intensity", intensity);
 		shader.setUniform("pLight.radius", radius);
-		shader.setUniform("pLight.attenLinear", attenLinear);
 		shader.setUniform("isPoint", true);
 		shader.setUniform("isSpot", false);
 		shader.setUniform("model", trans.getTransform());

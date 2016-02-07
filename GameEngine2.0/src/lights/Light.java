@@ -10,7 +10,7 @@ public abstract class Light {
 	
 	protected Vec3 color;
 	protected Transform trans;
-	protected float intensity, attenLinear;
+	protected float intensity;
 	protected static final int VOLUME_FINENESS = 10;
 	//rotation for the next point on the volume
 	protected static final Quaternion volumeRot = Quaternion.fromAxisAngle(0, 1, 0, 360/VOLUME_FINENESS);
@@ -22,10 +22,9 @@ public abstract class Light {
 	 * @param position Position of the light or direction in the case of directional lights
 	 * @param color Color of the light
 	 * @param intensity Intensity of the light
-	 * @param attenLin Linear attenuation of the light
 	 */
-	public Light(Vec3 position, Vec3 color, float intensity, float attenLin){
-		this(position.x, position.y, position.z, color.x, color.y, color.z, intensity, attenLin);
+	public Light(Vec3 position, Vec3 color, float intensity){
+		this(position.x, position.y, position.z, color.x, color.y, color.z, intensity);
 	}
 	
 	/**
@@ -37,10 +36,9 @@ public abstract class Light {
 	 * @param zpos Z component for the position or direction
 	 * @param color Color of the light
 	 * @param intensity Intensity of the light
-	 * @param attenLin Linear attenuation of the light
 	 */
-	public Light(float xpos, float ypos, float zpos, Vec3 color, float intensity, float attenLin){
-		this(xpos, ypos, zpos, color.x, color.y, color.z, intensity, attenLin);
+	public Light(float xpos, float ypos, float zpos, Vec3 color, float intensity){
+		this(xpos, ypos, zpos, color.x, color.y, color.z, intensity);
 	}
 	
 	/**
@@ -52,10 +50,9 @@ public abstract class Light {
 	 * @param g Green component of the color of the light
 	 * @param b Blue component of the color of the light
 	 * @param intensity Intensity of the light
-	 * @param attenLin Linear attenuation of the light
 	 */
-	public Light(Vec3 position, float r, float g, float b, float intensity, float attenLin){
-		this(position.x, position.y, position.z, r, g, b, intensity, attenLin);
+	public Light(Vec3 position, float r, float g, float b, float intensity){
+		this(position.x, position.y, position.z, r, g, b, intensity);
 	}
 	
 	/**
@@ -69,14 +66,12 @@ public abstract class Light {
 	 * @param g Green component of the color of the light
 	 * @param b Blue component of the color of the light
 	 * @param intensity Intensity of the light
-	 * @param attenLin Linear attenuation of the light
 	 */
-	public Light(float xpos, float ypos, float zpos, float r, float g, float b, float intensity, float attenLin){
+	public Light(float xpos, float ypos, float zpos, float r, float g, float b, float intensity){
 		color = new Vec3(r, g, b);
 		trans = new Transform();
 		trans.setTranslation(xpos, ypos, zpos);
 		this.intensity = intensity;
-		this.attenLinear = attenLin;
 	}
 	
 	/**
@@ -152,24 +147,6 @@ public abstract class Light {
 	}
 	
 	/**
-	 * Sets the linear attenuation for this light
-	 * 
-	 * @param linear New linear attenuation for this light
-	 */
-	public void setAttenuationLinear(float linear){
-		attenLinear = linear;
-	}
-	
-	/**
-	 * Gets the linear attenuation of this light
-	 * 
-	 * @return Linear attenuation for light
-	 */
-	public float getAttenuationLinear(){
-		return attenLinear;
-	}
-	
-	/**
 	 * Binds this light to the shader program uniform.
 	 * <br>
 	 * The light uniform is assumed to be of the type Light 
@@ -177,7 +154,7 @@ public abstract class Light {
 	 * 
 	 * struct Light{
 	 * 	  vec3 pos, color;
-	 * 	  float intensity, attenLinear;
+	 * 	  float intensityear;
 	 * };
 	 * 
 	 * with an instance name of light, additionally this method will attempt

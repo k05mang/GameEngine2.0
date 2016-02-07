@@ -19,65 +19,80 @@ public class SpotLight extends Light {
 			Vec3 color, 
 			Vec3 direction, 
 			float radius, float length, 
-			float intensity, float attenLin) {
-		this(position.x, position.y, position.z, color.x, color.y, color.z, direction.x, direction.y, direction.z, radius, length, intensity, attenLin);
+			float intensity) {
+		this(position.x, position.y, position.z, color.x, color.y, color.z, direction.x, direction.y, direction.z, radius, length, intensity);
 	}
 	
 	public SpotLight(Vec3 position, 
 			float r, float g, float b, 
 			float dirx, float diry, float dirz, 
 			float radius, float length, 
-			float intensity, float attenLin) {
-		this(position.x, position.y, position.z, r, g, b, dirx, diry, dirz, radius, length, intensity, attenLin);
+			float intensity) {
+		this(position.x, position.y, position.z, r, g, b, dirx, diry, dirz, radius, length, intensity);
 	}
 
 	public SpotLight(float xpos, float ypos, float zpos, 
 			Vec3 color, 
 			float dirx, float diry, float dirz,
 			float radius, float length, 
-			float intensity, float attenLin) {
-		this(xpos, ypos, zpos, color.x, color.y, color.z, dirx, diry, dirz, radius, length, intensity, attenLin);
+			float intensity) {
+		this(xpos, ypos, zpos, color.x, color.y, color.z, dirx, diry, dirz, radius, length, intensity);
 	}
 
 	public SpotLight(float xpos, float ypos, float zpos, 
 			float r, float g, float b, 
 			Vec3 direction, 
 			float radius, float length, 
-			float intensity, float attenLin) {
-		this(xpos, ypos, zpos, r, g, b, direction.x, direction.y, direction.z, radius, length, intensity, attenLin);
+			float intensity) {
+		this(xpos, ypos, zpos, r, g, b, direction.x, direction.y, direction.z, radius, length, intensity);
 	}
 	
 	public SpotLight(Vec3 position, 
 			Vec3 color, 
 			float dirx, float diry, float dirz, 
 			float radius, float length, 
-			float intensity, float attenLin) {
-		this(position.x, position.y, position.z, color.x, color.y, color.z, dirx, diry, dirz, radius, length, intensity, attenLin);
+			float intensity) {
+		this(position.x, position.y, position.z, color.x, color.y, color.z, dirx, diry, dirz, radius, length, intensity);
 	}
 	
 	public SpotLight(float xpos, float ypos, float zpos,
 			Vec3 color, 
 			Vec3 direction, 
 			float radius, float length, 
-			float intensity, float attenLin) {
-		this(xpos, ypos, zpos, color.x, color.y, color.z, direction.x, direction.y, direction.z, radius, length, intensity, attenLin);
+			float intensity) {
+		this(xpos, ypos, zpos, color.x, color.y, color.z, direction.x, direction.y, direction.z, radius, length, intensity);
 	}
 	
 	public SpotLight(Vec3 position, 
 			float r, float g, float b, 
 			Vec3 direction, 
 			float radius, float length, 
-			float intensity, float attenLin) {
-		this(position.x, position.y, position.z, r, g, b, direction.x, direction.y, direction.z, radius, length, intensity, attenLin);
+			float intensity) {
+		this(position.x, position.y, position.z, r, g, b, direction.x, direction.y, direction.z, radius, length, intensity);
 	}
 
+	/**
+	 * Constructs a spot light that has a cone of influence
+	 * @param xpos
+	 * @param ypos
+	 * @param zpos
+	 * @param r
+	 * @param g
+	 * @param b
+	 * @param dirx
+	 * @param diry
+	 * @param dirz
+	 * @param radius
+	 * @param length
+	 * @param intensity
+	 */
 	public SpotLight( 
 			float xpos, float ypos, float zpos, 
 			float r, float g, float b, 
 			float dirx, float diry, float dirz,
 			float radius, float length,
-			float intensity, float attenLin) {
-		super(xpos, ypos, zpos, r, g, b, intensity, attenLin);
+			float intensity) {
+		super(xpos, ypos, zpos, r, g, b, intensity);
 		this.radius = Math.abs(radius);
 		this.length = Math.abs(length);
 		Vec3 maxVec = new Vec3(this.radius, -this.length, 0);
@@ -102,7 +117,8 @@ public class SpotLight extends Light {
 	public float getLength(){
 		return length;
 	}
-	
+
+	@Override
 	public void transform(Transform transform){
 		radius *= transform.getScalars().x;
 		length *= transform.getScalars().y;
@@ -118,7 +134,8 @@ public class SpotLight extends Light {
 		
 		trans.transform(transform);
 	}
-	
+
+	@Override
 	public Mesh getVolume(){
 		volume.setTransform(trans);
 		return volume;
@@ -132,7 +149,6 @@ public class SpotLight extends Light {
 		shader.setUniform("sLight.cutOff", cutoff);
 		shader.setUniform("sLight.length", length);
 		shader.setUniform("sLight.direction", direction);
-		shader.setUniform("sLight.attenLinear", attenLinear);
 		shader.setUniform("isPoint", false);
 		shader.setUniform("isSpot", true);
 		shader.setUniform("model", trans.getTransform());

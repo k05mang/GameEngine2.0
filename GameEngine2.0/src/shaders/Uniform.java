@@ -1,35 +1,26 @@
 package shaders;
 
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL21.*;
-import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL31.*;
 import static org.lwjgl.opengl.GL41.*;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.system.Configuration;
-
-import gldata.BufferObject;
 
 public class Uniform {
-	private int location, size;
+	private int location;
 	public UniformType type;
 	private ByteBuffer dataBuffer;
 	
+	/**
+	 * Constructs a uniform with the given {@code type} and program {@code location}.
+	 * 
+	 * @param type UniformType indicating the type of uniform this will represent
+	 * @param location Uniform location in the shader program
+	 */
 	public Uniform(UniformType type, int location){
-		this(type, location, type.getSize());
-	}
-	
-	public Uniform(UniformType type, int location, int size){
 		this.type = type;
 		this.location = location;
-		this.size = size;
-		dataBuffer = BufferUtils.createByteBuffer(4*size);
+		dataBuffer = BufferUtils.createByteBuffer(4*type.size);
 	}
 	
 	/**
@@ -51,14 +42,16 @@ public class Uniform {
 	}
 	
 	/**
-	 * Sets the value of this uniform object on the GPU with the given data buffer
+	 * Sets the uniform to the value set by one of the other {@code set} functions.
+	 * This function buffers the uniform bytebuffer to the GPU for processing the uniform.
 	 * 
-	 * @param data Buffer of data to use in changing the value of this uniform
-	 * @return True if the variable could be set false otherwise
+	 * @param program Shader program to set the uniform value of with this uniform
+	 * @param transpose Whether or not to transpose the data as it is sent to the GPU,
+	 * this is used when calling a set on a matrix type
 	 */
-	private boolean set(int program, boolean transpose){
+	private void set(int program, boolean transpose){
 		if(type.isFloat()){
-			switch(size){
+			switch(type.size){
 				case 1:
 					glProgramUniform1fv(program, location, 1, dataBuffer);
 					break;
@@ -72,11 +65,8 @@ public class Uniform {
 					glProgramUniform4fv(program, location, 1, dataBuffer);
 					break;
 			}
-			return true;
-		}else if(type.isMatrix()){
-			return this.setMat(program, transpose);
 		}else if(type.isInt()){
-			switch(size){
+			switch(type.size){
 				case 1:
 					glProgramUniform1iv(program, location, 1, dataBuffer);
 					break;
@@ -90,111 +80,50 @@ public class Uniform {
 					glProgramUniform4iv(program, location, 1, dataBuffer);
 					break;
 			}
-			return true;
+		}else if(type.isMatrix()){
+			this.setMat(program, transpose);
 		}
-		return false;
 	}
 	
-	public boolean set(int program, boolean transpose, float... variables){
+	public void set(int program, boolean transpose, float... variables){
 		dataBuffer.position(0);
-		//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
-		//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
-		if (variables.length >= size) {
-			for (int insert = 0; insert < size; insert++) {
-				//determine if the type of the uniform is mismatched and convert to the needed type
-				if (type.isFloat() || type.isMatrix()){
-					dataBuffer.putFloat(variables[insert]);
-				}else{
-					dataBuffer.putInt((int)variables[insert]);
-				}
-			}
-		} else if (variables.length < size) {
-			//get the dataBuffer that we can from the passed values
-			for (int insert = 0; insert < variables.length; insert++) {
-				//determine if the type of the uniform is mismatched and convert to the needed type
-				if (type.isFloat() || type.isMatrix()){
-					dataBuffer.putFloat(variables[insert]);
-				}else{
-					dataBuffer.putInt((int)variables[insert]);
-				}
-			}
-			
-			//pad the remaining space needed for the buffer with 0's
-			for (int remaining = size - variables.length; remaining < size; remaining++) {
-				//determine if the type of the uniform is mismatched and put the appropriate padding
-				if (type.isFloat() || type.isMatrix()){
-					dataBuffer.putFloat(0.0f);
-				}else{
-					dataBuffer.putInt(0);
-				}
+		for (int insert = 0; insert < Math.min(type.size, variables.length); insert++) {
+			//determine if the type of the uniform is mismatched and convert to the needed type
+			if (type.isFloat() || type.isMatrix()){
+				dataBuffer.putFloat(variables[insert]);
+			}else{
+				dataBuffer.putInt((int)variables[insert]);
 			}
 		}
 		dataBuffer.flip();//move the writer position back to the start of the buffer for reads
-		return this.set(program, transpose);
+		this.set(program, transpose);
 	}
 
-	public boolean set(int program, boolean transpose, int... variables){
+	public void set(int program, boolean transpose, int... variables){
 		dataBuffer.position(0);
-		//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
-		//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
-		if (variables.length >= size) {
-			for (int insert = 0; insert < size; insert++) {
-				//determine if the type of the uniform is mismatched and convert to the needed type
-				if (type.isFloat() || type.isMatrix()){
-					dataBuffer.putFloat((float)variables[insert]);
-				}else{
-					dataBuffer.putInt(variables[insert]);
-				}
-			}
-		} else if (variables.length < size) {
-			//get the dataBuffer that we can from the passed values
-			for (int insert = 0; insert < variables.length; insert++) {
-				//determine if the type of the uniform is mismatched and convert to the needed type
-				if (type.isFloat() || type.isMatrix()){
-					dataBuffer.putFloat((float)variables[insert]);
-				}else{
-					dataBuffer.putInt(variables[insert]);
-				}
-			}
-			
-			//pad the remaining space needed for the buffer with 0's
-			for (int remaining = size - variables.length; remaining < size; remaining++) {
-				//determine if the type of the uniform is mismatched and put the appropriate padding
-				if (type.isFloat() || type.isMatrix()){
-					dataBuffer.putFloat(0.0f);
-				}else{
-					dataBuffer.putInt(0);
-				}
+		for (int insert = 0; insert < Math.min(type.size, variables.length); insert++) {
+			//determine if the type of the uniform is mismatched and convert to the needed type
+			if (type.isFloat() || type.isMatrix()){
+				dataBuffer.putFloat((float)variables[insert]);
+			}else{
+				dataBuffer.putInt(variables[insert]);
 			}
 		}
 		dataBuffer.flip();//move the writer position back to the start of the buffer for reads
-		return this.set(program, transpose);
+		this.set(program, transpose);
 	}
 
-	public boolean set(int program, boolean... variables){
-		if (type.isInt()) {
-			dataBuffer.position(0);
-			//Determine is the data is smaller than this uniforms size, in which case we pad the missing data with 0's
-			//or if it is larger than or equal in size, just take that given data up to the size of the uniform and add it to the buffer
-			if (variables.length >= size) {
-				for (int insert = 0; insert < size; insert++) {
-					dataBuffer.putInt(variables[insert] ? 1 : 0);
-				}
-			} else if (variables.length < size) {
-				//get the dataBuffer that we can from the passed values
-				for (int insert = 0; insert < variables.length; insert++) {
-					dataBuffer.putInt(variables[insert] ? 1 : 0);
-				}
-				
-				//pad the remaining space needed for the buffer with 0's
-				for (int remaining = size - variables.length; remaining < size; remaining++) {
-					dataBuffer.putInt(0);
-				}
+	public void set(int program, boolean... variables){
+		dataBuffer.position(0);
+		for (int insert = 0; insert < Math.min(type.size, variables.length); insert++) {
+			if (type.isInt()) {
+				dataBuffer.putInt(variables[insert] ? 1 : 0);
+			}else if(type.isFloat()){
+				dataBuffer.putFloat(variables[insert] ? 1.0f : 0.0f);
 			}
-			dataBuffer.flip();//move the writer position back to the start of the buffer for reads
-			return this.set(program, false);
 		}
-		return false;
+		dataBuffer.flip();//move the writer position back to the start of the buffer for reads
+		this.set(program, false);
 	}
 	
 	/**
@@ -238,54 +167,4 @@ public class Uniform {
 		}
 		return false;
 	}
-	
-	/**
-	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values
-	 * 
-	 * @param buffer Buffer to bind to this uniform interface block
-	 * @return True if the variable could be set false otherwise
-	 */
-//	public boolean bindBuffer(BufferObject buffer){
-//		if(type == BLOCK){
-//			glBindBufferBase(GL_UNIFORM_BUFFER, location, buffer.getId());
-//			return true;
-//		}else{
-//			return false;
-//		}
-//	}
-//	
-//	/**
-//	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values, 
-//	 * the buffer is read starting from the given index up through the uniform blocks total size
-//	 *  
-//	 * @param buffer Buffer to bind to the uniform interface block
-//	 * @param offset Offset into the buffer to start reading data from
-//	 * @return True if the variable could be set false otherwise
-//	 */
-//	public boolean bindBuffer(BufferObject buffer, int offset){
-//		if(type == BLOCK){
-//			glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.getId(), offset, size);
-//			return true;
-//		}else{
-//			return false;
-//		}
-//	}
-//	
-//	/**
-//	 * Binds a buffer object to this uniform that is used to set the uniform interfaces values, 
-//	 * the buffer is read starting from the given index up through the dataSize given to this function
-//	 * 
-//	 * @param buffer Buffer to bind to the uniform interface block
-//	 * @param offset Offset into the buffer to start reading data from
-//	 * @param dataSize Size of the buffer to read for this uniform object
-//	 * @return True if the variable could be set false otherwise
-//	 */
-//	public boolean bindBuffer(BufferObject buffer, int offset, int dataSize){
-//		if(type == BLOCK){
-//			glBindBufferRange(GL_UNIFORM_BUFFER, location, buffer.getId(), offset, dataSize);
-//			return true;
-//		}else{
-//			return false;
-//		}
-//	}
 }

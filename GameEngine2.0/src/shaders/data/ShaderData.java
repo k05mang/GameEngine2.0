@@ -16,15 +16,27 @@ public class ShaderData {
 	private int program;
 	private HashMap<String, Uniform> uniforms;
 	
+	/**
+	 * Constructs a ShaderData class that can be used to query information about the given shader program 
+	 * specified by the program id {@code program}.
+	 * 
+	 * @param program Shader program id handle
+	 */
 	public ShaderData(int program){
 		this.program = program;
 		uniforms = new HashMap<String, Uniform>();
 	}
 	
+	/**
+	 * Loads various data about the shader program, such as uniforms
+	 */
 	public void introspect(){
 		loadUniforms();
 	}
 	
+	/**
+	 * Loads the uniforms associated with the shader program
+	 */
 	private void loadUniforms(){
 		//get the number of uniforms to acquire
 		int numUniforms = glGetProgramInterfacei(program, Interface.UNIFORM.value, GL_ACTIVE_RESOURCES);
@@ -65,6 +77,13 @@ public class ShaderData {
 		}
 	}
 	
+	/**
+	 * Gets the uniform specified by the id {@code name}
+	 * 
+	 * @param name Id of the shader program uniform
+	 * 
+	 * @return Uniform loaded from this shader data
+	 */
 	public Uniform getUniform(String name){
 		return uniforms.get(name);
 	}

@@ -17,7 +17,6 @@ import renderers.RenderMode;
 
 public final class Icosphere extends Mesh {
 	private float radius;
-	private static final Vec2 uv = new Vec2();
 	
 	public Icosphere(float radius, int order){
 		this(radius, order, SOLID_MODE);
@@ -228,13 +227,13 @@ public final class Icosphere extends Mesh {
 		}else{//otherwise subdivide it and recurse
 			
 			Vec3 halfPoint = genVert(base.he1.sourceVert, base.he2.sourceVert);
-			Vertex edge1 = new Vertex(halfPoint, halfPoint, uv);
+			Vertex edge1 = new Vertex(halfPoint, halfPoint, 0, 0);
 			
 			halfPoint = genVert(base.he2.sourceVert, base.he3.sourceVert);
-			Vertex edge2 = new Vertex(halfPoint, halfPoint, uv);
+			Vertex edge2 = new Vertex(halfPoint, halfPoint, 0, 0);
 			
 			halfPoint = genVert(base.he3.sourceVert, base.he1.sourceVert);
-			Vertex edge3 = new Vertex(halfPoint, halfPoint, uv);
+			Vertex edge3 = new Vertex(halfPoint, halfPoint, 0, 0);
 			
 			//add the new vertices to the mesh and the vert map if they ahven't been added already
 			if(vertMap.get(edge1) == null){

@@ -8,337 +8,127 @@ import static org.lwjgl.opengl.GL32.*;
 import static org.lwjgl.opengl.GL40.*;
 import static org.lwjgl.opengl.GL42.*;
 
+//TODO add support for double types
 public enum UniformType {
-	FLOAT(GL_FLOAT),
-	VEC2(GL_FLOAT_VEC2),
-	VEC3(GL_FLOAT_VEC3),
-	VEC4(GL_FLOAT_VEC4),
-	DOUBLE(GL_DOUBLE),
-	DVEC2(GL_DOUBLE_VEC2),
-	DVEC3(GL_DOUBLE_VEC3),
-	DVEC4(GL_DOUBLE_VEC4),
-	INT(GL_INT),
-	IVEC2(GL_INT_VEC2),
-	IVEC3(GL_INT_VEC3),
-	IVEC4(GL_INT_VEC4),
-	UINT(GL_UNSIGNED_INT),
-	UVEC2(GL_UNSIGNED_INT_VEC2),
-	UVEC3(GL_UNSIGNED_INT_VEC3),
-	UVEC4(GL_UNSIGNED_INT_VEC4),
-	BOOL(GL_BOOL),
-	BVEC2(GL_BOOL_VEC2),
-	BVEC3(GL_BOOL_VEC3),
-	BVEC4(GL_BOOL_VEC4),
-	MAT2(GL_FLOAT_MAT2),
-	MAT3(GL_FLOAT_MAT3),
-	MAT4(GL_FLOAT_MAT4),
-	MAT2X3(GL_FLOAT_MAT2x3),
-	MAT2X4(GL_FLOAT_MAT2x4),
-	MAT3X2(GL_FLOAT_MAT3x2),
-	MAT3X4(GL_FLOAT_MAT3x4),
-	MAT4X2(GL_FLOAT_MAT4x2),
-	MAT4X3(GL_FLOAT_MAT4x3),
-	DMAT2(GL_DOUBLE_MAT2),
-	DMAT3(GL_DOUBLE_MAT3),
-	DMAT4(GL_DOUBLE_MAT4),
-	DMAT2X3(GL_DOUBLE_MAT2x3),
-	DMAT2X4(GL_DOUBLE_MAT2x4),
-	DMAT3X2(GL_DOUBLE_MAT3x2),
-	DMAT3X4(GL_DOUBLE_MAT3x4),
-	DMAT4X2(GL_DOUBLE_MAT4x2),
-	DMAT4X3(GL_DOUBLE_MAT4x3),
-	SAMPLER_1D(GL_SAMPLER_1D),
-	SAMPLER_2D(GL_SAMPLER_2D),
-	SAMPLER_3D(GL_SAMPLER_3D),
-	SAMPLER_CUBE(GL_SAMPLER_CUBE),
-	SAMPLER_1DSHADOW(GL_SAMPLER_1D_SHADOW),
-	SAMPLER_2DSHADOW(GL_SAMPLER_2D_SHADOW),
-	SAMPLER_1DARRAY(GL_SAMPLER_1D_ARRAY),
-	SAMPLER_2DARRAY(GL_SAMPLER_2D_ARRAY),
-	SAMPLER_1DARRAYSHADOW(GL_SAMPLER_1D_ARRAY_SHADOW),
-	SAMPLER_2DARRAYSHADOW(GL_SAMPLER_2D_ARRAY_SHADOW),
-	SAMPLER_2DMS(GL_SAMPLER_2D_MULTISAMPLE),
-	SAMPLER_2DMSARRAY(GL_SAMPLER_2D_MULTISAMPLE_ARRAY),
-	SAMPLER_CUBESHADOW(GL_SAMPLER_CUBE_SHADOW),
-	SAMPLER_BUFFER(GL_SAMPLER_BUFFER),
-	SAMPLER_2DRECT(GL_SAMPLER_2D_RECT),
-	SAMPLER_2DRECTSHADOW(GL_SAMPLER_2D_RECT_SHADOW),
-	ISAMPLER_1D(GL_INT_SAMPLER_1D),
-	ISAMPLER_2D(GL_INT_SAMPLER_2D),
-	ISAMPLER_3D(GL_INT_SAMPLER_3D),
-	ISAMPLER_CUBE(GL_INT_SAMPLER_CUBE),
-	ISAMPLER_1DARRAY(GL_INT_SAMPLER_1D_ARRAY),
-	ISAMPLER_2DARRAY(GL_INT_SAMPLER_2D_ARRAY),
-	ISAMPLER_2DMS(GL_INT_SAMPLER_2D_MULTISAMPLE),
-	ISAMPLER_2DMSARRAY(GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY),
-	ISAMPLER_BUFFER(GL_INT_SAMPLER_BUFFER),
-	ISAMPLER_2DRECT(GL_INT_SAMPLER_2D_RECT),
-	USAMPLER_1D(GL_UNSIGNED_INT_SAMPLER_1D),
-	USAMPLER_2D(GL_UNSIGNED_INT_SAMPLER_2D),
-	USAMPLER_3D(GL_UNSIGNED_INT_SAMPLER_3D),
-	USAMPLER_CUBE(GL_UNSIGNED_INT_SAMPLER_CUBE),
-	USAMPLER_1DARRAY(GL_UNSIGNED_INT_SAMPLER_1D_ARRAY),
-	USAMPLER_2DARRAY(GL_UNSIGNED_INT_SAMPLER_2D_ARRAY),
-	USAMPLER_2DMS(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE),
-	USAMPLER_2DMSARRAY(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY),
-	USAMPLER_BUFFER(GL_UNSIGNED_INT_SAMPLER_BUFFER),
-	USAMPLER_2DRECT(GL_UNSIGNED_INT_SAMPLER_2D_RECT),
-	IMAGE_1D(GL_IMAGE_1D),
-	IMAGE_2D(GL_IMAGE_2D),
-	IMAGE_3D(GL_IMAGE_3D),
-	IMAGE_2DRECT(GL_IMAGE_2D_RECT),
-	IMAGE_CUBE(GL_IMAGE_CUBE),
-	IMAGE_BUFFER(GL_IMAGE_BUFFER),
-	IMAGE_1DARRAY(GL_IMAGE_1D_ARRAY),
-	IMAGE_2DARRAY(GL_IMAGE_2D_ARRAY),
-	IMAGE_2DMS(GL_IMAGE_2D_MULTISAMPLE),
-	IMAGE_2DMSARRAY(GL_IMAGE_2D_MULTISAMPLE_ARRAY),
-	IIMAGE_1D(GL_INT_IMAGE_1D),
-	IIMAGE_2D(GL_INT_IMAGE_2D),
-	IIMAGE_3D(GL_INT_IMAGE_3D),
-	IIMAGE_2DRECT(GL_INT_IMAGE_2D_RECT),
-	IIMAGE_CUBE(GL_INT_IMAGE_CUBE),
-	IIMAGE_BUFFER(GL_INT_IMAGE_BUFFER),
-	IIMAGE_1DARRAY(GL_INT_IMAGE_1D_ARRAY),
-	IIMAGE_2DARRAY(GL_INT_IMAGE_2D_ARRAY),
-	IIMAGE_2DMS(GL_INT_IMAGE_2D_MULTISAMPLE),
-	IIMAGE_2DMSARRAY(GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY),
-	UIMAGE_1D(GL_UNSIGNED_INT_IMAGE_1D),
-	UIMAGE_2D(GL_UNSIGNED_INT_IMAGE_2D),
-	UIMAGE_3D(GL_UNSIGNED_INT_IMAGE_3D),
-	UIMAGE_2DRECT(GL_UNSIGNED_INT_IMAGE_2D_RECT),
-	UIMAGE_CUBE(GL_UNSIGNED_INT_IMAGE_CUBE),
-	UIMAGE_BUFFER(GL_UNSIGNED_INT_IMAGE_BUFFER),
-	UIMAGE_1DARRAY(GL_UNSIGNED_INT_IMAGE_1D_ARRAY),
-	UIMAGE_2DARRAY(GL_UNSIGNED_INT_IMAGE_2D_ARRAY),
-	UIMAGE_2DMS(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE),
-	UIMAGE_2DMSARRAY(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY),
-	ATOMIC_UINT(GL_UNSIGNED_INT_ATOMIC_COUNTER);
+	FLOAT(GL_FLOAT, 1),
+	VEC2(GL_FLOAT_VEC2, 2),
+	VEC3(GL_FLOAT_VEC3, 3),
+	VEC4(GL_FLOAT_VEC4, 4),
+	DOUBLE(GL_DOUBLE, 2),
+	DVEC2(GL_DOUBLE_VEC2, 4),
+	DVEC3(GL_DOUBLE_VEC3, 6),
+	DVEC4(GL_DOUBLE_VEC4, 8),
+	INT(GL_INT, 1),
+	IVEC2(GL_INT_VEC2, 2),
+	IVEC3(GL_INT_VEC3, 3),
+	IVEC4(GL_INT_VEC4, 4),
+	UINT(GL_UNSIGNED_INT, 1),
+	UVEC2(GL_UNSIGNED_INT_VEC2, 2),
+	UVEC3(GL_UNSIGNED_INT_VEC3, 3),
+	UVEC4(GL_UNSIGNED_INT_VEC4, 4),
+	BOOL(GL_BOOL, 1),
+	BVEC2(GL_BOOL_VEC2, 2),
+	BVEC3(GL_BOOL_VEC3, 3),
+	BVEC4(GL_BOOL_VEC4, 4),
+	MAT2(GL_FLOAT_MAT2, 4),
+	MAT3(GL_FLOAT_MAT3, 9),
+	MAT4(GL_FLOAT_MAT4, 16),
+	MAT2X3(GL_FLOAT_MAT2x3, 6),
+	MAT2X4(GL_FLOAT_MAT2x4, 8),
+	MAT3X2(GL_FLOAT_MAT3x2, 6),
+	MAT3X4(GL_FLOAT_MAT3x4, 12),
+	MAT4X2(GL_FLOAT_MAT4x2, 8),
+	MAT4X3(GL_FLOAT_MAT4x3, 12),
+	DMAT2(GL_DOUBLE_MAT2, 4),
+	DMAT3(GL_DOUBLE_MAT3, 9),
+	DMAT4(GL_DOUBLE_MAT4, 16),
+	DMAT2X3(GL_DOUBLE_MAT2x3, 6),
+	DMAT2X4(GL_DOUBLE_MAT2x4, 8),
+	DMAT3X2(GL_DOUBLE_MAT3x2, 6),
+	DMAT3X4(GL_DOUBLE_MAT3x4, 12),
+	DMAT4X2(GL_DOUBLE_MAT4x2, 8),
+	DMAT4X3(GL_DOUBLE_MAT4x3, 12),
+	SAMPLER_1D(GL_SAMPLER_1D, 1),
+	SAMPLER_2D(GL_SAMPLER_2D, 1),
+	SAMPLER_3D(GL_SAMPLER_3D, 1),
+	SAMPLER_CUBE(GL_SAMPLER_CUBE, 1),
+	SAMPLER_1DSHADOW(GL_SAMPLER_1D_SHADOW, 1),
+	SAMPLER_2DSHADOW(GL_SAMPLER_2D_SHADOW, 1),
+	SAMPLER_1DARRAY(GL_SAMPLER_1D_ARRAY, 1),
+	SAMPLER_2DARRAY(GL_SAMPLER_2D_ARRAY, 1),
+	SAMPLER_1DARRAYSHADOW(GL_SAMPLER_1D_ARRAY_SHADOW, 1),
+	SAMPLER_2DARRAYSHADOW(GL_SAMPLER_2D_ARRAY_SHADOW, 1),
+	SAMPLER_2DMS(GL_SAMPLER_2D_MULTISAMPLE, 1),
+	SAMPLER_2DMSARRAY(GL_SAMPLER_2D_MULTISAMPLE_ARRAY, 1),
+	SAMPLER_CUBESHADOW(GL_SAMPLER_CUBE_SHADOW, 1),
+	SAMPLER_BUFFER(GL_SAMPLER_BUFFER, 1),
+	SAMPLER_2DRECT(GL_SAMPLER_2D_RECT, 1),
+	SAMPLER_2DRECTSHADOW(GL_SAMPLER_2D_RECT_SHADOW, 1),
+	ISAMPLER_1D(GL_INT_SAMPLER_1D, 1),
+	ISAMPLER_2D(GL_INT_SAMPLER_2D, 1),
+	ISAMPLER_3D(GL_INT_SAMPLER_3D, 1),
+	ISAMPLER_CUBE(GL_INT_SAMPLER_CUBE, 1),
+	ISAMPLER_1DARRAY(GL_INT_SAMPLER_1D_ARRAY, 1),
+	ISAMPLER_2DARRAY(GL_INT_SAMPLER_2D_ARRAY, 1),
+	ISAMPLER_2DMS(GL_INT_SAMPLER_2D_MULTISAMPLE, 1),
+	ISAMPLER_2DMSARRAY(GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY, 1),
+	ISAMPLER_BUFFER(GL_INT_SAMPLER_BUFFER, 1),
+	ISAMPLER_2DRECT(GL_INT_SAMPLER_2D_RECT, 1),
+	USAMPLER_1D(GL_UNSIGNED_INT_SAMPLER_1D, 1),
+	USAMPLER_2D(GL_UNSIGNED_INT_SAMPLER_2D, 1),
+	USAMPLER_3D(GL_UNSIGNED_INT_SAMPLER_3D, 1),
+	USAMPLER_CUBE(GL_UNSIGNED_INT_SAMPLER_CUBE, 1),
+	USAMPLER_1DARRAY(GL_UNSIGNED_INT_SAMPLER_1D_ARRAY, 1),
+	USAMPLER_2DARRAY(GL_UNSIGNED_INT_SAMPLER_2D_ARRAY, 1),
+	USAMPLER_2DMS(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE, 1),
+	USAMPLER_2DMSARRAY(GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY, 1),
+	USAMPLER_BUFFER(GL_UNSIGNED_INT_SAMPLER_BUFFER, 1),
+	USAMPLER_2DRECT(GL_UNSIGNED_INT_SAMPLER_2D_RECT, 1),
+	IMAGE_1D(GL_IMAGE_1D, 1),
+	IMAGE_2D(GL_IMAGE_2D, 1),
+	IMAGE_3D(GL_IMAGE_3D, 1),
+	IMAGE_2DRECT(GL_IMAGE_2D_RECT, 1),
+	IMAGE_CUBE(GL_IMAGE_CUBE, 1),
+	IMAGE_BUFFER(GL_IMAGE_BUFFER, 1),
+	IMAGE_1DARRAY(GL_IMAGE_1D_ARRAY, 1),
+	IMAGE_2DARRAY(GL_IMAGE_2D_ARRAY, 1),
+	IMAGE_2DMS(GL_IMAGE_2D_MULTISAMPLE, 1),
+	IMAGE_2DMSARRAY(GL_IMAGE_2D_MULTISAMPLE_ARRAY, 1),
+	IIMAGE_1D(GL_INT_IMAGE_1D, 1),
+	IIMAGE_2D(GL_INT_IMAGE_2D, 1),
+	IIMAGE_3D(GL_INT_IMAGE_3D, 1),
+	IIMAGE_2DRECT(GL_INT_IMAGE_2D_RECT, 1),
+	IIMAGE_CUBE(GL_INT_IMAGE_CUBE, 1),
+	IIMAGE_BUFFER(GL_INT_IMAGE_BUFFER, 1),
+	IIMAGE_1DARRAY(GL_INT_IMAGE_1D_ARRAY, 1),
+	IIMAGE_2DARRAY(GL_INT_IMAGE_2D_ARRAY, 1),
+	IIMAGE_2DMS(GL_INT_IMAGE_2D_MULTISAMPLE, 1),
+	IIMAGE_2DMSARRAY(GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY, 1),
+	UIMAGE_1D(GL_UNSIGNED_INT_IMAGE_1D, 1),
+	UIMAGE_2D(GL_UNSIGNED_INT_IMAGE_2D, 1),
+	UIMAGE_3D(GL_UNSIGNED_INT_IMAGE_3D, 1),
+	UIMAGE_2DRECT(GL_UNSIGNED_INT_IMAGE_2D_RECT, 1),
+	UIMAGE_CUBE(GL_UNSIGNED_INT_IMAGE_CUBE, 1),
+	UIMAGE_BUFFER(GL_UNSIGNED_INT_IMAGE_BUFFER, 1),
+	UIMAGE_1DARRAY(GL_UNSIGNED_INT_IMAGE_1D_ARRAY, 1),
+	UIMAGE_2DARRAY(GL_UNSIGNED_INT_IMAGE_2D_ARRAY, 1),
+	UIMAGE_2DMS(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE, 1),
+	UIMAGE_2DMSARRAY(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY, 1),
+	ATOMIC_UINT(GL_UNSIGNED_INT_ATOMIC_COUNTER, 1);
 
-	public final int value;
+	public final int value, size;
 	
-	private UniformType(int type){
+	private UniformType(int type, int size){
 		value = type;
+		this.size = size;
 	}
 	
-	public int getSize(){
-		switch(this){
-			case ATOMIC_UINT:
-				return 1;
-			case BOOL:
-				return 1;
-			case BVEC2:
-				return 2;
-			case BVEC3:
-				return 3;
-			case BVEC4:
-				return 4;
-			case DMAT2:
-				return 4;
-			case DMAT2X3:
-				return 6;
-			case DMAT2X4:
-				return 8;
-			case DMAT3:
-				return 9;
-			case DMAT3X2:
-				return 6;
-			case DMAT3X4:
-				return 12;
-			case DMAT4:
-				return 16;
-			case DMAT4X2:
-				return 8;
-			case DMAT4X3:
-				return 12;
-			case DOUBLE:
-				return 1;
-			case DVEC2:
-				return 2;
-			case DVEC3:
-				return 3;
-			case DVEC4:
-				return 4;
-			case FLOAT:
-				return 1;
-			case IIMAGE_1D:
-				return 1;
-			case IIMAGE_1DARRAY:
-				return 1;
-			case IIMAGE_2D:
-				return 1;
-			case IIMAGE_2DARRAY:
-				return 1;
-			case IIMAGE_2DMS:
-				return 1;
-			case IIMAGE_2DMSARRAY:
-				return 1;
-			case IIMAGE_2DRECT:
-				return 1;
-			case IIMAGE_3D:
-				return 1;
-			case IIMAGE_BUFFER:
-				return 1;
-			case IIMAGE_CUBE:
-				return 1;
-			case IMAGE_1D:
-				return 1;
-			case IMAGE_1DARRAY:
-				return 1;
-			case IMAGE_2D:
-				return 1;
-			case IMAGE_2DARRAY:
-				return 1;
-			case IMAGE_2DMS:
-				return 1;
-			case IMAGE_2DMSARRAY:
-				return 1;
-			case IMAGE_2DRECT:
-				return 1;
-			case IMAGE_3D:
-				return 1;
-			case IMAGE_BUFFER:
-				return 1;
-			case IMAGE_CUBE:
-				return 1;
-			case INT:
-				return 1;
-			case ISAMPLER_1D:
-				return 1;
-			case ISAMPLER_1DARRAY:
-				return 1;
-			case ISAMPLER_2D:
-				return 1;
-			case ISAMPLER_2DARRAY:
-				return 1;
-			case ISAMPLER_2DMS:
-				return 1;
-			case ISAMPLER_2DMSARRAY:
-				return 1;
-			case ISAMPLER_2DRECT:
-				return 1;
-			case ISAMPLER_3D:
-				return 1;
-			case ISAMPLER_BUFFER:
-				return 1;
-			case ISAMPLER_CUBE:
-				return 1;
-			case IVEC2:
-				return 2;
-			case IVEC3:
-				return 3;
-			case IVEC4:
-				return 4;
-			case MAT2:
-				return 4;
-			case MAT2X3:
-				return 6;
-			case MAT2X4:
-				return 8;
-			case MAT3:
-				return 9;
-			case MAT3X2:
-				return 6;
-			case MAT3X4:
-				return 12;
-			case MAT4:
-				return 16;
-			case MAT4X2:
-				return 8;
-			case MAT4X3:
-				return 12;
-			case SAMPLER_1D:
-				return 1;
-			case SAMPLER_1DARRAY:
-				return 1;
-			case SAMPLER_1DARRAYSHADOW:
-				return 1;
-			case SAMPLER_1DSHADOW:
-				return 1;
-			case SAMPLER_2D:
-				return 1;
-			case SAMPLER_2DARRAY:
-				return 1;
-			case SAMPLER_2DARRAYSHADOW:
-				return 1;
-			case SAMPLER_2DMS:
-				return 1;
-			case SAMPLER_2DMSARRAY:
-				return 1;
-			case SAMPLER_2DRECT:
-				return 1;
-			case SAMPLER_2DRECTSHADOW:
-				return 1;
-			case SAMPLER_2DSHADOW:
-				return 1;
-			case SAMPLER_3D:
-				return 1;
-			case SAMPLER_BUFFER:
-				return 1;
-			case SAMPLER_CUBE:
-				return 1;
-			case SAMPLER_CUBESHADOW:
-				return 1;
-			case UIMAGE_1D:
-				return 1;
-			case UIMAGE_1DARRAY:
-				return 1;
-			case UIMAGE_2D:
-				return 1;
-			case UIMAGE_2DARRAY:
-				return 1;
-			case UIMAGE_2DMS:
-				return 1;
-			case UIMAGE_2DMSARRAY:
-				return 1;
-			case UIMAGE_2DRECT:
-				return 1;
-			case UIMAGE_3D:
-				return 1;
-			case UIMAGE_BUFFER:
-				return 1;
-			case UIMAGE_CUBE:
-				return 1;
-			case UINT:
-				return 1;
-			case USAMPLER_1D:
-				return 1;
-			case USAMPLER_1DARRAY:
-				return 1;
-			case USAMPLER_2D:
-				return 1;
-			case USAMPLER_2DARRAY:
-				return 1;
-			case USAMPLER_2DMS:
-				return 1;
-			case USAMPLER_2DMSARRAY:
-				return 1;
-			case USAMPLER_2DRECT:
-				return 1;
-			case USAMPLER_3D:
-				return 1;
-			case USAMPLER_BUFFER:
-				return 1;
-			case USAMPLER_CUBE:
-				return 1;
-			case UVEC2:
-				return 2;
-			case UVEC3:
-				return 3;
-			case UVEC4:
-				return 4;
-			case VEC2:
-				return 2;
-			case VEC3:
-				return 3;
-			case VEC4:
-				return 4;
-			default:
-				return 0;
-		
-		}
-	}
-	
+	/**
+	 * Gets the UniformType enum based on the given integer returned by calls to the GL
+	 * 
+	 * @param type Integer representing a uniform value from the GL
+	 * @return UniformType representing the given type
+	 */
 	public static UniformType getType(int type){
 		for(UniformType value : UniformType.values()){
 			if(value.value == type){
@@ -348,6 +138,11 @@ public enum UniformType {
 		return null;
 	}
 	
+	/**
+	 * Determines whether the this UniformType is a float type
+	 * 
+	 * @return True if the uniform type is a float, false otherwise
+	 */
 	public boolean isFloat(){
 		return
 			this == FLOAT ||
@@ -355,7 +150,12 @@ public enum UniformType {
 			this == VEC3 ||
 			this == VEC4;
 	}
-	
+
+	/**
+	 * Determines whether the this UniformType is an integer type
+	 * 
+	 * @return True if the uniform type is an integer, false otherwise
+	 */
 	public boolean isInt(){
 		return
 			this == INT ||
@@ -437,7 +237,12 @@ public enum UniformType {
 			this == UIMAGE_2DMS ||
 			this == UIMAGE_2DMSARRAY;	
 	}
-	
+
+	/**
+	 * Determines whether the this UniformType is a matrix type
+	 * 
+	 * @return True if the uniform type is a matrix, false otherwise
+	 */
 	public boolean isMatrix(){
 		return
 			this == MAT2 ||
@@ -459,7 +264,12 @@ public enum UniformType {
 			this == DMAT4X2 ||
 			this == DMAT4X3;
 	}
-	
+
+	/**
+	 * Determines whether the this UniformType is a sampler type
+	 * 
+	 * @return True if the uniform type is a sampler, false otherwise
+	 */
 	public boolean isSampler(){
 		return
 			this == SAMPLER_1D ||
@@ -499,7 +309,12 @@ public enum UniformType {
 			this == USAMPLER_BUFFER ||
 			this == USAMPLER_2DRECT;
 	}
-	
+
+	/**
+	 * Determines whether the this UniformType is an image type
+	 * 
+	 * @return True if the uniform type is an image, false otherwise
+	 */
 	public boolean isImage(){
 		return
 			this == IMAGE_1D ||

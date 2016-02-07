@@ -126,7 +126,6 @@ public class DeferredRenderer {
 		finalPass.setUniform("lighting", 1);
 		finalPass.setUniform("ambient", .3f);
 		finalPass.setUniform("gamma", 1);
-		finalPass.setUniform("model", Transform.getRotateMat(1, 0, 0, 90));
 	}
 	
 	public void render(ArrayList<Resource> meshes, ArrayList<Light> lights){
@@ -145,19 +144,13 @@ public class DeferredRenderer {
 			mat.bind(geoPass);
 			castMesh.render();
 		}
-//		glDisable(GL_CULL_FACE);
-//		geoPass.setUniform("color", 1,0,0);
-//		Mesh mesh = lights.get(0).getVolume();
-//		geoPass.setUniform("model", mesh.getModelView());
-//		mesh.render();
-//		glEnable(GL_CULL_FACE);
 		geoPass.unbind();
 		
 		gbuffer.setupLightingPass();
 		
 		for(Light light : lights){
-			stencilPass.bind();
 			Mesh mesh = light.getVolume();
+			stencilPass.bind();
 			gbuffer.stencilPass();
 			//render the light volume for stenciling
 			stencilPass.setUniform("model", mesh.getModelView());

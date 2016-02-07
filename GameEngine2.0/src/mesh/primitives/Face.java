@@ -47,19 +47,15 @@ public class Face {
 		he3.parent = this;
 	}
 	
+	/**
+	 * Constructs a face that is a copy of the given face. The given face will only have its basic
+	 * primitive indices copied, other information stored in the face, such as adjacency information,
+	 * will not be copied.
+	 * 
+	 * @param face Face to copy
+	 */
 	public Face(Face face){
 		this(face.he1.sourceVert, face.he2.sourceVert, face.he3.sourceVert);
-	}
-	
-	/**
-	 * Stores this face's vertex indices, representing the primitive of the face, in the given buffer object
-	 * 
-	 * @param buffer BufferObject to place the indices into
-	 */
-	public void insertPrim(BufferObject buffer){
-		buffer.add(he1.sourceVert);
-		buffer.add(he2.sourceVert);
-		buffer.add(he3.sourceVert);
 	}
 	
 	/**
@@ -71,23 +67,6 @@ public class Face {
 		vao.add(he1.sourceVert);
 		vao.add(he2.sourceVert);
 		vao.add(he3.sourceVert);
-	}
-	
-	/**
-	 * Stores this face's vertex indices, representing the primitive and adjacent information compatible with
-	 * GL_TRIANGLES_ADJACENCY, in the given buffer object
-	 * 
-	 * @param buffer BufferObject to place the indices into
-	 */
-	public void insertPrimAdj(BufferObject buffer){
-		buffer.add(he1.sourceVert);
-		buffer.add(he1.opposite != null ? he1.opposite.prev.sourceVert : -1);
-		
-		buffer.add(he2.sourceVert);
-		buffer.add(he2.opposite != null ? he2.opposite.prev.sourceVert : -1);
-		
-		buffer.add(he3.sourceVert);
-		buffer.add(he3.opposite != null ? he3.opposite.prev.sourceVert : -1);
 	}
 
 	

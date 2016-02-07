@@ -15,10 +15,24 @@ public class Shader {
 	private ShaderStage type;
 	private String fileName;
 	
+	/**
+	 * Constructs a shader of the given ShaderStage {@code shaderType}, and shader source code
+	 * in a file with the pathname {@code fileName}
+	 * 
+	 * @param fileName String specifying the pathname for a file containing the source code for the shader
+	 * @param shaderType The type of shader this shader will be
+	 */
 	public Shader(String fileName, ShaderStage shaderType){
 		this(new File(fileName), shaderType);
 	}
 	
+	/**
+	 * Constructs a shader of the given ShaderStage {@code shaderType}, and shader source code
+	 * in {@code file}
+	 * 
+	 * @param file File containing the shader source code
+	 * @param shaderType The type of shader this shader will be
+	 */
 	public Shader(File file, ShaderStage shaderType){
 		type = shaderType;
 		fileName = file.getName();
@@ -98,6 +112,13 @@ public class Shader {
 		}
 	}
 	
+	/**
+	 * Parses the given file and stores it in a string to be passed to the GPU for shader
+	 * compilation
+	 * 
+	 * @param file File to parse
+	 * @return String containing the shader source code from the file
+	 */
 	public static String getSource(File file){
 		StringBuilder source = new StringBuilder();
 		try{

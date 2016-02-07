@@ -47,7 +47,7 @@ public class ShaderPipeline {
 		if(program.isSeparable() && program.isLinked()){
 			int stageBits = 0;
 			for(ShaderStage stage : stages){
-				stageBits |= stage.getUseBit();
+				stageBits |= stage.useBit;
 			}
 			glUseProgramStages(id, stageBits, program.getId());
 		}
@@ -72,8 +72,8 @@ public class ShaderPipeline {
 	 * 
 	 * @param stage Stage to disable in this pipeline object
 	 */
-	public void disableStage(ShaderStage stage){
-		glUseProgramStages(id, stage.getUseBit(), 0);
+	public void detachProgramAt(ShaderStage stage){
+		glUseProgramStages(id, stage.useBit, 0);
 	}
 	
 	/**

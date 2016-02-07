@@ -32,7 +32,7 @@ public class Geometry {
 	
 	public Geometry(Geometry geo){
 		vertices = new ArrayList<Vertex>(geo.vertices.size());
-		hashVerts = new HashMap<Vertex, Integer>();
+		hashVerts = new HashMap<Vertex, Integer>(geo.vertices.size());
 		faces = new ArrayList<Face>(geo.faces.size());
 		edgeMap = new HashMap<Edge, HalfEdge>();
 		
@@ -44,7 +44,7 @@ public class Geometry {
 		
 		//copy the faces
 		for(Face face : geo.faces){
-			faces.add(new Face(face));
+			add(face);
 		}
 	}
 	
