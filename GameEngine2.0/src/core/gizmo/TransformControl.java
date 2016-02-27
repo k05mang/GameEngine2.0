@@ -1,9 +1,9 @@
-package core;
+package core.gizmo;
 
 import glMath.Transform;
 import glMath.vectors.Vec3;
 import mesh.Arrow;
-import mesh.primitives.geometry.Cuboid;
+import mesh.primitives.geometry.Cube;
 import mesh.primitives.geometry.Torus;
 import renderers.RenderMode;
 import shaders.ShaderProgram;
@@ -13,7 +13,7 @@ public class TransformControl {
 	private static final float WHEEL_RADIUS = 10f;
 	private float wheelRadius;
 	public static final Torus rotWheel = new Torus(WHEEL_RADIUS, .5f, 40);
-	public static final Cuboid scale = new Cuboid(1);
+	public static final Cube scale = new Cube(1);
 	private Transform xRot, yRot, zRot, cube;
 	
 	public TransformControl(Vec3 position){
@@ -39,9 +39,10 @@ public class TransformControl {
 		zRot.translate(x, y, z);
 		cube.translate(x, y, z);
 		
-		xAxis.translate(x, y, z); 
-		yAxis.translate(x, y, z); 
-		zAxis.translate(x, y, z);
+		Transform trans = new Transform().translate(x, y, z);
+		xAxis.transform(trans); 
+		yAxis.transform(trans); 
+		zAxis.transform(trans);
 	}
 	
 	public void translate(Vec3 trans){
@@ -73,15 +74,16 @@ public class TransformControl {
 		yRot.scale(scale); 
 		zRot.scale(scale);
 		cube.scale(scale);
-		
-		xAxis.scale(scale); 
-		yAxis.scale(scale);
-		zAxis.scale(scale);
+
+		Transform trans = new Transform().scale(scale);
 		
 		float newWheelRadius = scale*wheelRadius;
-		xAxis.translate(newWheelRadius-wheelRadius, 0,0); 
-		yAxis.translate(0, newWheelRadius-wheelRadius, 0); 
-		zAxis.translate(0, 0, newWheelRadius-wheelRadius);
+		trans.setTranslation(newWheelRadius-wheelRadius, 0,0); 
+		xAxis.transform(trans); 
+		trans.setTranslation(0, newWheelRadius-wheelRadius, 0); 
+		yAxis.transform(trans); 
+		trans.setTranslation(0, 0, newWheelRadius-wheelRadius);
+		zAxis.transform(trans);
 		
 		wheelRadius = newWheelRadius;
 	}

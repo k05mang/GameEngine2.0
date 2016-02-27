@@ -58,16 +58,17 @@ public final class Cone extends Mesh {
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		Vertex tip = new Vertex(0,0,0, 0,1,0, 0,0);
+		Vertex tip = new Vertex(0,0,0, 0,centered ? this.length/2.0f : 0,0, 0,0);
 		geometry.add(tip);
 		tip.addTo(vbo);
 		for(int segment = 1; segment < subdiv+1; segment++){
 			double theta = 2*PI*(segment/(double)subdiv);
 			
-			float x = (float)(cos(theta));
-			float z = (float)(sin(theta));
+			float x = this.radius*(float)(cos(theta));
+			float z = this.radius*(float)(sin(theta));
+			float vertOffset = -(centered ? this.length/2.0f : this.length);
 			
-			Vertex bottomVert = new Vertex(x, -1, z,  x, -1, z, 0,0);
+			Vertex bottomVert = new Vertex(x, vertOffset, z,  x, vertOffset, z, 0,0);
 			geometry.add(bottomVert);
 			bottomVert.addTo(vbo);
 			
@@ -90,12 +91,7 @@ public final class Cone extends Mesh {
 				bottom.insertPrim(solidIbo);
 			}
 		}
-
-		if(centered){
-			transforms.translate(0, this.length/2.0f, 0);
-		}
 		
-		transforms.scale(this.radius, this.length, this.radius);
 		//flush the index buffers
 		solidIbo.flush(BufferUsage.STATIC_DRAW);
 		edgeIbo.flush(BufferUsage.STATIC_DRAW);
@@ -131,9 +127,6 @@ public final class Cone extends Mesh {
 	/**
 	 * Constructs a copy of the given cone
 	 * 
-	 * Refer to {@link Mesh.Renderable#Renderable(Mesh) Renderable's copy constructor} 
-	 * for more information about cautions with the copy constructor
-	 * 
 	 * @param copy Cone to copy
 	 */
 	public Cone(Cone copy){
@@ -148,7 +141,7 @@ public final class Cone extends Mesh {
 	 * @return Radius of the base of this cone
 	 */
 	public float getRadius(){
-		return radius;
+		return Math.max(transforms.getScalars().x, transforms.getScalars().z)*radius;
 	}
 	
 	/**
@@ -157,6 +150,6 @@ public final class Cone extends Mesh {
 	 * @return Length of this cone
 	 */
 	public float getLength(){
-		return length;
+		return transforms.getScalars().y*length;
 	}
 }

@@ -11,10 +11,10 @@ import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import renderers.RenderMode;
 
-public final class Cuboid extends Mesh {
+public final class Cube extends Mesh {
 	private Vec3 halfDimensions;
 	
-	public Cuboid(float width, float height, float depth){
+	public Cube(float width, float height, float depth){
 		this(width, height, depth, SOLID_MODE);
 	}
 	
@@ -25,7 +25,7 @@ public final class Cuboid extends Mesh {
 	 * @param height Y dimension of the cuboid
 	 * @param depth Z dimension of the cuboid
 	 */
-	public Cuboid(float width, float height, float depth, String defaultMode){
+	public Cube(float width, float height, float depth, String defaultMode){
 		super();
 		
 		halfDimensions = new Vec3(Math.abs(width)/2.0f, Math.abs(height)/2.0f, Math.abs(depth)/2.0f);
@@ -35,28 +35,28 @@ public final class Cuboid extends Mesh {
 		
 		//-----xpos face------
 		geometry.add(new Vertex(
-				1, 1, 1, 	//position
+				halfDimensions.x, halfDimensions.y, halfDimensions.z, 	//position
 				1, 0, 0, 	//normal
 				0, 1,		//uvs
 				0,0,-1,		//tangent
 				0,1,0		//bitangent
 				));
 		geometry.add(new Vertex(
-				1, -1, 1, 
+				halfDimensions.x, -halfDimensions.y, halfDimensions.z, 
 				1, 0, 0, 
 				0, 0,
 				0,0,-1,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				1, 1, -1, 
+				halfDimensions.x, halfDimensions.y, -halfDimensions.z,
 				1, 0, 0, 
 				1, 1,
 				0,0,-1,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				1, -1, -1, 
+				halfDimensions.x, -halfDimensions.y, -halfDimensions.z,
 				1, 0, 0, 
 				1, 0,
 				0,0,-1,	
@@ -64,28 +64,28 @@ public final class Cuboid extends Mesh {
 				));
 		//-----xneg face------
 		geometry.add(new Vertex(
-				-1, 1, -1, 
+				-halfDimensions.x, halfDimensions.y, -halfDimensions.z,
 				-1, 0, 0, 
 				0, 1,
 				0,0,1,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				-1, -1, -1, 
+				-halfDimensions.x, -halfDimensions.y, -halfDimensions.z,
 				-1, 0, 0, 
 				0, 0,
 				0,0,1,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				-1, 1, 1, 
+				-halfDimensions.x, halfDimensions.y, halfDimensions.z,
 				-1, 0, 0, 
 				1, 1,
 				0,0,1,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				-1, -1, 1, 
+				-halfDimensions.x, -halfDimensions.y, halfDimensions.z,
 				-1, 0, 0, 
 				1, 0,
 				0,0,1,	
@@ -94,28 +94,28 @@ public final class Cuboid extends Mesh {
 		
 		//-----ypos face------
 		geometry.add(new Vertex(
-				-1, 1, -1, 
+				-halfDimensions.x, halfDimensions.y, -halfDimensions.z,
 				0, 1, 0, 
 				0, 1,
 				1,0,0,	
 				0,0,-1	
 				));
 		geometry.add(new Vertex(
-				-1, 1, 1, 
+				-halfDimensions.x, halfDimensions.y, halfDimensions.z,
 				0, 1, 0, 
 				0, 0,
 				1,0,0,	
 				0,0,-1	
 				));
 		geometry.add(new Vertex(
-				1, 1, -1, 
+				halfDimensions.x, halfDimensions.y, -halfDimensions.z,
 				0, 1, 0, 
 				1, 1,
 				1,0,0,	
 				0,0,-1	
 				));
 		geometry.add(new Vertex(
-				1, 1, 1, 
+				halfDimensions.x, halfDimensions.y, halfDimensions.z,
 				0, 1, 0, 
 				1, 0,
 				1,0,0,	
@@ -123,28 +123,28 @@ public final class Cuboid extends Mesh {
 				));
 		//-----yneg face------
 		geometry.add(new Vertex(
-				-1, -1, 1, 
+				-halfDimensions.x, -halfDimensions.y, halfDimensions.z,
 				0, -1, 0, 
 				0, 1,
 				1,0,0,	
 				0,0,1	
 				));
 		geometry.add(new Vertex(
-				-1, -1, -1, 
+				-halfDimensions.x, -halfDimensions.y, -halfDimensions.z,
 				0, -1, 0, 
 				0, 0,
 				1,0,0,	
 				0,0,1	
 				));
 		geometry.add(new Vertex(
-				1, -1, 1, 
+				halfDimensions.x, -halfDimensions.y, halfDimensions.z,
 				0, -1, 0, 
 				1, 1,
 				1,0,0,	
 				0,0,1	
 				));
 		geometry.add(new Vertex(
-				1, -1, -1, 
+				halfDimensions.x, -halfDimensions.y, -halfDimensions.z,
 				0, -1, 0, 
 				1, 0,
 				1,0,0,	
@@ -153,28 +153,28 @@ public final class Cuboid extends Mesh {
 		
 		//-----zpos face------
 		geometry.add(new Vertex(
-				-1, 1, 1, 
+				-halfDimensions.x, halfDimensions.y, halfDimensions.z,
 				0, 0, 1,
 				0, 1,
 				1,0,0,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				-1, -1, 1, 
+				-halfDimensions.x, -halfDimensions.y, halfDimensions.z,
 				0, 0, 1, 
 				0, 0,
 				1,0,0,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				1, 1, 1, 
+				halfDimensions.x, halfDimensions.y, halfDimensions.z,
 				0, 0, 1, 
 				1, 1,
 				1,0,0,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				1, -1, 1, 
+				halfDimensions.x, -halfDimensions.y, halfDimensions.z,
 				0, 0, 1, 
 				1, 0,
 				1,0,0,	
@@ -182,28 +182,28 @@ public final class Cuboid extends Mesh {
 				));
 		//-----zneg face------
 		geometry.add(new Vertex(
-				1, 1, -1, 
+				halfDimensions.x, halfDimensions.y, -halfDimensions.z,
 				0, 0, -1, 
 				0, 1,
 				-1,0,0,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				1, -1, -1, 
+				halfDimensions.x, -halfDimensions.y, -halfDimensions.z, 
 				0, 0, -1,
 				0, 0,
 				-1,0,0,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				-1, 1, -1, 
+				-halfDimensions.x, halfDimensions.y, -halfDimensions.z, 
 				0, 0, -1, 
 				1, 1,
 				-1,0,0,	
 				0,1,0	
 				));
 		geometry.add(new Vertex(
-				-1, -1, -1, 
+				-halfDimensions.x, -halfDimensions.y, -halfDimensions.z,
 				0, 0, -1, 
 				1, 0,
 				-1,0,0,	
@@ -273,7 +273,6 @@ public final class Cuboid extends Mesh {
 					2 + 4 * face
 					));
 		}
-		transforms.scale(halfDimensions);
 
 		geometry.insertVertices(vbo);
 		geometry.insertIndices(solidIbo, RenderMode.TRIANGLES);
@@ -328,11 +327,11 @@ public final class Cuboid extends Mesh {
 	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
 	 * for the Cone to render with
 	 */
-	public Cuboid(Vec3 dimensions, String defaultMode){
+	public Cube(Vec3 dimensions, String defaultMode){
 		this(dimensions.x, dimensions.y, dimensions.z, defaultMode);
 	}
 	
-	public Cuboid(Vec3 dimensions){
+	public Cube(Vec3 dimensions){
 		this(dimensions, SOLID_MODE);
 	}
 	
@@ -344,23 +343,20 @@ public final class Cuboid extends Mesh {
 	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
 	 * for the Cone to render with
 	 */
-	public Cuboid(float scale, String defaultMode){
+	public Cube(float scale, String defaultMode){
 		this(scale, scale, scale, defaultMode);
 	}
 	
-	public Cuboid(float scale){
+	public Cube(float scale){
 		this(scale, SOLID_MODE);
 	}
 	
 	/**
 	 * Constructs a copy of the given cuboid
 	 * 
-	 * Refer to {@link Mesh.Model#Renderable(Mesh) Renderable's copy constructor} 
-	 * for more information about cautions with the copy constructor
-	 * 
 	 * @param copy Cuboid to copy
 	 */
-	public Cuboid(Cuboid copy){
+	public Cube(Cube copy){
 		super(copy);
 		this.halfDimensions = copy.halfDimensions;
 	}
@@ -371,7 +367,7 @@ public final class Cuboid extends Mesh {
 	 * @return Width of the cuboid
 	 */
 	public float getWidth(){
-		return halfDimensions.x*2;
+		return transforms.getScalars().x*halfDimensions.x*2;
 	}
 
 	/**
@@ -380,7 +376,7 @@ public final class Cuboid extends Mesh {
 	 * @return Height of the cuboid
 	 */
 	public float getHeight(){
-		return halfDimensions.y*2;
+		return transforms.getScalars().y*halfDimensions.y*2;
 	}
 
 	/**
@@ -389,6 +385,6 @@ public final class Cuboid extends Mesh {
 	 * @return Depth of the cuboid
 	 */
 	public float getDepth(){
-		return halfDimensions.z*2;
+		return transforms.getScalars().z*halfDimensions.z*2;
 	}
 }

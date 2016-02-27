@@ -49,16 +49,17 @@ public final class Cylinder extends Mesh{
 		
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
+		float halfLength = this.length/2.0f;
 		
 		for(int segment = 0; segment < maxSegment+1; segment++){
 			float u = (segment/(float)maxSegment);
 			double theta = 2*PI*u;
 			
-			float x = (float)cos(theta);
-			float z = (float)sin(theta);
+			float x = this.radius*(float)cos(theta);
+			float z = this.radius*(float)sin(theta);
 
-			Vertex sideTop = new Vertex(x, 1, z,  x, 0, z, 1-u, 1);
-			Vertex sideBottom = new Vertex(x, -1, z,  x, 0, z, 1-u,0);
+			Vertex sideTop = new Vertex(x, halfLength, z,  x, 0, z, 1-u, 1);
+			Vertex sideBottom = new Vertex(x, -halfLength, z,  x, 0, z, 1-u,0);
 
 			geometry.add(sideTop);
 			geometry.add(sideBottom);
@@ -101,8 +102,8 @@ public final class Cylinder extends Mesh{
 			//since the caps are generated with indices two segments ahead of the current one
 			//this will prevent redundant face generation at the end
 			if(segment < maxSegment){
-				Vertex capTop = new Vertex(x, 1, z,  0,1,0, x/2+.5f, -z/2+.5f);
-				Vertex capBottom = new Vertex(x, -1, z,  0,-1,0, x/2+.5f, -z/2+.5f);
+				Vertex capTop = new Vertex(x, halfLength, z,  0,1,0, x/2+.5f, -z/2+.5f);
+				Vertex capBottom = new Vertex(x, -halfLength, z,  0,-1,0, x/2+.5f, -z/2+.5f);
 				geometry.add(capTop);
 				geometry.add(capBottom);
 				if(segment < maxSegment-2){
@@ -133,7 +134,6 @@ public final class Cylinder extends Mesh{
 
 		geometry.genTangentBitangent();
 		geometry.insertVertices(vbo);
-		transforms.scale(this.radius, this.length/2, this.radius);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 
@@ -170,9 +170,6 @@ public final class Cylinder extends Mesh{
 	/**
 	 * Constructs a copy of the given cylinder
 	 * 
-	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
-	 * for more information about cautions with the copy constructor
-	 * 
 	 * @param copy Cylinder to copy
 	 */
 	public Cylinder(Cylinder copy){
@@ -187,7 +184,7 @@ public final class Cylinder extends Mesh{
 	 * @return Radius of this cylinder
 	 */
 	public float getRadius(){
-		return radius;
+		return Math.max(transforms.getScalars().x, transforms.getScalars().z)*radius;
 	}
 	
 	/**
@@ -196,6 +193,6 @@ public final class Cylinder extends Mesh{
 	 * @return Length of this cylinder
 	 */
 	public float getLength(){
-		return length;
+		return transforms.getScalars().y*length;
 	}
 }

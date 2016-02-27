@@ -289,9 +289,6 @@ public final class Icosphere extends Mesh {
 	/**
 	 * Constructs a copy of the given icosphere
 	 * 
-	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
-	 * for more information about cautions with the copy constructor
-	 * 
 	 * @param copy Icosphere to copy
 	 */
 	public Icosphere(Icosphere copy){
@@ -305,6 +302,6 @@ public final class Icosphere extends Mesh {
 	 * @return Radius of this icosphere
 	 */
 	public float getRadius(){
-		return radius;
+		return Math.max(transforms.getScalars().x, Math.max(transforms.getScalars().y, transforms.getScalars().z))*radius;
 	}
 }

@@ -62,7 +62,18 @@ public class Transform {
 	 * @return This transform post operation
 	 */
 	public Transform scale(float scalar){
-		scale(scalar, scalar, scalar);
+		scale.set(scale.x*scalar, scale.y*scalar, scale.z*scalar);
+		return this;
+	}
+	
+	/**
+	 * Scales this Transform by the scale of the given Transform
+	 * 
+	 * @param trans Transform whose scale to use as the scaling
+	 * @return This Transform post operation
+	 */
+	public Transform scale(Transform trans){
+		scale.set(scale.x*trans.scale.x, scale.y*trans.scale.y, scale.z*trans.scale.z);
 		return this;
 	}
 
@@ -89,6 +100,17 @@ public class Transform {
 		position.add(vector);
 		return this;
 	}
+	
+	/**
+	 * Translates this Transform by the given Transforms translation
+	 * 
+	 * @param trans Transform whose translation to use in translating this Transform
+	 * @return This Transform post operation
+	 */
+	public Transform translate(Transform trans){
+		position.add(trans.position);
+		return this;
+	}
 
 	/**
 	 * Rotates this transform be the given axis and angel theta
@@ -113,6 +135,17 @@ public class Transform {
 	 */
 	public Transform rotate(Vec3 axis, float theta){
 		orientation.set(Quaternion.fromAxisAngle(axis, theta).mult(orientation));
+		return this;
+	}
+	
+	/**
+	 * Rotates this Transform by the given Transforms rotation
+	 * 
+	 * @param trans Transform whose rotation will be used to rotate this Transform
+	 * @return This Transform post operation
+	 */
+	public Transform rotate(Transform trans){
+		orientation.set(Quaternion.multiply(trans.orientation, orientation));
 		return this;
 	}
 	
@@ -182,12 +215,30 @@ public class Transform {
 	}
 	
 	/**
+	 * Sets this Transforms scale to the given Transforms scale
+	 * 
+	 * @param trans Transform whose scale to set this Transforms scale to
+	 */
+	public void setScale(Transform trans){
+		scale.set(trans.scale);
+	}
+	
+	/**
 	 * Sets the orientation for this transform
 	 * 
 	 * @param orientation Orientation to set this transform to
 	 */
 	public void setOrientation(Quaternion orientation){
 		this.orientation.set(orientation);
+	}
+	
+	/**
+	 * Sets this Transforms rotation to the given Transforms rotation
+	 * 
+	 * @param trans Transform whose rotation to set this Transforms rotation to
+	 */
+	public void setOrientation(Transform trans){
+		orientation.set(trans.orientation);
 	}
 	
 	/**
@@ -208,6 +259,15 @@ public class Transform {
 	 */
 	public void setTranslation(Vec3 trans){
 		position.set(trans);
+	}
+	
+	/**
+	 * Sets this Transforms translation to the given Transforms translation
+	 * 
+	 * @param trans Transform whose translation to use in setting this Transforms translation to
+	 */
+	public void setTranslation(Transform trans){
+		position.set(trans.position);
 	}
 	
 	/**

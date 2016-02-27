@@ -19,7 +19,7 @@ import shaders.ShaderStage;
 import core.Camera;
 import core.Resource;
 import core.SceneManager;
-import core.TransformControl;
+import core.gizmo.TransformControl;
 import framebuffer.Gbuffer;
 import glMath.Transform;
 import glMath.VecUtil;

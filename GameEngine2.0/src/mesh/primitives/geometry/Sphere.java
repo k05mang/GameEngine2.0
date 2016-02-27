@@ -81,9 +81,9 @@ public final class Sphere extends Mesh{
 				double phi = PI*v;
 				double theta = 2*PI*u;
 				
-				float x = (float)( cos(theta)*sin(phi) );
-				float y = (float)( cos(phi) );//since y is the up axis have it use the conventional z calculation
-				float z = (float)( sin(theta)*sin(phi) );
+				float x = (float)( this.radius*cos(theta)*sin(phi) );
+				float y = (float)( this.radius*cos(phi) );//since y is the up axis have it use the conventional z calculation
+				float z = (float)( this.radius*sin(theta)*sin(phi) );
 				
 				int curIndex = 0;//current index
 				int nextStackIndex = 0;//same slice next stack
@@ -191,7 +191,7 @@ public final class Sphere extends Mesh{
 		}
 		geometry.genTangentBitangent();
 		geometry.insertVertices(vbo);
-		transforms.scale(this.radius, this.radius, this.radius);
+		
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
@@ -240,9 +240,6 @@ public final class Sphere extends Mesh{
 	/**
 	 * Constructs a sphere that is the copy of the given sphere.
 	 * 
-	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
-	 * for more information about cautions with the copy constructor
-	 * 
 	 * @param copy Sphere to copy
 	 */
 	public Sphere(Sphere copy){
@@ -256,6 +253,6 @@ public final class Sphere extends Mesh{
 	 * @return Radius of this sphere
 	 */
 	public float getRadius(){
-		return radius;
+		return Math.max(transforms.getScalars().x, Math.max(transforms.getScalars().y, transforms.getScalars().z))*radius;
 	}
 }

@@ -187,9 +187,6 @@ public final class Torus extends Mesh {
 	/**
 	 * Constructs a copy of the given torus
 	 * 
-	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
-	 * for more information about cautions with the copy constructor
-	 * 
 	 * @param copy Torus to copy
 	 */
 	public Torus(Torus copy){
@@ -204,7 +201,7 @@ public final class Torus extends Mesh {
 	 * @return Radius of the torus from the middle to the middle of the tube
 	 */
 	public float getRadius() {
-		return radius;
+		return Math.max(transforms.getScalars().x, transforms.getScalars().z)*radius;
 	}
 
 	/**
@@ -213,6 +210,6 @@ public final class Torus extends Mesh {
 	 * @return Radius of the tube of the torus
 	 */
 	public float getTubeRadius() {
-		return tubeRadius;
+		return Math.max(transforms.getScalars().x, Math.max(transforms.getScalars().y, transforms.getScalars().z))*tubeRadius;
 	}
 }

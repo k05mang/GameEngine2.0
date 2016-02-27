@@ -52,8 +52,8 @@ public final class Disc extends Mesh {
 			float u = (float)(cos(theta));
 			float v = (float)(sin(theta));
 			
-			float x = u;
-			float z = v;
+			float x = this.radius*u;
+			float z = this.radius*v;
 
 			Vertex curVert = new Vertex(x, 0, z,  0,1,0, u/2+.5f, -v/2+.5f, 1,0,0, 0,0,1);
 
@@ -77,7 +77,6 @@ public final class Disc extends Mesh {
 			}
 		}
 
-		transforms.scale(this.radius, 1, this.radius);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
@@ -117,9 +116,6 @@ public final class Disc extends Mesh {
 	/**
 	 * Constructs a copy of the given disc
 	 * 
-	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
-	 * for more information about cautions with the copy constructor
-	 * 
 	 * @param copy Disc to copy
 	 */
 	public Disc(Disc copy){
@@ -132,6 +128,6 @@ public final class Disc extends Mesh {
 	 * @return Radius of the disc
 	 */
 	public float getRadius(){
-		return radius;
+		return Math.max(transforms.getScalars().x, transforms.getScalars().z)*radius;
 	}
 }

@@ -46,10 +46,10 @@ public final class Plane extends Mesh{
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		Vertex topLeft = new Vertex(-1,0,-1, 0,1,0, 0,1, 1,0,0, 0,0,-1);
-		Vertex bottomLeft = new Vertex(-1,0,1, 0,1,0, 0,0, 1,0,0, 0,0,-1);
-		Vertex topRight = new Vertex(1,0,-1, 0,1,0, 1,1, 1,0,0, 0,0,-1);
-		Vertex bottomRight = new Vertex(1,0,1, 0,1,0, 1,0, 1,0,0, 0,0,-1);
+		Vertex topLeft = new Vertex(-this.width/2.0f,0,-this.length/2.0f, 0,1,0, 0,1, 1,0,0, 0,0,-1);
+		Vertex bottomLeft = new Vertex(-this.width/2.0f,0,this.length/2.0f, 0,1,0, 0,0, 1,0,0, 0,0,-1);
+		Vertex topRight = new Vertex(this.width/2.0f,0,-this.length/2.0f, 0,1,0, 1,1, 1,0,0, 0,0,-1);
+		Vertex bottomRight = new Vertex(this.width/2.0f,0,this.length/2.0f, 0,1,0, 1,0, 1,0,0, 0,0,-1);
 		
 		topLeft.addTo(vbo);
 		bottomLeft.addTo(vbo);
@@ -86,7 +86,6 @@ public final class Plane extends Mesh{
 		edgeIbo.add(2);
 		edgeIbo.add(0);
 		
-		transforms.scale(Math.abs(width)/2.0f, 1, Math.abs(length)/2.0f);
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
 		
@@ -127,9 +126,6 @@ public final class Plane extends Mesh{
 	/**
 	 * Constructs a copy of the given plane
 	 * 
-	 * Refer to {@link renderer.Mesh#Renderable(Mesh) Renderable's copy constructor} 
-	 * for more information about cautions with the copy constructor
-	 * 
 	 * @param copy Plane to copy
 	 */
 	public Plane(Plane copy){
@@ -144,7 +140,7 @@ public final class Plane extends Mesh{
 	 * @return Length of the plane along the z axis
 	 */
 	public float getLength(){
-		return length;
+		return transforms.getScalars().z*length;
 	}
 	
 	/**
@@ -153,6 +149,6 @@ public final class Plane extends Mesh{
 	 * @return Width of the plane along the x axis
 	 */
 	public float getWidth(){
-		return width;
+		return transforms.getScalars().x*width;
 	}
 }

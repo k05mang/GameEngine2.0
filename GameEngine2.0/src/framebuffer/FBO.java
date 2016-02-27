@@ -302,6 +302,11 @@ public class FBO implements Resource {
 		glDeleteFramebuffers(id);
 	}
 
+	/**
+	 * Determines whether or not this Framebuffer object is Framebuffer complete as defined by the GL
+	 * 
+	 * @return True if the Framebuffer is complete, false otherwise
+	 */
 	public boolean isComplete(){
 		if(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE){
 			return true;
@@ -310,6 +315,12 @@ public class FBO implements Resource {
 		}
 	}
 	
+	/**
+	 * Determines the status of the Framebuffer object and retuns a String representing the status
+	 * of the Framebuffer.
+	 * 
+	 * @return String representing the current status of the Framebuffer object on the GPU
+	 */
 	public String getStatus(){
 		switch(glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER)){
 			case GL_FRAMEBUFFER_UNDEFINED:

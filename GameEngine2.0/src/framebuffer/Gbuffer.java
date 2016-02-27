@@ -32,6 +32,9 @@ public class Gbuffer {
 		framebuffer.setDrawBuffers(0, 1, 2);
 	}
 
+	/**
+	 * Binds the appropriate textures and sets the context state for rendering the geo pass
+	 */
 	public void geoPass(){
 		framebuffer.bind(true, true);
 		framebuffer.setDrawBuffers(0,1,2);

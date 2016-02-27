@@ -3,11 +3,11 @@ package lights;
 import glMath.Transform;
 import glMath.vectors.Vec3;
 import mesh.Mesh;
-import mesh.primitives.geometry.Cuboid;
+import mesh.primitives.geometry.Cube;
 import shaders.ShaderProgram;
 
 public class DirectionalLight extends Light {
-	public final static Cuboid volume = new Cuboid(1, 1, 1);
+	public final static Cube volume = new Cube(1, 1, 1);
 	private Vec3 direction;
 
 	/**
@@ -65,7 +65,7 @@ public class DirectionalLight extends Light {
 	public DirectionalLight(float dirx, float diry, float dirz, float r, float g, float b, float vWidth, float vHeight, float vDepth, float intensity) {
 		super(0,0,0, r, g, b, intensity);
 		direction = new Vec3(dirx, diry, dirz);
-		trans.scale(vWidth/2.0f, vHeight/2.0f, vDepth/2.0f);
+		trans.scale(vWidth, vHeight, vDepth);
 	}
 
 	@Override
