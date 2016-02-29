@@ -12,8 +12,9 @@ import java.util.ArrayList;
 
 import core.Resource;
 import core.SceneManager;
+import core.SpatialAsset;
 
-public abstract class Mesh implements Resource{
+public abstract class Mesh implements Resource, SpatialAsset{
 	protected Transform transforms;
 	protected Geometry geometry;
 	protected VertexArray vao;
@@ -54,13 +55,19 @@ public abstract class Mesh implements Resource{
 		material = new String(copy.material);
 	}
 	
-	/**
-	 * Transforms this renderable's transform by the given Transform object
-	 * 
-	 * @param transform Transform to modify this renderable with
-	 */
+	@Override
 	public void transform(Transform transform){
 		transforms.transform(transform);
+	}
+	
+	@Override
+	public void setTransform(Transform trans){
+		transforms.set(trans);
+	}
+	
+	@Override
+	public Transform getTransform(){
+		return transforms;
 	}
 	
 	/**
@@ -99,10 +106,6 @@ public abstract class Mesh implements Resource{
 		return geometry.getNumFaces();
 	}
 	
-	public Vec3 getPos(){
-		return transforms.getTranslation();
-	}
-	
 	@Override
 	public void delete(){
 		vao.delete();
@@ -112,15 +115,6 @@ public abstract class Mesh implements Resource{
 		for(IndexBuffer buffer : ibos){
 			buffer.delete();
 		}
-	}
-	
-	/**
-	 * Sets this mesh's transformation to the given transformation
-	 * 
-	 * @param trans Transformation to set this mesh to
-	 */
-	public void setTransform(Transform trans){
-		transforms.set(trans);
 	}
 	
 	/**
@@ -172,6 +166,13 @@ public abstract class Mesh implements Resource{
 		return material;
 	}
 	
+	/**
+	 * Sets the mode with which this Mesh will render. Only modes that the mesh supports may be passed to this function.
+	 * Modes that are guaranteed to be supported by this function are {@code SOLID_MODE} and {@code EDGE_MODE} as defined
+	 * in this class.
+	 * 
+	 * @param mode Mode to render the mesh with
+	 */
 	public void setRenderMode(String mode){
 		vao.setIndexBuffer(mode);
 	}

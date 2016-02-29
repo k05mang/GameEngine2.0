@@ -19,7 +19,6 @@ import shaders.ShaderStage;
 import core.Camera;
 import core.Resource;
 import core.SceneManager;
-import core.gizmo.TransformControl;
 import framebuffer.Gbuffer;
 import glMath.Transform;
 import glMath.VecUtil;
@@ -128,7 +127,7 @@ public class DeferredRenderer {
 		finalPass.setUniform("gamma", 1);
 	}
 	
-	public void render(ArrayList<Resource> meshes, ArrayList<Light> lights){
+	public void render(ArrayList<Mesh> meshes, ArrayList<Light> lights){
 		gbuffer.geoPass();//ready the gbuffer for the geometry pass
 		geoPass.setUniform("view", main.getLookAt());
 		stencilPass.setUniform("view", main.getLookAt());
@@ -137,12 +136,11 @@ public class DeferredRenderer {
 		
 		geoPass.bind();
 		//render geometry
-		for(Resource mesh : meshes){
-			Mesh castMesh = ((Mesh) mesh);
-			geoPass.setUniform("model", castMesh.getModelView());
-			Material mat = (Material) SceneManager.materials.get(castMesh.getMaterial());
+		for(Mesh mesh : meshes){
+			geoPass.setUniform("model", mesh.getModelView());
+			Material mat = (Material) SceneManager.materials.get(mesh.getMaterial());
 			mat.bind(geoPass);
-			castMesh.render();
+			mesh.render();
 		}
 		geoPass.unbind();
 		

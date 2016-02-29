@@ -5,8 +5,9 @@ import glMath.Transform;
 import glMath.vectors.Vec3;
 import mesh.Mesh;
 import shaders.ShaderProgram;
+import core.SpatialAsset;
 
-public abstract class Light {
+public abstract class Light implements SpatialAsset{
 	
 	protected Vec3 color;
 	protected Transform trans;
@@ -75,15 +76,6 @@ public abstract class Light {
 	}
 	
 	/**
-	 * Gets the position or direction of the light
-	 * 
-	 * @return Position or direction of the light
-	 */
-	public Vec3 getPos(){
-		return trans.getTranslation();
-	}
-	
-	/**
 	 * Gets the color of the light
 	 * 
 	 * @return Color of the light
@@ -112,18 +104,10 @@ public abstract class Light {
 		color.set(r, g, b);
 	}
 	
-	/**
-	 * Transforms the light
-	 * 
-	 * @param transform Transform that changes this light
-	 */
+	@Override
 	public abstract void transform(Transform transform);
 	
-	/**
-	 * Gets this lights transformation
-	 * 
-	 * @return Trasnformation of this light
-	 */
+	@Override
 	public Transform getTransform(){
 		return trans;
 	}

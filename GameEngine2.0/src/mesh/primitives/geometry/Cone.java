@@ -18,13 +18,10 @@ public final class Cone extends Mesh {
 
 	private float length, radius;
 	
-	public Cone(float radius, float length, int slices, boolean centered){
-		this(radius, length, slices, centered, SOLID_MODE);
-	}
-	
 	/**
-	 * Constructs a cone primitive with the given radius, length, and subdivisions while making
-	 * it compatible with the given RenderModes.
+	 * Constructs a cone primitive with the given {@code radius}, {@code length}, and {@code slices}. {@code centered} 
+	 * determines whether the cones origin will be at the center of the cone or the tip. The default mode the resulting
+	 * mesh will render with will be SOLID_MODE.
 	 * 
 	 * Slices must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
 	 * 
@@ -32,6 +29,28 @@ public final class Cone extends Mesh {
 	 * @param length Length of the cone from the base to the tip
 	 * @param slices Number of subdivisions to make for the cone
 	 * @param centered Whether the cone should start with its center at the middle of the cone or at the tip of the cone
+	 */
+	public Cone(float radius, float length, int slices, boolean centered){
+		this(radius, length, slices, centered, SOLID_MODE);
+	}
+	
+	/**
+	 * Constructs a cone primitive with the given {@code radius}, {@code length}, and {@code slices}. {@code centered} 
+	 * determines whether the cones origin will be at the center of the cone or the tip. {@code defaultMode} will
+	 * specify the mode the cone will initially render with. Selectable modes and what they entail are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * </ul>
+	 * 
+	 * Slices must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
+	 * 
+	 * @param radius Radius of the base of the cone
+	 * @param length Length of the cone from the base to the tip
+	 * @param slices Number of subdivisions to make for the cone
+	 * @param centered Whether the cone should start with its center at the middle of the cone or at the tip of the cone
+	 * @param defaultMode Defines the mode to render the mesh with
 	 */
 	public Cone(float radius, float length, int slices, boolean centered, String defaultMode){
 		super();

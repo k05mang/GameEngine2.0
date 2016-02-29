@@ -17,15 +17,11 @@ import renderers.RenderMode;
 
 public final class Icosphere extends Mesh {
 	private float radius;
-	
-	public Icosphere(float radius, int order){
-		this(radius, order, SOLID_MODE);
-	}
-	
+
 	/**
-	 * Constructs an icosphere, which is defined to be a an icosahedron subdivided where all points are equadistant from the center.
-	 * The sphere will have the given radius, and will have a the given order of subdivisions making it more refined. The sphere will 
-	 * also be compatible with the given RenderModes.
+	 * Constructs an icosphere, which is defined to be an icosahedron subdivided where all points are equadistant from the center.
+	 * The sphere will have the given {@code radius}, and will have a the given {@code order} of subdivisions making it more refined. 
+	 * The default mode is SOLID_MODE.
 	 * 
 	 * Order cannot be less than 0, any value less than 0 will be defaulted to 0. Additionally care should be taken when specifying 
 	 * the order of the sphere subdivisions as the number of vertices grows exponentially with the number of vertices being equal to
@@ -33,6 +29,29 @@ public final class Icosphere extends Mesh {
 	 * 
 	 * @param radius Radius of the sphere
 	 * @param order Order of magnitude of recursive subdivisions
+	 */
+	public Icosphere(float radius, int order){
+		this(radius, order, SOLID_MODE);
+	}
+	
+	/**
+	 * Constructs an icosphere, which is defined to be an icosahedron subdivided where all points are equadistant from the center.
+	 * The sphere will have the given {@code radius}, and will have a the given {@code order} of subdivisions making it more refined. 
+	 * {@code defaultMode} will specify the mode the mesh will initially render with. Selectable modes and what they entail 
+	 * are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * </ul>
+	 * 
+	 * Order cannot be less than 0, any value less than 0 will be defaulted to 0. Additionally care should be taken when specifying 
+	 * the order of the sphere subdivisions as the number of vertices grows exponentially with the number of vertices being equal to
+	 * 12+(2^(order*2)-1)*10. Orders 5 and less are generally sufficient to create a smooth sphere.
+	 * 
+	 * @param radius Radius of the sphere
+	 * @param order Order of magnitude of recursive subdivisions
+	 * @param defaultMode Defines the mode to render the mesh with
 	 */
 	public Icosphere(float radius, int order, String defaultMode){
 		super();

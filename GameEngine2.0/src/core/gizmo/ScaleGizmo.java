@@ -1,19 +1,20 @@
 package core.gizmo;
 
+import glMath.Transform;
+import glMath.vectors.Vec3;
 import mesh.Arrow;
 import shaders.ShaderProgram;
 import core.Camera;
 import core.SpatialAsset;
 
-public class TranslationGizmo extends TransformGizmo{
-
+public class ScaleGizmo extends TransformGizmo {
 	private Arrow xaxis, yaxis, zaxis;
 	
-	public TranslationGizmo(){
+	public ScaleGizmo(){
 		super();
-		xaxis = new Arrow(10, 0,0,0, 1,0,0, 1,0,0);
-		yaxis = new Arrow(10, 0,0,0, 0,1,0, 0,1,0);
-		zaxis = new Arrow(10, 0,0,0, 0,0,1, 0,0,1);
+		xaxis = new Arrow(10, 0,0,0, 1,0,0, 1,0,0, true);
+		yaxis = new Arrow(10, 0,0,0, 0,1,0, 0,1,0, true);
+		zaxis = new Arrow(10, 0,0,0, 0,0,1, 0,0,1, true);
 	}
 
 	@Override
@@ -27,20 +28,25 @@ public class TranslationGizmo extends TransformGizmo{
 	@Override
 	public void bind(SpatialAsset target){
 		super.bind(target);
-		xaxis.setPos(target.getTransform().getTranslation());
-		yaxis.setPos(target.getTransform().getTranslation());
-		zaxis.setPos(target.getTransform().getTranslation());
+		//get the targets orientation and position
+		Transform trans = new Transform(target.getTransform());
+		trans.setScale(1);
+		//transforms the axis controls to align with the object
+		xaxis.transform(trans);
+		yaxis.transform(trans);
+		zaxis.transform(trans);
 	}
-
+	
 	@Override
 	public void update() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void select(Camera view, float screenX, float screenY) {
 		// TODO Auto-generated method stub
-		
+
 	}
+
 }

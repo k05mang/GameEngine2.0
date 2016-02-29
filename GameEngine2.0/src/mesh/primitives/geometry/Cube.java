@@ -14,16 +14,71 @@ import renderers.RenderMode;
 public final class Cube extends Mesh {
 	private Vec3 halfDimensions;
 	
+	/**
+	 * Constructs a cube with the given {@code width}, {@code height}, and {@code depth}.
+	 * The default mode is SOLID_MODE.
+	 * 
+	 * @param width X dimension of the cube
+	 * @param height Y dimension of the cube
+	 * @param depth Z dimension of the cube
+	 * @param defaultMode Defines the mode to render the mesh with
+	 */
 	public Cube(float width, float height, float depth){
 		this(width, height, depth, SOLID_MODE);
 	}
+
+	/**
+	 * Constructs a cube with the dimensions to use given as a vector. The components of the vector are assigned as such
+	 * <ul>
+	 * <li>X -> width</li>
+	 * <li>Y -> height</li>
+	 * <li>Z -> depth</li>
+	 * </ul>
+	 * <br>
+	 * The default mode is SOLID_MODE.
+	 * 
+	 * @param dimensions Vector containing the dimensions of the cube
+	 */
+	public Cube(Vec3 dimensions){
+		this(dimensions, SOLID_MODE);
+	}
 	
 	/**
-	 * Constructs a cuboid with the given width, height, and depth while also being compatible with the given RenderModes
+	 * Constructs a cube with the dimensions to use given as a vector. The components of the vector are assigned as such
+	 * <ul>
+	 * <li>X -> width</li>
+	 * <li>Y -> height</li>
+	 * <li>Z -> depth</li>
+	 * </ul>
+	 * <br>
+	 * {@code defaultMode} will specify the mode the mesh will initially render with. Selectable modes and what they entail 
+	 * are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * </ul>
 	 * 
-	 * @param width X dimension of the cuboid
-	 * @param height Y dimension of the cuboid
-	 * @param depth Z dimension of the cuboid
+	 * @param dimensions Vector containing the dimensions of the cube
+	 * @param defaultMode Defines the mode to render the mesh with
+	 */
+	public Cube(Vec3 dimensions, String defaultMode){
+		this(dimensions.x, dimensions.y, dimensions.z, defaultMode);
+	}
+	
+	/**
+	 * Constructs a cube with the given {@code width}, {@code height}, and {@code depth}. {@code defaultMode} will specify 
+	 * the mode the mesh will initially render with. Selectable modes and what they entail are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * </ul>
+	 * 
+	 * @param width X dimension of the cube
+	 * @param height Y dimension of the cube
+	 * @param depth Z dimension of the cube
+	 * @param defaultMode Defines the mode to render the mesh with
 	 */
 	public Cube(float width, float height, float depth, String defaultMode){
 		super();
@@ -313,26 +368,6 @@ public final class Cube extends Mesh {
 		vao.enableAttribute(2);
 		vao.enableAttribute(3);
 		vao.enableAttribute(4);
-	}
-	
-	/**
-	 * Constructs a cuboid with the dimensions to use given as a vector. The components of the vector are assigned as such
-	 * <ul>
-	 * <li>X -> width</li>
-	 * <li>Y -> height</li>
-	 * <li>Z -> depth</li>
-	 * </ul>
-	 * 
-	 * @param dimensions Vector containing the dimensions of the cuboid
-	 * @param modes RenderModes this Cuboid should be compatible with, the first mode is the initial mode
-	 * for the Cone to render with
-	 */
-	public Cube(Vec3 dimensions, String defaultMode){
-		this(dimensions.x, dimensions.y, dimensions.z, defaultMode);
-	}
-	
-	public Cube(Vec3 dimensions){
-		this(dimensions, SOLID_MODE);
 	}
 	
 	/**

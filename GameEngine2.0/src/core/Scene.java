@@ -10,10 +10,26 @@ import static org.lwjgl.opengl.GL30.GL_INVALID_FRAMEBUFFER_OPERATION;
 import windowing.Window;
 
 public interface Scene {
+	
+	/**
+	 * Function called by the Window during the main render loop. The Scene subclass 
+	 * should perform any rendering in this function.
+	 * 
+	 * @param window Calling window object
+	 */
 	public void computeScene(Window window);
 	
+	/**
+	 * Function called when the context is being deleted. This method is meant to allow the 
+	 * subclass to clean up external resources used during the run time of the application.
+	 * This would be things such as GPU assets that can be deleted with calls to various 
+	 * functions.
+	 */
 	public void cleanup();
 	
+	/**
+	 * Function that can be used to get OpenGL error states that will be printed to the terminal
+	 */
 	public static void printError(){
 		int error = glGetError();
 		System.out.println(error);
@@ -44,6 +60,4 @@ public interface Scene {
 				break;
 		}
 	}
-	
-//	public void launch();
 }

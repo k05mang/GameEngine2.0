@@ -21,29 +21,73 @@ public final class Sphere extends Mesh{
 	LATERAL_MODE = "lateral",
 	ORBITAL_MODE = "orbit";
 
+	/**
+	 * Constructs a sphere primitive with the given {@code radius}, horizontal and vertical {@code divisions}. 
+	 * The default mode for the sphere is set to SOLID_MODE.
+	 * 
+	 * @param radius Radius of the sphere
+	 * @param divisions Number of vertical and horizontal segments
+	 */
 	public Sphere(float radius, int divisions){
 		this(radius, divisions, divisions, SOLID_MODE);
 	}
 	
+	/**
+	 * Constructs a sphere primitive with the given {@code radius}, horizontal {@code stacks}, and vertical {@code slices}. 
+	 * The default mode for the sphere is set to SOLID_MODE.
+	 * 
+	 * Slices must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
+	 * 
+	 * Stacks must be greater than 0, if the value given is less than 1 then a default value of 1 will be used instead.
+	 * 
+	 * @param radius Radius of the sphere
+	 * @param slices Number of vertical segments
+	 * @param stacks Number of horizontal segments between the top tip and bottom tip of the sphere
+	 */
 	public Sphere(float radius, int slices, int stacks){
 		this(radius, slices, stacks, SOLID_MODE);
 	}
 	
+	/**
+	 * Constructs a sphere primitive with the given {@code radius}, horizontal and vertical {@code divisions}. 
+	 * {@code defaultMode} will specify the mode the mesh will initially render with. Selectable modes and what they entail 
+	 * are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * <li>LATERAL_MODE: The mesh will render as a GL_LINES, where only the edges that define the vertical slices are rendered</li>
+	 * <li>ORBITAL_MODE: The mesh will render as a GL_LINES, where only the edges that define the horizontal stacks are rendered</li>
+	 * </ul>
+	 * 
+	 * @param radius Radius of the sphere
+	 * @param divisions Number of vertical and horizontal segments
+	 * @param defaultMode Defines the mode to render the mesh with
+	 */
 	public Sphere(float radius, int divisions, String defaultMode){
 		this(radius, divisions, divisions, defaultMode);
 	}
 	
 	/**
-	 * Constructs a sphere primitive with the given radius, and subdivisions while making it compatible
-	 * with the given RenderModes.
+	 * Constructs a sphere primitive with the given {@code radius}, horizontal {@code stacks}, and vertical {@code slices}. 
+	 * {@code defaultMode} will specify the mode the mesh will initially render with. Selectable modes and what they entail 
+	 * are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * <li>LATERAL_MODE: The mesh will render as a GL_LINES, where only the edges that define the vertical slices are rendered</li>
+	 * <li>ORBITAL_MODE: The mesh will render as a GL_LINES, where only the edges that define the horizontal stacks are rendered</li>
+	 * </ul>
 	 * 
 	 * Slices must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
 	 * 
-	 * Stacks must be greater than 0, if teh value given is less than 1 then a default value of 1 will be used instead.
+	 * Stacks must be greater than 0, if the value given is less than 1 then a default value of 1 will be used instead.
 	 * 
 	 * @param radius Radius of the sphere
 	 * @param slices Number of vertical segments
 	 * @param stacks Number of horizontal segments between the top tip and bottom tip of the sphere
+	 * @param defaultMode Defines the mode to render the mesh with
 	 */
 	public Sphere(float radius, int slices, int stacks, String defaultMode){
 		super();

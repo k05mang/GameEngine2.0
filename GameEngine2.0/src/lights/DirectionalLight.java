@@ -8,7 +8,7 @@ import shaders.ShaderProgram;
 
 public class DirectionalLight extends Light {
 	public final static Cube volume = new Cube(1, 1, 1);
-	private Vec3 direction;
+	private Vec3 direction, originalDirection;
 
 	/**
 	 * Constructs a directional light with the given {@code direction}, {@code color}, 
@@ -65,6 +65,7 @@ public class DirectionalLight extends Light {
 	public DirectionalLight(float dirx, float diry, float dirz, float r, float g, float b, float vWidth, float vHeight, float vDepth, float intensity) {
 		super(0,0,0, r, g, b, intensity);
 		direction = new Vec3(dirx, diry, dirz);
+		originalDirection = new Vec3(dirx, diry, dirz);
 		trans.scale(vWidth, vHeight, vDepth);
 	}
 
@@ -88,5 +89,11 @@ public class DirectionalLight extends Light {
 		shader.setUniform("isPoint", false);
 		shader.setUniform("isSpot", false);
 		shader.setUniform("model", trans.getTransform());
+	}
+
+	@Override
+	public void setTransform(Transform trans) {
+		direction = trans.getOrientation().multVec(originalDirection);
+		this.trans.set(trans);
 	}
 }

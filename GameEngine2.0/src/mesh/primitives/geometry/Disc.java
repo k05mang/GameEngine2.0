@@ -17,15 +17,33 @@ public final class Disc extends Mesh {
 
 	private float radius;
 	
+	/**
+	 * Constructs a disc with the given {@code radius} and number of {@code segments}. The default mode the resulting
+	 * mesh will render with will be SOLID_MODE.
+	 * 
+	 * Segments must be a value greater than 2. If the given value is less than 3 then 3 will be used as default.
+	 * 
+	 * @param radius Radius of the disc
+	 * @param segments Fineness of the disc
+	 */
 	public Disc(float radius, int segments){
 		this(radius, segments, SOLID_MODE);
 	}
 	
 	/**
-	 * Constructs a disc with the given radius and number of segments
+	 * Constructs a disc with the given {@code radius} and number of {@code segments}. {@code defaultMode} will
+	 * specify the mode the mesh will initially render with. Selectable modes and what they entail are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * </ul>
+	 * 
+	 * Segments must be a value greater than 2. If the given value is less than 3 then 3 will be used as default.
 	 * 
 	 * @param radius Radius of the disc
 	 * @param segments Fineness of the disc
+	 * @param defaultMode Defines the mode to render the mesh with
 	 */
 	public Disc(float radius, int segments, String defaultMode){
 		this.radius = Math.abs(radius);

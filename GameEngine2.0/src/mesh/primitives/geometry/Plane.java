@@ -12,25 +12,58 @@ import renderers.RenderMode;
 
 public final class Plane extends Mesh{
 	float width, length;
-
+	/**
+	 * Constructs a plane with the given {@code sideLength} as the width and length of the plane along
+	 * the x-z dimensions, the resulting plane will be square. The default mode the resulting
+	 * mesh will render with will be SOLID_MODE.
+	 * 
+	 * @param sideLength Width and length of this plane along the x and z axis
+	 */
 	public Plane(float sideLength){
 		this(sideLength, sideLength, SOLID_MODE);
 	}
 
+	/**
+	 * Constructs a plane with the given {code width} being the dimension along the x axis, and {code length}
+	 * being the dimension along the z axis. The default mode the resulting mesh will render with will be SOLID_MODE.
+	 * 
+	 * @param width Width of this plane along the x axis
+	 * @param length Length of this plane along the z axis
+	 */
 	public Plane(float width, float length){
 		this(width, length, SOLID_MODE);
 	}
 
+	/**
+	 * Constructs a plane with the given {@code sideLength} as the width and length of the plane along
+	 * the x-z dimensions, the resulting plane will be square. {@code defaultMode} will specify the mode the mesh will initially 
+	 * render with. Selectable modes and what they entail are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * </ul>
+	 * 
+	 * @param sideLength Width and length of this plane along the x and z axis
+	 * @param defaultMode Defines the mode to render the mesh with
+	 */
 	public Plane(float sideLength, String defaultMode){
 		this(sideLength, sideLength, defaultMode);
 	}
 	
 	/**
-	 * Constructs a plane with the given width being the dimension along the x axis, and length
-	 * being the dimension along the z axis. The plane is initially centered at the origin.
+	 * Constructs a plane with the given {code width} being the dimension along the x axis, and {code length}
+	 * being the dimension along the z axis. {@code defaultMode} will specify the mode the mesh will initially 
+	 * render with. Selectable modes and what they entail are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * </ul>
 	 * 
 	 * @param width Width of this plane along the x axis
 	 * @param length Length of this plane along the z axis
+	 * @param defaultMode Defines the mode to render the mesh with
 	 */
 	public Plane(float width, float length, String defaultMode){
 		super();

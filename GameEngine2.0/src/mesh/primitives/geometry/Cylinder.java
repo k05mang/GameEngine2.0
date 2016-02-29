@@ -15,19 +15,35 @@ import gldata.IndexBuffer;
 public final class Cylinder extends Mesh{
 	private float length, radius;
 	
-	public Cylinder(float radius, float length, int segments){
-		this(radius, length, segments, SOLID_MODE);
-	}
-	
 	/**
-	 * Constructs a cylinder with the given radius, length, and subdivisions while making it compatible with the
-	 * given RenderModes
+	 * Constructs a cylinder with the given {@code radius}, {@code length}, and {@code segments}. The default mode 
+	 * the resulting mesh will render with will be SOLID_MODE.
 	 * 
 	 * Segments must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
 	 * 
 	 * @param radius Radius of the cylinder
 	 * @param length Length of the cylinder from one end to the other
 	 * @param segments Number of segments to define this cylinder
+	 */
+	public Cylinder(float radius, float length, int segments){
+		this(radius, length, segments, SOLID_MODE);
+	}
+	
+	/**
+	 * Constructs a cylinder with the given {@code radius}, {@code length}, and {@code segments}. {@code defaultMode} will
+	 * specify the mode the mesh will initially render with. Selectable modes and what they entail are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * </ul>
+	 * 
+	 * Segments must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
+	 * 
+	 * @param radius Radius of the cylinder
+	 * @param length Length of the cylinder from one end to the other
+	 * @param segments Number of segments to define this cylinder
+	 * @param defaultMode Defines the mode to render the mesh with
 	 */
 	public Cylinder(float radius, float length, int segments, String defaultMode){
 		super();

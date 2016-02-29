@@ -20,21 +20,21 @@ public final class Torus extends Mesh {
 		TUBE_RINGS = "rings",
 		FULL_TUBE_RINGS = "full_rings";
 
+	/**
+	 * Constructs a torus with the given {@code radius}, and {@code tubeRadius}, with {@code segments} rings
+	 * each with the given number of {@code segments} per ring. The default mode is SOLID_MODE.
+	 * 
+	 * @param radius Radius of the torus measured from the center of the torus to the middle of the torus's tube
+	 * @param tubeRadius Radius of the tube of the torus
+	 * @param segments Number of rings and segments per ring
+	 */
 	public Torus(float radius, float tubeRadius, int segments){
 		this(radius, tubeRadius, segments, segments, SOLID_MODE);
 	}
-	
-	public Torus(float radius, float tubeRadius, int rings, int ringSegs){
-		this(radius, tubeRadius, rings, ringSegs, SOLID_MODE);
-	}
-	
-	public Torus(float radius, float tubeRadius, int segments, String defaultMode){
-		this(radius, tubeRadius, segments, segments, defaultMode);
-	}
-	
+
 	/**
-	 * Constructs a torus with the given radius, and tube radius, with the specified number of rings each with the given number of
-	 * segments per ring. The torus will be constructed such that it is compatible with the give RenderModes
+	 * Constructs a torus with the given {@code radius}, and {@code tubeRadius}, with the specified number of 
+	 * {@code rings} each with the given number of {@code segments} per ring.  The default mode is SOLID_MODE.
 	 * 
 	 * Rings and ringSegs must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
 	 * 
@@ -42,6 +42,52 @@ public final class Torus extends Mesh {
 	 * @param tubeRadius Radius of the tube of the torus
 	 * @param rings Number of vertical segments defining the smoothness of the ring of the torus
 	 * @param ringSegs Number of horizontal segments defining the smoothness of the torus tube
+	 * @param defaultMode Defines the mode to render the mesh with
+	 */
+	public Torus(float radius, float tubeRadius, int rings, int ringSegs){
+		this(radius, tubeRadius, rings, ringSegs, SOLID_MODE);
+	}
+	
+	/**
+	 * Constructs a torus with the given {@code radius}, and {@code tubeRadius}, with {@code segments} rings
+	 * each with the given number of {@code segments} per ring. {@code defaultMode} will specify 
+	 * the mode the mesh will initially render with. Selectable modes and what they entail are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * <li>TUBE_RINGS: The mesh will render as a GL_LINES, where only the rings of the torus are rendered</li>
+	 * <li>FULL_TUBE_RINGS: The mesh will render as a GL_LINES, where only the rings of the full torus tube are rendered</li>
+	 * </ul>
+	 * 
+	 * @param radius Radius of the torus measured from the center of the torus to the middle of the torus's tube
+	 * @param tubeRadius Radius of the tube of the torus
+	 * @param segments Number of rings and segments per ring
+	 * @param defaultMode Defines the mode to render the mesh with
+	 */
+	public Torus(float radius, float tubeRadius, int segments, String defaultMode){
+		this(radius, tubeRadius, segments, segments, defaultMode);
+	}
+	
+	/**
+	 * Constructs a torus with the given {@code radius}, and {@code tubeRadius}, with the specified number of 
+	 * {@code rings} each with the given number of {@code segments} per ring. {@code defaultMode} will specify 
+	 * the mode the mesh will initially render with. Selectable modes and what they entail are as follows:
+	 * <ul>
+	 * <li>SOLID_MODE: The mesh will render as a GL_TRIANGLES</li>
+	 * <li>EDGE_MODE: The mesh will render as GL_LINES, where only the major edges of the mesh are rendered. This will
+	 * only render edges of the mesh that define its shape.</li>
+	 * <li>TUBE_RINGS: The mesh will render as a GL_LINES, where only the rings of the torus are rendered</li>
+	 * <li>FULL_TUBE_RINGS: The mesh will render as a GL_LINES, where only the rings of the full torus tube are rendered</li>
+	 * </ul>
+	 * 
+	 * Rings and ringSegs must be greater than 2, if the value is less than 3 a default value of 3 will be used instead.
+	 * 
+	 * @param radius Radius of the torus measured from the center of the torus to the middle of the torus's tube
+	 * @param tubeRadius Radius of the tube of the torus
+	 * @param rings Number of vertical segments defining the smoothness of the ring of the torus
+	 * @param ringSegs Number of horizontal segments defining the smoothness of the torus tube
+	 * @param defaultMode Defines the mode to render the mesh with
 	 */
 	public Torus(float radius, float tubeRadius, int rings, int ringSegs, String defaultMode){
 		super();
