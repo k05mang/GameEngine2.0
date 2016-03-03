@@ -35,7 +35,7 @@ public class PointLight extends Light {
 		//this gets the cutoff
 		this.radius = maxVec.length();
 		
-		trans.scale(radius);
+		transforms.scale(radius);
 	}
 
 	public float getRadius(){
@@ -45,23 +45,23 @@ public class PointLight extends Light {
 	@Override
 	public void transform(Transform transform){
 		radius *= transform.getScalars().x;
-		trans.transform(transform);
+		transforms.transform(transform);
 	}
 
 	@Override
 	public Mesh getVolume(){
-		volume.setTransform(trans);
+		volume.setTransform(transforms);
 		return volume;
 	}
 	
 	@Override
 	public void bind(ShaderProgram shader){
-		shader.setUniform("pLight.pos", trans.getTranslation());
+		shader.setUniform("pLight.pos", transforms.getTranslation());
 		shader.setUniform("pLight.color", color);
 		shader.setUniform("pLight.intensity", intensity);
 		shader.setUniform("pLight.radius", radius);
 		shader.setUniform("isPoint", true);
 		shader.setUniform("isSpot", false);
-		shader.setUniform("model", trans.getTransform());
+		shader.setUniform("model", transforms.getTransform());
 	}
 }

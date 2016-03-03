@@ -1,4 +1,4 @@
-package collision;
+package physics.collision;
 
 import glMath.*;
 import glMath.matrices.Mat4;

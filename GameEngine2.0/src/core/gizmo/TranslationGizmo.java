@@ -27,9 +27,9 @@ public class TranslationGizmo extends TransformGizmo{
 	@Override
 	public void bind(SpatialAsset target){
 		super.bind(target);
-		xaxis.setPos(target.getTransform().getTranslation());
-		yaxis.setPos(target.getTransform().getTranslation());
-		zaxis.setPos(target.getTransform().getTranslation());
+		xaxis.setPos(target.getPos());
+		yaxis.setPos(target.getPos());
+		zaxis.setPos(target.getPos());
 	}
 
 	@Override

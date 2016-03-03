@@ -14,8 +14,7 @@ import core.Resource;
 import core.SceneManager;
 import core.SpatialAsset;
 
-public abstract class Mesh implements Resource, SpatialAsset{
-	protected Transform transforms;
+public abstract class Mesh extends SpatialAsset implements Resource{
 	protected Geometry geometry;
 	protected VertexArray vao;
 	protected ArrayList<BufferObject> vbos;
@@ -27,6 +26,7 @@ public abstract class Mesh implements Resource, SpatialAsset{
 	 * Constructs a Renderable with a VertexArray, Mesh, Transform, and array of BufferObjects and IndexBuffers
 	 */
 	public Mesh(){
+		super();
 		vao = new VertexArray();
 		geometry = new Geometry();
 		transforms = new Transform();
@@ -47,27 +47,13 @@ public abstract class Mesh implements Resource, SpatialAsset{
 	 * @param copy Mesh to copy from
 	 */
 	public Mesh(Mesh copy){
+		super(copy);
 		vao = copy.vao;
 		vbos = copy.vbos;
 		ibos = copy.ibos;
 		geometry = copy.geometry;//new Geometry(copy.geometry);
 		transforms = new Transform(copy.transforms);
 		material = new String(copy.material);
-	}
-	
-	@Override
-	public void transform(Transform transform){
-		transforms.transform(transform);
-	}
-	
-	@Override
-	public void setTransform(Transform trans){
-		transforms.set(trans);
-	}
-	
-	@Override
-	public Transform getTransform(){
-		return transforms;
 	}
 	
 	/**

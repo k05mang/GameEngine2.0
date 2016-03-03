@@ -43,9 +43,9 @@ public class RotationGizmo extends TransformGizmo {
 	@Override
 	public void bind(SpatialAsset target){
 		super.bind(target);
-		xaxis.setPos(target.getTransform().getTranslation());
-		yaxis.setPos(target.getTransform().getTranslation());
-		zaxis.setPos(target.getTransform().getTranslation());
+		xRot.setTranslation(target.getPos());
+		yRot.setTranslation(target.getPos());
+		zRot.setTranslation(target.getPos());
 	}
 
 	@Override

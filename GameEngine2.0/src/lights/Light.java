@@ -7,10 +7,9 @@ import mesh.Mesh;
 import shaders.ShaderProgram;
 import core.SpatialAsset;
 
-public abstract class Light implements SpatialAsset{
+public abstract class Light extends SpatialAsset{
 	
 	protected Vec3 color;
-	protected Transform trans;
 	protected float intensity;
 	protected static final int VOLUME_FINENESS = 10;
 	//rotation for the next point on the volume
@@ -69,9 +68,9 @@ public abstract class Light implements SpatialAsset{
 	 * @param intensity Intensity of the light
 	 */
 	public Light(float xpos, float ypos, float zpos, float r, float g, float b, float intensity){
+		super();
 		color = new Vec3(r, g, b);
-		trans = new Transform();
-		trans.setTranslation(xpos, ypos, zpos);
+		transforms.setTranslation(xpos, ypos, zpos);
 		this.intensity = intensity;
 	}
 	
@@ -102,14 +101,6 @@ public abstract class Light implements SpatialAsset{
 	 */
 	public void setColor(float r, float g, float b){
 		color.set(r, g, b);
-	}
-	
-	@Override
-	public abstract void transform(Transform transform);
-	
-	@Override
-	public Transform getTransform(){
-		return trans;
 	}
 	
 	/**

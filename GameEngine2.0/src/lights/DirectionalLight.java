@@ -66,19 +66,19 @@ public class DirectionalLight extends Light {
 		super(0,0,0, r, g, b, intensity);
 		direction = new Vec3(dirx, diry, dirz);
 		originalDirection = new Vec3(dirx, diry, dirz);
-		trans.scale(vWidth, vHeight, vDepth);
+		transforms.scale(vWidth, vHeight, vDepth);
 	}
 
 	@Override
 	public Mesh getVolume(){
-		volume.setTransform(trans);
+		volume.setTransform(transforms);
 		return volume;
 	}
 
 	@Override
 	public void transform(Transform transform){
 		direction = transform.getOrientation().multVec(direction);
-		trans.transform(transform);
+		transforms.transform(transform);
 	}
 	
 	@Override
@@ -88,12 +88,12 @@ public class DirectionalLight extends Light {
 		shader.setUniform("dLight.intensity", intensity);
 		shader.setUniform("isPoint", false);
 		shader.setUniform("isSpot", false);
-		shader.setUniform("model", trans.getTransform());
+		shader.setUniform("model", transforms.getTransform());
 	}
 
 	@Override
 	public void setTransform(Transform trans) {
 		direction = trans.getOrientation().multVec(originalDirection);
-		this.trans.set(trans);
+		transforms.set(trans);
 	}
 }

@@ -25,7 +25,7 @@ public abstract class TransformGizmo {
 	
 	public void bind(SpatialAsset target){
 		this.target = target;
-		sphereTrans.setTranslation(target.getTransform().getTranslation());
+		sphereTrans.setTranslation(target.getPos());
 	}
 	
 	public void unbind(){

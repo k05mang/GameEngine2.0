@@ -106,8 +106,8 @@ public class SpotLight extends Light {
 		direction = new Vec3(dirx, diry, dirz).normalize();
 		Vec3 axis = centerVec.cross(direction);
 		float angle = (float)(Math.acos(centerVec.dot(direction))*180/Math.PI);
-		trans.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
-		trans.scale(this.radius, this.length, this.radius);
+		transforms.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
+		transforms.scale(this.radius, this.length, this.radius);
 	}
 	
 	public float getRadius(){
@@ -132,18 +132,18 @@ public class SpotLight extends Light {
 		Quaternion rotation = transform.getOrientation();
 		direction = rotation.multVec(direction);
 		
-		trans.transform(transform);
+		transforms.transform(transform);
 	}
 
 	@Override
 	public Mesh getVolume(){
-		volume.setTransform(trans);
+		volume.setTransform(transforms);
 		return volume;
 	}
 	
 	@Override
 	public void bind(ShaderProgram shader){
-		shader.setUniform("sLight.pos", trans.getTranslation());
+		shader.setUniform("sLight.pos", transforms.getTranslation());
 		shader.setUniform("sLight.color", color);
 		shader.setUniform("sLight.intensity", intensity);
 		shader.setUniform("sLight.cutOff", cutoff);
@@ -151,6 +151,6 @@ public class SpotLight extends Light {
 		shader.setUniform("sLight.direction", direction);
 		shader.setUniform("isPoint", false);
 		shader.setUniform("isSpot", true);
-		shader.setUniform("model", trans.getTransform());
+		shader.setUniform("model", transforms.getTransform());
 	}
 }
