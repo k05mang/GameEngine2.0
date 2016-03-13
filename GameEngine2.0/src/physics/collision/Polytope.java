@@ -127,7 +127,7 @@ public class Polytope {
 	 * @author Kevin
 	 *
 	 */
-	public static class PolytopePoint{
+	public class PolytopePoint{
 		
 		public Vec3 supportA, supportB, supportFinal;//support points
 		
@@ -163,7 +163,7 @@ public class Polytope {
 	 * @author Kevin
 	 *
 	 */
-	public static class PolytopeEdge{
+	public class PolytopeEdge{
 		
 		public PolytopePoint start, end;//start and end points as polytopePoints
 		
@@ -196,7 +196,7 @@ public class Polytope {
 	 * @author Kevin
 	 *
 	 */
-	public static class PolytopeTriangle{
+	public class PolytopeTriangle{
 		public PolytopeEdge s1, s2, s3;
 		public Vec3 normal;
 		

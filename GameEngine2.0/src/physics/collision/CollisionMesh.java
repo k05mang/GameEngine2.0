@@ -21,5 +21,12 @@ public abstract class CollisionMesh extends SpatialAsset{
 		super(copy);
 	}
 	
+	/**
+	 * Gets the farthest point on the mesh in the given direction.
+	 * 
+	 * @param direction Direction to sample a point from on the mesh
+	 * 
+	 * @return Point on the mesh in the direction the given vector
+	 */
 	public abstract Vec3 support(Vec3 direction);
 }

@@ -25,93 +25,6 @@ public abstract class CollisionDetector {
 		return expandingPolytope(new Polytope(simplex.get(3), simplex.get(2), simplex.get(1), simplex.get(0)), objA, objB);
 	}
 	
-	private static boolean computeSimplex(ArrayList<Polytope.PolytopePoint> simplex, Vec3 direction){
-		switch(simplex.size()){
-			case 1:
-				return false;
-			case 2:
-				//vectors from the recently added point to the simplex to the origin
-				Vec3 ao = simplex.get(1).supportFinal.inverse();
-				//vector from the recently added point in the simplex to the previous point
-				Vec3 ab = (Vec3)VecUtil.subtract(simplex.get(0).supportFinal, simplex.get(1).supportFinal);
-				/*since we know that the origin can't be behind B, since we just came from that
-				direction, and we know it can't be in front of A, since A is that farthest point 
-				on the sum and it would have failed the early exit test, we know then that the
-				origin is only in the direction perpendicular to the edge AB
-				*/				
-				direction.set(VecUtil.cross(ab,ao,ab));
-				return false;
-			case 3:
-				ab = (Vec3)VecUtil.subtract( simplex.get(1).supportFinal, simplex.get(2).supportFinal );
-				Vec3 ac = (Vec3)VecUtil.subtract( simplex.get(0).supportFinal, simplex.get(2).supportFinal );
-				ao = simplex.get(2).supportFinal.inverse();
-				Vec3 abc = ab.cross(ac);
-				/*
-				 * check if the edge AC is closest to the origin*/
-				if(abc.cross(ac).dot(ao) > 0){
-					simplex.remove(1);
-					direction.set(VecUtil.cross(ac,ao,ac));
-				}else if(ab.cross(abc).dot(ao) > 0){
-					simplex.remove(0);
-					direction.set(VecUtil.cross(ab,ao,ab));
-				}else{
-					if(abc.dot(ao) > 0){
-						direction.set(abc);
-					}else{
-						direction.set(abc.inverse());
-						Polytope.PolytopePoint b = simplex.get(0);
-						simplex.set(0, simplex.get(1));
-						simplex.set(1, b);
-					}
-				}
-				return false;
-			case 4:
-				ab = (Vec3)VecUtil.subtract( simplex.get(2).supportFinal, simplex.get(3).supportFinal );
-				ac = (Vec3)VecUtil.subtract( simplex.get(1).supportFinal, simplex.get(3).supportFinal );
-				Vec3 ad = (Vec3)VecUtil.subtract( simplex.get(0).supportFinal, simplex.get(3).supportFinal );
-				abc = ab.cross(ac);
-				Vec3 acd = ac.cross(ad);
-				Vec3 adb = ad.cross(ab);
-				ao = simplex.get(3).supportFinal.inverse();
-				float abcDOTao = abc.dot(ao);
-				float acdDOTao = acd.dot(ao);
-				float adbDOTao = adb.dot(ao);
-				
-				//test what face the origin might be located
-				if(abcDOTao > 0){
-					simplex.remove(0);
-				}else if(acdDOTao > 0){
-					simplex.remove(2);
-				}else if(adbDOTao > 0){
-					simplex.remove(1);//remove C
-					Polytope.PolytopePoint b = simplex.get(1);
-					//swap B and D to maintain winding order
-					simplex.set(1, simplex.get(0));
-					simplex.set(0, b);
-				}else{
-					return true;
-				}
-				//check the new triangle for edge cases, only updating the direction vector
-				//after, this was where I was messing up last time, passing a new direction
-				//and letting the loop run again
-				ab = (Vec3)VecUtil.subtract( simplex.get(1).supportFinal, simplex.get(2).supportFinal );
-				ac = (Vec3)VecUtil.subtract( simplex.get(0).supportFinal, simplex.get(2).supportFinal );
-				abc = ab.cross(ac);
-				if(abc.cross(ac).dot(ao) > 0){
-					simplex.remove(1);
-					direction.set(VecUtil.cross(ac,ao,ac));
-				}else if(ab.cross(abc).dot(ao) > 0){
-					simplex.remove(0);
-					direction.set(VecUtil.cross(ab,ao,ab));
-				}else{
-					direction.set(abc);
-				}
-				return false;
-			default:
-				return false;
-		}
-	}
-	
 	//this seems to be producing the wrong results FIX IT
 	private static CollisionData computeDistance(ArrayList<Polytope.PolytopePoint> points){
 //		System.out.println(points.size());
@@ -119,7 +32,8 @@ public abstract class CollisionDetector {
 			case 1:
 				Polytope.PolytopePoint point = points.get(0);
 				Vec3 normal = new Vec3(point.supportA);
-				float distance = normal.normalize();
+				float distance = normal.length();
+				normal.normalize();
 				return new CollisionData(normal, point.supportA, point.supportA, distance, false);
 			case 2:
 				Polytope.PolytopePoint start = points.get(1);
