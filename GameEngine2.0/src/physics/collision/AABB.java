@@ -65,8 +65,8 @@ public class AABB extends CollisionMesh{
 	
 	@Override
 	public void transform(Transform transform){
-		transforms.setTranslation(transform);
-		transforms.setScale(transform);
+		transforms.translate(transform);
+		transforms.scale(transform);
 	}
 	
 	@Override
@@ -84,11 +84,11 @@ public class AABB extends CollisionMesh{
 				Math.copySign(halfDimensions.z, direction.z)
 				);
 		//transform the point
-		//translate
-		point.add(transforms.getTranslation());
 		//scale
 		Vec3 scalars = transforms.getScalars();
 		point.set(point.x*scalars.x, point.y*scalars.y, point.z*scalars.z);
+		//translate
+		point.add(transforms.getTranslation());
 		return point;
 	}
 }

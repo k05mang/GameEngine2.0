@@ -111,10 +111,13 @@ public class Simplex {
 //			ac = (Vec3)VecUtil.subtract( c, a );
 //			abc = ab.cross(ac);
 //			if(abc.cross(ac).dot(ao) > 0){
-//				simplex.remove(1);
+//				//remove b
+//				b = c;
+//				c = null;
 //				direction.set(VecUtil.cross(ac,ao,ac));
 //			}else if(ab.cross(abc).dot(ao) > 0){
-//				simplex.remove(0);
+//				//remove c
+//				c = null;
 //				direction.set(VecUtil.cross(ab,ao,ab));
 //			}else{
 //				direction.set(abc);
