@@ -12,27 +12,70 @@ import shaders.ShaderProgram;
 import core.Resource;
 import core.SceneManager;
 
+/**
+ * 
+ * @author Kevin Mango
+ * 
+ * Class used to represent vectors in a 3 dimensional space, and additionally used to create interactive transformation elements.
+ *
+ */
 public class Arrow{
 	
 	private Transform shaftTrans, tipTrans;
-	private float length, tipLength;
+	private float shaftLength, tipLength;
 	private final float origLength, origTipLength;
 	private Vec3 direction, position, color;
 	private boolean useCube;
 	private Mesh shaft, tip;
-	
+
+	/**
+	 * Same as {@link #Arrow(float length, Vec3 position, Vec3 direction, Vec3 color, boolean cubeTip) Arrow} with cubeTip set to false
+	 */
 	public Arrow(float length, Vec3 position, Vec3 direction, Vec3 color){
 		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, color.x, color.y, color.z, false);
 	}
 	
+	/**
+	 * Same as {@link #Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz, 
+	 * float r, float g, float b, boolean cubeTip) Arrow} with cubeTip set to false
+	 */
 	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz, float r, float g, float b){
 		this(length, posx, posy, posz, dirx, diry, dirz, r, g, b, false);
 	}
 	
+	/**
+	 * Constructs an Arrow object with the given {@code length}, {@code position}, {@code direction}, and {@code color}.
+	 * {@code cubeTip} is used to specify the type of tip that is used in rendering the Arrow, if true the tip will be a 
+	 * cube, else a cone will be used.
+	 * 
+	 * @param length Length of the Arrow from the base to the tip
+	 * @param position Position of the base of the Arrow
+	 * @param direction Direction of the Arrow
+	 * @param color Color of the Arrow
+	 * @param cubeTip Boolean indicating what type of tip to use in rendering, true means a cube will be the tip, otherwise a cone
+	 */
 	public Arrow(float length, Vec3 position, Vec3 direction, Vec3 color, boolean cubeTip){
 		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, color.x, color.y, color.z);
 	}
 	
+	/**
+	 * Constructs an Arrow object with the given {@code length}, position given by {@code posx}, {@code posy}, and {@code posz}.
+	 * Direction given by {@code dirx}, {@code diry}, and {@code dirz} relative to the base position of the Arrow. And color 
+	 * specified by {@code r}, {@code g}, and {@code b}. {@code cubeTip} is used to specify the type of tip that is used in 
+	 * rendering the Arrow, if true the tip will be a cube, else a cone will be used.
+	 * 
+	 * @param length Length of the Arrow from base to tip
+	 * @param posx X value of the position of the Arrow
+	 * @param posy Y value of the position of the Arrow
+	 * @param posz Z value of the position of the Arrow
+	 * @param dirx X value of the direction of the Arrow 
+	 * @param diry Y value of the direction of the Arrow 
+	 * @param dirz Z value of the direction of the Arrow 
+	 * @param r Red component of the Arrow's color
+	 * @param g Green component of the Arrow's color
+	 * @param b Blue component of the Arrow's color
+	 * @param cubeTip Boolean indicating what type of tip to use in rendering, true means a cube will be the tip, otherwise a cone
+	 */
 	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz, float r, float g, float b, boolean cubeTip){
 		//add meshes to the meshes manager if they don't exist already
 		//check if the shaft was added
@@ -50,10 +93,13 @@ public class Arrow{
 		shaft = (Mesh)SceneManager.meshes.get("arrow_shaft");
 		useCube = cubeTip;
 		tip = useCube ? (Mesh)SceneManager.meshes.get("arrow_cube") : (Mesh)SceneManager.meshes.get("arrow_cone");
-		this.length = length;
-		origLength = length;
+		
 		origTipLength = useCube ? 2 : 2.5f;
 		tipLength = origTipLength;
+		//subtract tip length from the length of the shaft so that the arrow will span the entire length
+		shaftLength = length-origTipLength;
+		origLength = length-origTipLength;
+		
 		color = new Vec3(r, g, b);
 		position = new Vec3(posx, posy, posz);
 		direction = new Vec3(dirx, diry, dirz);
@@ -68,13 +114,14 @@ public class Arrow{
 		shaftTrans.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
 		tipTrans.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
 		//translate the cylinder
-		float halfLength = length/2;
+		float halfLength = shaftLength/2;
 		shaftTrans.translate(halfLength*direction.x, halfLength*direction.y, halfLength*direction.z);
 		//translate the tip
+		halfLength = tipLength/2;
 		tipTrans.translate(
-				length*direction.x+Math.signum(direction.x)*(tipLength/2), 
-				length*direction.y+Math.signum(direction.y)*(tipLength/2), 
-				length*direction.z+Math.signum(direction.z)*(tipLength/2));
+				shaftLength*direction.x+Math.signum(direction.x)*halfLength, 
+				shaftLength*direction.y+Math.signum(direction.y)*halfLength, 
+				shaftLength*direction.z+Math.signum(direction.z)*halfLength);
 		
 		//translate both to the position
 		shaftTrans.translate(position);
@@ -82,15 +129,27 @@ public class Arrow{
 		
 	}
 	
+	/**
+	 * Renders the Arrow by first setting the "model" and "color" variables of the given ShaderProgram. "color"
+	 * is expected to be a vec3 uniform and will be set the value of this Arrows color. "model" is expected to
+	 * be a mat4 uniform that will be used to transform the meshes of the Arrow during rendering.
+	 * 
+	 * @param program ShaderProgram whose uniform variables to modify for rendering this Arrow
+	 */
 	public void render(ShaderProgram program){
-		program.setUniform("model", shaftTrans.getTransform());
 		program.setUniform("color", color);
+		program.setUniform("model", shaftTrans.getTransform());
 		shaft.render();
 		program.setUniform("model", tipTrans.getTransform());
-		program.setUniform("color", color);
 		tip.render();
 	}
 	
+	/**
+	 * Transforms the Arrow with the given Transform {@code trans}, all transformations are applied relative to the base
+	 * of the Arrow.
+	 * 
+	 * @param trans Transform to modify this Arrow with
+	 */
 	public void transform(Transform trans){
 		shaftTrans.transform(trans);
 		tipTrans.transform(trans);
@@ -98,16 +157,16 @@ public class Arrow{
 		position.add(trans.getTranslation());
 
 		//scale
-		float newLength = trans.getScalars().y*length;
+		float newLength = trans.getScalars().y*shaftLength;
 		float newTipLength = trans.getScalars().y*tipLength;
 		//translate the meshes to maintain the position
-		shaftTrans.translate((newLength-length)/2*direction.x, (newLength-length)/2*direction.y, (newLength-length)/2*direction.z);
+		shaftTrans.translate((newLength-shaftLength)/2*direction.x, (newLength-shaftLength)/2*direction.y, (newLength-shaftLength)/2*direction.z);
 		tipTrans.translate(
-				(newLength-length+(newTipLength-tipLength)/2)*direction.x, 
-				(newLength-length+(newTipLength-tipLength)/2)*direction.y, 
-				(newLength-length+(newTipLength-tipLength)/2)*direction.z
+				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.x, 
+				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.y, 
+				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.z
 				);
-		length = newLength;
+		shaftLength = newLength;
 		tipLength = newTipLength;
 		
 		//rotate
@@ -128,61 +187,113 @@ public class Arrow{
 		direction.normalize();
 	}
 	
+	/**
+	 * Sets the length of the Arrow to the given length, the length only changes the length of the shaft of the Arrow. The
+	 * tip retains it's length after the length of the Arrow has been changed, however the full length of the Arrow from the
+	 * base to the tip of the tip will be equal to the length passed to this function.
+	 * 
+	 * @param length The new length to set this Arrow to 
+	 */
 	public void setLength(float length){
-		float scale = length/this.length;//calculate how much to scale the cylinder by
-		shaftTrans.scale(1, scale, 1);
-		Vec3 translation = new Vec3(direction);
-		translation.scale((length-this.length)/2);
-		shaftTrans.translate(translation);
-		tipTrans.translate(translation.scale(2));
-		this.length = length;
+		float scale = (length-tipLength)/shaftLength;//calculate how much to scale the cylinder by
+		shaftTrans.scale(1, scale, 1);//scale the shaft
+		Vec3 translation = new Vec3(direction);//copy the direction vector for translating the pieces of the arrow
+		translation.scale((length-tipLength-shaftLength)/2);//scale direction copy for translation of cylinder
+		shaftTrans.translate(translation);//translate the shaft
+		tipTrans.translate(translation.scale(2));//translate the tip after scaling the translation vector
+		shaftLength = length-tipLength;
 	}
 	
+	/**
+	 * Gets the length of the Arrow, the length is defined as the span between the starting point of the Arrow to the tip of the Arrow
+	 * 
+	 * @return The length of the Arrow from the base to the tip
+	 */
 	public float getLength(){
-		return length;
+		return shaftLength+tipLength;
 	}
 	
+	/**
+	 * Sets the scaling for this Arrow, the Arrow's positiion will be maintained, meaning that any scaling is done relative to the
+	 * position of the Arrow
+	 * 
+	 * @param scale Scale to set this Arrow to
+	 */
 	public void setScale(float scale){
 		float newLength = scale*origLength;
 		float newTipLength = scale*origTipLength;
 		//translate the meshes to maintain the position
-		shaftTrans.translate((newLength-length)/2*direction.x, (newLength-length)/2*direction.y, (newLength-length)/2*direction.z);
+		shaftTrans.translate((newLength-shaftLength)/2*direction.x, (newLength-shaftLength)/2*direction.y, (newLength-shaftLength)/2*direction.z);
 		tipTrans.translate(
-				(newLength-length+(newTipLength-tipLength)/2)*direction.x, 
-				(newLength-length+(newTipLength-tipLength)/2)*direction.y, 
-				(newLength-length+(newTipLength-tipLength)/2)*direction.z
+				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.x, 
+				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.y, 
+				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.z
 				);
 		shaftTrans.setScale(.5f, origLength, .5f);
 		float xzScale = useCube ? origTipLength : 1;
 		tipTrans.setScale(xzScale, origTipLength, xzScale);
 		shaftTrans.scale(scale);
 		tipTrans.scale(scale);
-		length = newLength;
+		shaftLength = newLength;
 		tipLength = newTipLength;
 	}
 	
+	/**
+	 * Sets the position of this Arrow with the given vector
+	 * 
+	 * @param pos Vector representing the new position of this Arrow
+	 */
 	public void setPos(Vec3 pos){
 		setPos(pos.x, pos.y, pos.z);
 	}
 	
+	/**
+	 * Sets the position this Arrow is being emitted from
+	 * 
+	 * @param x X value to set this Arrows position to
+	 * @param y Y value to set this Arrows position to
+	 * @param z Z value to set this Arrows position to
+	 */
 	public void setPos(float x, float y, float z){
 		shaftTrans.translate(x-position.x, y-position.y, z-position.z);
 		tipTrans.translate(x-position.x, y-position.y, z-position.z);
 		position.set(x, y, z);
 	}
 	
+	/**
+	 * Gets the position this Arrow is emitted from
+	 * 
+	 * @return Position this Arrow is being emitted from
+	 */
 	public Vec3 getPos(){
 		return position;
 	}
 	
+	/**
+	 * Sets the color to use when rendering this Arrow
+	 * 
+	 * @param r Red component of this Arrows color
+	 * @param g Green component of this Arrows color
+	 * @param b Blue component of this Arrows color
+	 */
 	public void setColor(float r, float g, float b){
 		color.set(r, g, b);
 	}
 	
+	/**
+	 * Sets the color used to render this arrow
+	 * 
+	 * @param color Vector containing the RGB components of the color to use when rendering this Arrow
+	 */
 	public void setColor(Vec3 color){
 		setColor(color.x, color.y, color.z);
 	}
 	
+	/**
+	 * Gets the color that is used when rendering the Arrow
+	 * 
+	 * @return Vector containing the RGB components of the color of this Arrow
+	 */
 	public Vec3 getColor(){
 		return color;
 	}

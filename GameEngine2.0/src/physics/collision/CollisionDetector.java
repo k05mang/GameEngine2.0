@@ -28,6 +28,48 @@ public abstract class CollisionDetector {
 		return true;
 	}
 	
+	public static boolean intersects(Ray ray, AABB bbox){
+		//create the normals of the planes of the faces of the bounding box
+		//since the box is axis aligned all the face normals are just the axis and their negations
+		Vec3 rayRelBox = VecUtil.subtract(ray.getPos(), bbox.getPos());//ray position relative to the box
+		//determine the normals that need to be tested based on the position of ray relative to the box
+		//this way we only need to test the 3 faces that could potentially be intersected
+		Vec3 xaxis = new Vec3(Math.signum(rayRelBox.x),0,0);
+		Vec3 yaxis = new Vec3(0,Math.signum(rayRelBox.y),0);
+		Vec3 zaxis = new Vec3(0,0,Math.signum(rayRelBox.z));
+		Vec3 boxhalfDim = bbox.getHalfDimensions();
+		//compute the point intersection for the 3 planes defined by the normals above
+			//x face of the bounding box
+				float lDotn = xaxis.dot(ray.getDirection());
+				//first check if the ray could intersect the plane at all
+				if(lDotn <= 0){//
+					//compute the plane center for use in the formula to compute the point on the plane intersection
+					//from the bounding box center translate in the direction of the face we are testing against
+					//by the dimension of the x axis of the box
+					Vec3 planeCenter = VecUtil.add(bbox.getPos(), VecUtil.scale(xaxis, boxhalfDim.x));
+					//before computing depth along the line, determine if the ray is parallel to the plane to prevent div 0
+					if(lDotn < 0){
+						//compute the depth along the line for the point on the line that intersects the plane
+						//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
+						float d = ((planeCenter.subtract(ray.getPos()).dot(xaxis)))/lDotn;
+						Vec3 planePoint = VecUtil.scale(ray.getDirection(), d).add(ray.getPos());
+						
+						//check if the point is in the bounds of the plane that represents the face of the bounding box
+						//check with the point relative to the center of the plane
+						planePoint.subtract(planeCenter);
+						if(Math.abs(planePoint.y) <= boxhalfDim.y && Math.abs(planePoint.z) <= boxhalfDim.z){
+							return true;
+						}
+					}else{
+						return true;
+					}
+				}
+			//y face of the bounding box
+			//z face of the bounding box
+			
+			return false;
+	}
+	
 	//this seems to be producing the wrong results FIX IT
 //	private static CollisionData computeDistance(ArrayList<Polytope.PolytopePoint> points){
 ////		System.out.println(points.size());
