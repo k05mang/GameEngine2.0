@@ -1,5 +1,6 @@
 package mesh;
 
+import physics.collision.Ray;
 import glMath.Quaternion;
 import glMath.Transform;
 import glMath.VecUtil;
@@ -29,10 +30,44 @@ public class Arrow{
 	private Mesh shaft, tip;
 
 	/**
+	 * Constructs an arrow that represents a Ray object
+	 * 
+	 * @param ray Ray whose data to use in the construction of this Arrow
+	 */
+	public Arrow(Ray ray){
+		//use the rays length only if the ray is negative which means it is infinite, in which case an arbitrary value is used
+		this(ray.getLength() < 0 ? 10000 : ray.getLength(), ray.getPos(), ray.getDirection(), 1,1,1);
+	}
+	
+	/**
 	 * Same as {@link #Arrow(float length, Vec3 position, Vec3 direction, Vec3 color, boolean cubeTip) Arrow} with cubeTip set to false
 	 */
 	public Arrow(float length, Vec3 position, Vec3 direction, Vec3 color){
 		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, color.x, color.y, color.z, false);
+	}
+	
+	public Arrow(float length, Vec3 position, Vec3 direction, float r, float g, float b){
+		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, r, g, b, false);
+	}
+	
+	public Arrow(float length, float posx, float posy, float posz, Vec3 direction, Vec3 color){
+		this(length, posx, posy, posz, direction.x, direction.y, direction.z, color.x, color.y, color.z, false);
+	}
+	
+	public Arrow(float length, Vec3 position, float dirx, float diry, float dirz, Vec3 color){
+		this(length, position.x, position.y, position.z, dirx, diry, dirz, color.x, color.y, color.z, false);
+	}
+	
+	public Arrow(float length, Vec3 position, float dirx, float diry, float dirz, float r, float g, float b){
+		this(length, position.x, position.y, position.z, dirx, diry, dirz, r, g, b, false);
+	}
+	
+	public Arrow(float length, float posx, float posy, float posz, Vec3 direction, float r, float g, float b){
+		this(length, posx, posy, posz, direction.x, direction.y, direction.z, r, g, b, false);
+	}
+	
+	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz, Vec3 color){
+		this(length, posx, posy, posz, dirx, diry, dirz, color.x, color.y, color.z, false);
 	}
 	
 	/**
@@ -55,7 +90,31 @@ public class Arrow{
 	 * @param cubeTip Boolean indicating what type of tip to use in rendering, true means a cube will be the tip, otherwise a cone
 	 */
 	public Arrow(float length, Vec3 position, Vec3 direction, Vec3 color, boolean cubeTip){
-		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, color.x, color.y, color.z);
+		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, color.x, color.y, color.z, cubeTip);
+	}
+	
+	public Arrow(float length, Vec3 position, Vec3 direction, float r, float g, float b, boolean cubeTip){
+		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, r, g, b, cubeTip);
+	}
+	
+	public Arrow(float length, float posx, float posy, float posz, Vec3 direction, Vec3 color, boolean cubeTip){
+		this(length, posx, posy, posz, direction.x, direction.y, direction.z, color.x, color.y, color.z, cubeTip);
+	}
+	
+	public Arrow(float length, Vec3 position, float dirx, float diry, float dirz, Vec3 color, boolean cubeTip){
+		this(length, position.x, position.y, position.z, dirx, diry, dirz, color.x, color.y, color.z, cubeTip);
+	}
+	
+	public Arrow(float length, Vec3 position, float dirx, float diry, float dirz, float r, float g, float b, boolean cubeTip){
+		this(length, position.x, position.y, position.z, dirx, diry, dirz, r, g, b, cubeTip);
+	}
+	
+	public Arrow(float length, float posx, float posy, float posz, Vec3 direction, float r, float g, float b, boolean cubeTip){
+		this(length, posx, posy, posz, direction.x, direction.y, direction.z, r, g, b, cubeTip);
+	}
+	
+	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz, Vec3 color, boolean cubeTip){
+		this(length, posx, posy, posz, dirx, diry, dirz, color.x, color.y, color.z, cubeTip);
 	}
 	
 	/**
@@ -102,10 +161,9 @@ public class Arrow{
 		
 		color = new Vec3(r, g, b);
 		position = new Vec3(posx, posy, posz);
-		direction = new Vec3(dirx, diry, dirz);
-		direction.normalize();
+		direction = new Vec3(dirx, diry, dirz).normalize();
 		//create the initial transforms for the shaft and tip
-		shaftTrans = new Transform().scale(.5f, length, .5f);
+		shaftTrans = new Transform().scale(.5f, shaftLength, .5f);
 		float xzScale = useCube ? tipLength : 1;
 		tipTrans = new Transform().scale(xzScale, tipLength, xzScale);
 		//first orient the meshes
@@ -117,11 +175,10 @@ public class Arrow{
 		float halfLength = shaftLength/2;
 		shaftTrans.translate(halfLength*direction.x, halfLength*direction.y, halfLength*direction.z);
 		//translate the tip
-		halfLength = tipLength/2;
 		tipTrans.translate(
-				shaftLength*direction.x+Math.signum(direction.x)*halfLength, 
-				shaftLength*direction.y+Math.signum(direction.y)*halfLength, 
-				shaftLength*direction.z+Math.signum(direction.z)*halfLength);
+				(shaftLength+tipLength)*direction.x, 
+				(shaftLength+tipLength)*direction.y, 
+				(shaftLength+tipLength)*direction.z);
 		
 		//translate both to the position
 		shaftTrans.translate(position);
@@ -162,9 +219,9 @@ public class Arrow{
 		//translate the meshes to maintain the position
 		shaftTrans.translate((newLength-shaftLength)/2*direction.x, (newLength-shaftLength)/2*direction.y, (newLength-shaftLength)/2*direction.z);
 		tipTrans.translate(
-				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.x, 
-				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.y, 
-				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.z
+				(newLength-shaftLength+newTipLength-tipLength)*direction.x, 
+				(newLength-shaftLength+newTipLength-tipLength)*direction.y, 
+				(newLength-shaftLength+newTipLength-tipLength)*direction.z
 				);
 		shaftLength = newLength;
 		tipLength = newTipLength;
@@ -225,9 +282,9 @@ public class Arrow{
 		//translate the meshes to maintain the position
 		shaftTrans.translate((newLength-shaftLength)/2*direction.x, (newLength-shaftLength)/2*direction.y, (newLength-shaftLength)/2*direction.z);
 		tipTrans.translate(
-				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.x, 
-				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.y, 
-				(newLength-shaftLength+(newTipLength-tipLength)/2)*direction.z
+				(newLength-shaftLength+newTipLength-tipLength)*direction.x, 
+				(newLength-shaftLength+newTipLength-tipLength)*direction.y, 
+				(newLength-shaftLength+newTipLength-tipLength)*direction.z
 				);
 		shaftTrans.setScale(.5f, origLength, .5f);
 		float xzScale = useCube ? origTipLength : 1;

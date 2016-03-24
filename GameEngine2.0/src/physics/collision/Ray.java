@@ -9,15 +9,15 @@ public class Ray extends SpatialAsset {
 	private Vec3 direction;
 	private float length;
 	
-	Ray(float length, Vec3 start, Vec3 direction){
+	public Ray(float length, Vec3 start, Vec3 direction){
 		this(length, start.x, start.y, start.z, direction.x, direction.y, direction.z);
 	}
 	
-	Ray(float length, float x, float y, float z, float dirx, float diry, float dirz){
+	public Ray(float length, float x, float y, float z, float dirx, float diry, float dirz){
 		super();
 		this.length = Math.abs(length);
 		transforms.translate(x, y, z);
-		direction = new Vec3(dirx, diry, dirz);
+		direction = new Vec3(dirx, diry, dirz).normalize();
 	}
 
 	public Ray(Ray copy) {

@@ -50,7 +50,7 @@ public class AABB extends CollisionMesh{
 	 */
 	public AABB(float width, float height, float depth){
 		super();
-		halfDimensions = new Vec3(width/2.0f, height/2.0f, depth/2.0f);
+		halfDimensions = new Vec3(Math.abs(width)/2.0f, Math.abs(height)/2.0f, Math.abs(depth)/2.0f);
 	}
 	
 	/**

@@ -44,7 +44,7 @@ public interface MouseEvent {
 	 * 
 	 * @param window Window that called this callback function
 	 * @param xpos New x position of the mouse cursor
-	 * @param ypos New y position of the mouse cursor
+	 * @param ypos New y position of the mouse cursor, y values increase as the mouse moves down the screen
 	 */
 	public void mouseMove(Window window, double xpos, double ypos);
 }
