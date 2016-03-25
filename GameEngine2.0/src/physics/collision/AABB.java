@@ -64,13 +64,14 @@ public class AABB extends CollisionMesh{
 	}
 	
 	/**
-	 * Gets the half dimensions of the bounding box
+	 * Gets the current half dimensions of the bounding box
 	 * 
 	 * @return A Vec3 containing the half dimensions of the bounding box, each vector component 
 	 * corresponds to the dimension along that axis
 	 */
 	public Vec3 getHalfDimensions(){
-		return halfDimensions;
+		Vec3 scalars = transforms.getScalars();
+		return new Vec3(halfDimensions.x*scalars.x, halfDimensions.y*scalars.y, halfDimensions.z*scalars.z);
 	}
 	
 	@Override

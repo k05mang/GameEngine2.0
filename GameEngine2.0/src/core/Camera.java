@@ -1,75 +1,22 @@
 package core;
-import glMath.*;
+import static glMath.VecUtil.dot;
+import glMath.MatrixUtil;
+import glMath.Quaternion;
+import glMath.VecUtil;
 import glMath.matrices.Mat4;
 import glMath.vectors.Vec3;
 import glMath.vectors.Vec4;
-import static glMath.VecUtil.*;
+import physics.collision.Ray;
 
 public class Camera {
 	
 	private float theta, phi;
 	private Vec3 eye, forward, right, up;
 	private Mat4 projection;
-	/*
-	 * theta: Horizontal rotation in degrees
-	 * phi: Vertical rotation in degrees
-	 * eye: The x,y,z, coordinates of the camera
-	 * forward: The forward vector for the camera look at matrix
-	 * right: The right vector for the camera look at matrix
-	 * up: The up vector for the camera look at matrix
-	 * projection: The projection matrix for this camera 
-	 */
-	
-	/**
-	 * Constructs a camera object without any projection matrix, the camera is centered
-	 * at the origin, defined as (0,0,0) with 0 horizontal and vertical rotation.
-	 */
-	public Camera(){
-		this(0,0,0,0,0);
-	}
 	
 	/**
 	 * Creates a camera with the given x, y, z eye position, and a theta horizontal rotation
-	 * and a phi vertical rotation.
-	 * 
-	 * @param x the x component of the camera's location
-	 * @param y the y component of the camera's location
-	 * @param z the z component of the camera's location
-	 * @param theta the camera's horizontal rotation (in degrees)
-	 * @param phi the camera's vertical rotation (in degrees)
-	 */
-	public Camera( float x, float y, float z,
-			float theta , float phi) {
-		this.theta = theta;
-		this.phi = phi;
-		eye = new Vec3(x, y, z);
-		forward = new Vec3(0,0,-1);
-		right = new Vec3(1,0,0);
-		up = new Vec3(0,1,0);
-		projection = null;
-	}
-	
-	/**
-	 * Creates a camera with the given vector eye position, and a theta horizontal rotation
-	 * and a phi vertical rotation.
-	 * 
-	 * @param eye Vector that will be used for this cameras starting position
-	 * @param theta the camera's horizontal rotation (in degrees)
-	 * @param phi the camera's vertical rotation (in degrees)
-	 */
-	public Camera( Vec3 eye, float theta , float phi) {
-		this.theta = theta;
-		this.phi = phi;
-		this.eye = new Vec3(eye);
-		forward = new Vec3(0,0,-1);
-		right = new Vec3(1,0,0);
-		up = new Vec3(0,1,0);
-		projection = null;
-	}
-	
-	/**
-	 * Creates a camera with the given x, y, z eye position, and a theta horizontal rotation
-	 * and a phi vertical rotation, additionall this creates and stores a perspective projection
+	 * and a phi vertical rotation. Additionally this creates and stores a perspective projection
 	 * matrix formed using the given fovy, aspect, zNear, and zFar.
 	 * 
 	 * @param x the x component of the camera's location
@@ -253,5 +200,24 @@ public class Camera {
 	
 	public Vec3 getForwardVec(){
 		return forward;
+	}
+	
+	/**
+	 * Creates a Ray projected from the given normalized screen coordinates
+	 * 
+	 * @param x Screen space x in normalized coordinates
+	 * @param y Screen space y in normalized coordinates translated to account for inverted screen position
+	 * 
+	 * @return Ray projected in world coordinates
+	 */
+	public Ray genRay(float x, float y){
+		Vec4 ray = new Vec4(x, y, 1, 1);//vector in normalized screen space
+		//transform vector into view space from clip space using the inverse projection
+		ray = projection.inverse().multVec(ray);
+		ray.scale(1/ray.w);
+		//transform the ray into world space from view space using inverse view matrix
+		ray = getLookAt().inverse().multVec(ray);
+		//construct ray using eye position and ray direction and length
+		return new Ray(100, eye, ray.x, ray.y, ray.z);
 	}
 }

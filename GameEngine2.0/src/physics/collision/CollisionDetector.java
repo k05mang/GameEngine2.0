@@ -1,8 +1,9 @@
 package physics.collision;
 
-import java.util.ArrayList;
-
+import glMath.Quaternion;
+import glMath.Transform;
 import glMath.VecUtil;
+import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
 
 public abstract class CollisionDetector {
@@ -28,127 +29,92 @@ public abstract class CollisionDetector {
 		return true;
 	}
 	
-	public static boolean intersects(Ray ray, AABB bbox){
-		//create the normals of the planes of the faces of the bounding box
-		//since the box is axis aligned all the face normals are just the axis and their negations
-		Vec3 rayRelBox = VecUtil.subtract(ray.getPos(), bbox.getPos());//ray position relative to the box
-		//determine the normals that need to be tested based on the position of ray relative to the box
-		//this way we only need to test the 3 faces that could potentially be intersected
-		Vec3 xaxis = new Vec3(Math.signum(rayRelBox.x),0,0);
-		Vec3 yaxis = new Vec3(0,Math.signum(rayRelBox.y),0);
-		Vec3 zaxis = new Vec3(0,0,Math.signum(rayRelBox.z));
-		Vec3 boxhalfDim = bbox.getHalfDimensions();
-		float d = 0;//length along the ray that will intersect the plane
-		float rayLength = ray.getLength();
+	public static boolean intersects(Ray ray, CollisionPlane plane){
+		Vec2 planeHalfDim = plane.getHalfDimensions();
 		//compute the point intersection for the 3 planes defined by the normals above
 			//x face of the bounding box
-				float lDotn = xaxis.dot(ray.getDirection());
+				float lDotn = plane.getNormal().dot(ray.getDirection());
 				//first check if the ray could intersect the plane at all
 				if(lDotn <= 0){
-					//compute the plane center for use in the formula to compute the point on the plane intersection
-					//from the bounding box center translate in the direction of the face we are testing against
-					//by the dimension of the x axis of the box
-					Vec3 planeCenter = VecUtil.add(bbox.getPos(), VecUtil.scale(xaxis, boxhalfDim.x));
 					//compute the depth along the line for the point on the line that intersects the plane
 					//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
-					d = VecUtil.subtract(planeCenter, ray.getPos()).dot(xaxis)/lDotn;
-					if(rayLength >= 0){
-						//early out if the point on the line that intersects the plane is greater than the rays length it failed
-						if(d < rayLength){
-							Vec3 planePoint = VecUtil.scale(ray.getDirection(), d).add(ray.getPos());
-							//check if the point is in the bounds of the plane that represents the face of the bounding box
-							//check with the point relative to the center of the plane
-							planePoint.subtract(planeCenter);
-							if(Math.abs(planePoint.y) <= boxhalfDim.y && Math.abs(planePoint.z) <= boxhalfDim.z){
-//								System.out.println("X axis intersected");
-								return true;
-							}
-						}
-					}else{//case where the rays length is negative meaning it is infinite length
-						Vec3 planePoint = VecUtil.scale(ray.getDirection(), d).add(ray.getPos());
-						
-						//check if the point is in the bounds of the plane that represents the face of the bounding box
-						//check with the point relative to the center of the plane
-						planePoint.subtract(planeCenter);
-						if(Math.abs(planePoint.y) <= boxhalfDim.y && Math.abs(planePoint.z) <= boxhalfDim.z){
-//							System.out.println("X axis intersected");
-							return true;
-						}
+					float d = VecUtil.subtract(plane.getPos(), ray.getPos()).dot(plane.getNormal())/lDotn;
+					//check if the point computed along the line is within the range of the ray
+					if(ray.getLength() >= 0 && d > ray.getLength()){
+						return false;
+					}
+					Quaternion inverseOrient = plane.getTransform().getOrientation().conjugate();
+					//get the point on the plane by getting the point along the line in the direction of the ray using d
+					//translating that point by the ray position to get the point on the plane in world space
+					//translate that point so that it is relative to the plane origin
+					//orient that final point to make it relative to the plane before it is oriented
+					Vec3 planePoint = inverseOrient.multVec(VecUtil.scale(ray.getDirection(), d).add(ray.getPos()).subtract(plane.getPos()));
+					if(Math.abs(planePoint.x) <= planeHalfDim.x && Math.abs(planePoint.z) <= planeHalfDim.y){
+						return true;
 					}
 				}
-			//y face of the bounding box
-				lDotn = yaxis.dot(ray.getDirection());
-				//first check if the ray could intersect the plane at all
-				if(lDotn <= 0){
-					//compute the plane center for use in the formula to compute the point on the plane intersection
-					//from the bounding box center translate in the direction of the face we are testing against
-					//by the dimension of the x axis of the box
-					Vec3 planeCenter = VecUtil.add(bbox.getPos(), VecUtil.scale(yaxis, boxhalfDim.y));
-					//compute the depth along the line for the point on the line that intersects the plane
-					//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
-					d = VecUtil.subtract(planeCenter, ray.getPos()).dot(yaxis)/lDotn;
-					if(rayLength >= 0){
-						//early out if the point on the line that intersects the plane is greater than the rays length it failed
-						if(d < rayLength){
-							Vec3 planePoint = VecUtil.scale(ray.getDirection(), d).add(ray.getPos());
-							
-							//check if the point is in the bounds of the plane that represents the face of the bounding box
-							//check with the point relative to the center of the plane
-							planePoint.subtract(planeCenter);
-							if(Math.abs(planePoint.x) <= boxhalfDim.x && Math.abs(planePoint.z) <= boxhalfDim.z){
-//								System.out.println("y axis intersected");
-								return true;
-							}
-						}
-					}else{//case where the rays length is negative meaning it is infinite length
-						Vec3 planePoint = VecUtil.scale(ray.getDirection(), d).add(ray.getPos());
-						
-						//check if the point is in the bounds of the plane that represents the face of the bounding box
-						//check with the point relative to the center of the plane
-						planePoint.subtract(planeCenter);
-						if(Math.abs(planePoint.x) <= boxhalfDim.x && Math.abs(planePoint.z) <= boxhalfDim.z){
-//							System.out.println("y axis intersected");
-							return true;
-						}
-					}
-				}
-			//z face of the bounding box
-				lDotn = zaxis.dot(ray.getDirection());
-				//first check if the ray could intersect the plane at all
-				if(lDotn <= 0){
-					//compute the plane center for use in the formula to compute the point on the plane intersection
-					//from the bounding box center translate in the direction of the face we are testing against
-					//by the dimension of the x axis of the box
-					Vec3 planeCenter = VecUtil.add(bbox.getPos(), VecUtil.scale(zaxis, boxhalfDim.z));
-					//compute the depth along the line for the point on the line that intersects the plane
-					//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
-					d = VecUtil.subtract(planeCenter, ray.getPos()).dot(zaxis)/lDotn;
-					if(rayLength >= 0){
-						//early out if the point on the line that intersects the plane is greater than the rays length it failed
-						if(d < rayLength){
-							Vec3 planePoint = VecUtil.scale(ray.getDirection(), d).add(ray.getPos());
-							
-							//check if the point is in the bounds of the plane that represents the face of the bounding box
-							//check with the point relative to the center of the plane
-							planePoint.subtract(planeCenter);
-							if(Math.abs(planePoint.x) <= boxhalfDim.x && Math.abs(planePoint.y) <= boxhalfDim.y){
-//								System.out.println("z axis intersected");
-								return true;
-							}
-						}
-					}else{//case where the rays length is negative meaning it is infinite length
-						Vec3 planePoint = VecUtil.scale(ray.getDirection(), d).add(ray.getPos());
-						
-						//check if the point is in the bounds of the plane that represents the face of the bounding box
-						//check with the point relative to the center of the plane
-						planePoint.subtract(planeCenter);
-						if(Math.abs(planePoint.x) <= boxhalfDim.x && Math.abs(planePoint.y) <= boxhalfDim.y){
-//							System.out.println("z axis intersected");
-							return true;
-						}
-					}
-				}
-			return false;
+		return false;
+	}
+	
+	public static boolean intersects(Ray ray, AABB bbox){
+		//check if the ray was emitted from the box center which means the ray collides with the box
+		if(ray.getPos().equals(bbox.getPos())){
+			return true;
+		}
+		CollisionPlane plane = new CollisionPlane(1,1);//collision plane that will be modified for use with the faces
+		Transform trans = new Transform();//transform used to modify the plane
+		//this is to reduce memory usage
+		//compute the planes of the faces of the bounding box that are relevant for the ray
+		Vec3 rayRelBox = VecUtil.subtract(ray.getPos(), bbox.getPos());//ray position relative to the box
+		Vec3 boxHalfDim = bbox.getHalfDimensions();
+		
+		//compute x face
+		//scale the plane
+		trans.scale(boxHalfDim.y*2, 1, boxHalfDim.z*2);
+		//orient
+		trans.rotate(0,0,-1,Math.signum(rayRelBox.x)*90);
+		//translate
+		trans.translate(bbox.getPos());
+		trans.translate(Math.signum(rayRelBox.x)*boxHalfDim.x,0,0);
+		
+		//set the collision plane to the computed transform
+		plane.setTransform(trans);
+		//perform the computation for the x face
+		if(!intersects(ray, plane)){
+			//if that failed try the y face
+			//scale the plane
+			trans.setScale(boxHalfDim.x*2, 1, boxHalfDim.z*2);
+			//orient
+			trans.setOrientation(Quaternion.fromAxisAngle(0,0,-1,90-Math.signum(rayRelBox.y)*90));//rotate 180 if the y is negative 0 if not
+			//translate
+			trans.setTranslation(bbox.getPos());
+			trans.translate(0,Math.signum(rayRelBox.y)*boxHalfDim.y,0);
+			
+			//set the collision plane to the computed transform
+			plane.setTransform(trans);
+			
+			//perform the computation for the y face
+			if(!intersects(ray, plane)){
+				//if that failed try the z face
+				//scale the plane
+				trans.setScale(boxHalfDim.x*2, 1, boxHalfDim.y*2);
+				//orient
+				trans.setOrientation(Quaternion.fromAxisAngle(1,0,0,Math.signum(rayRelBox.z)*90));
+				//translate
+				trans.setTranslation(bbox.getPos());
+				trans.translate(0,0,Math.signum(rayRelBox.z)*boxHalfDim.z);
+				
+				//set the collision plane to the computed transform
+				plane.setTransform(trans);
+				
+				//perform the computation for the z face
+				return intersects(ray, plane);//since this is the final one it will decide true or false
+			}else{
+				return true;
+			}
+		}else{
+			return true;
+		}
 	}
 	
 	//this seems to be producing the wrong results FIX IT

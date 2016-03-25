@@ -180,13 +180,13 @@ public class Mat4 implements Matrix {
 					 -matrix[2].x*(matrix[0].y*matrix[3].z-matrix[3].y*matrix[0].z)
 					 +matrix[3].x*(matrix[0].y*matrix[2].z-matrix[2].y*matrix[0].z),
 				
-					  matrix[0].x*(matrix[1].y*matrix[3].z-matrix[3].y*matrix[1].z)
+					 -(matrix[0].x*(matrix[1].y*matrix[3].z-matrix[3].y*matrix[1].z)
 					 -matrix[1].x*(matrix[0].y*matrix[3].z-matrix[3].y*matrix[0].z)
-					 +matrix[3].x*(matrix[0].y*matrix[1].z-matrix[1].y*matrix[0].z),
+					 +matrix[3].x*(matrix[0].y*matrix[1].z-matrix[1].y*matrix[0].z)),
 				
-					 -(matrix[0].x*(matrix[1].y*matrix[2].z-matrix[2].y*matrix[1].z)
+					 matrix[0].x*(matrix[1].y*matrix[2].z-matrix[2].y*matrix[1].z)
 					 -matrix[1].x*(matrix[0].y*matrix[2].z-matrix[2].y*matrix[0].z)
-					 +matrix[2].x*(matrix[0].y*matrix[1].z-matrix[1].y*matrix[0].z))
+					 +matrix[2].x*(matrix[0].y*matrix[1].z-matrix[1].y*matrix[0].z)
 					);
 			
 			matrix[0].set(col1);

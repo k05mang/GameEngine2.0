@@ -8,9 +8,17 @@ public class Ray extends SpatialAsset {
 
 	private Vec3 direction;
 	private float length;
-	
+
 	public Ray(float length, Vec3 start, Vec3 direction){
 		this(length, start.x, start.y, start.z, direction.x, direction.y, direction.z);
+	}
+	
+	public Ray(float length, Vec3 start, float dirx, float diry, float dirz){
+		this(length, start.x, start.y, start.z, dirx, diry, dirz);
+	}
+
+	public Ray(float length, float x, float y, float z, Vec3 direction){
+		this(length, x, y, z, direction.x, direction.y, direction.z);
 	}
 	
 	public Ray(float length, float x, float y, float z, float dirx, float diry, float dirz){
@@ -35,14 +43,12 @@ public class Ray extends SpatialAsset {
 	}
 	
 	public Vec3 getDirection(){
-		return direction;
+		return transforms.getOrientation().multVec(direction);
 	}
 
 	@Override
 	public void transform(Transform transform){
-		transforms.translate(transform);//only translate the point since scaling is only relevant to the length
-		//and orientation for the direction
-		//orient the direction
-		direction.set(transforms.getOrientation().multVec(direction));
+		transforms.translate(transform);
+		transforms.rotate(transform);
 	}
 }

@@ -25,15 +25,18 @@ public class CollisionPlane extends CollisionMesh{
 		normal = new Vec3(copy.normal);
 	}
 	
+	public Vec3 getNormal(){
+		return transforms.getOrientation().multVec(normal);
+	}
+	
+	public Vec2 getHalfDimensions(){
+		Vec3 scalars = transforms.getScalars();
+		return new Vec2(halfDimensions.x*scalars.x, halfDimensions.y*scalars.z);
+	}
+	
 	@Override
 	public void transform(Transform trans){
 		super.transform(trans);//perform transformations as usual
-		//update the dimensions of the plane
-		halfDimensions.x *= trans.getScalars().x;
-		halfDimensions.y *= trans.getScalars().z;
-		
-		//orient the plane normal
-		normal.set(trans.getOrientation().multVec(normal));
 	}
 
 	@Override
