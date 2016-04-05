@@ -1,7 +1,7 @@
 package mesh.primitives.geometry;
 
 import mesh.Mesh;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
@@ -142,14 +142,14 @@ public final class Torus extends Mesh {
 				//prevent generating faces on the last loop since the faces need for the end of the
 				//torus has already been generated
 				if(curRing < maxRing && ringSeg < maxRingSeg){
-					Face left = new Face(
+					Triangle left = new Triangle(
 							ringSeg+(maxRingSeg+1)*curRing,//current vertex (current segment of current rings)
 							(ringSeg+1)+(maxRingSeg+1)*(curRing+1),//next segment of next ring
 							(ringSeg+1)+(maxRingSeg+1)*curRing//next segment of current ring
 							);
 					geometry.add(left);
 					
-					Face right = new Face(
+					Triangle right = new Triangle(
 							ringSeg+(maxRingSeg+1)*curRing,//current vertex (current segment of current rings)
 							ringSeg+(maxRingSeg+1)*(curRing+1),//current segment of next ring
 							(ringSeg+1)+(maxRingSeg+1)*(curRing+1)//next segment of next ring

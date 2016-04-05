@@ -7,7 +7,7 @@ package mesh.primitives;
  *
  */
 public class HalfEdge {
-	public Face parent;
+	public Triangle parent;
 	public HalfEdge opposite, next, prev;
 	public Integer sourceVert;
 	

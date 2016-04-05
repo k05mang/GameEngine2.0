@@ -3,7 +3,7 @@ package mesh.primitives.geometry;
 import java.util.HashMap;
 
 import mesh.Mesh;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import glMath.VecUtil;
 import glMath.vectors.Vec2;
@@ -154,40 +154,40 @@ public final class Icosphere extends Mesh {
 		
 		//specify faces, when considering what portion is being computed consider the icosahedron from the positive z looking down the negative z, with positive y being up
 		//pair of faces connected with top most positive y vertices
-		subdivide(new Face(4,5,0), clampedOrder, vertMap);//front half
-		subdivide(new Face(5,4,2), clampedOrder, vertMap);//back half
+		subdivide(new Triangle(4,5,0), clampedOrder, vertMap);//front half
+		subdivide(new Triangle(5,4,2), clampedOrder, vertMap);//back half
 		
 		//pair of faces connected with bottom most negative y vertices
-		subdivide(new Face(7,6,1), clampedOrder, vertMap);//front half
-		subdivide(new Face(6,7,3), clampedOrder, vertMap);//back half
+		subdivide(new Triangle(7,6,1), clampedOrder, vertMap);//front half
+		subdivide(new Triangle(6,7,3), clampedOrder, vertMap);//back half
 		
 		//pair of faces connected with right most positive x vertices
-		subdivide(new Face(8,9,4), clampedOrder, vertMap);//top half
-		subdivide(new Face(9,8,6), clampedOrder, vertMap);//bottom half
+		subdivide(new Triangle(8,9,4), clampedOrder, vertMap);//top half
+		subdivide(new Triangle(9,8,6), clampedOrder, vertMap);//bottom half
 		
 		//pair of faces connected with left most negative x vertices
-		subdivide(new Face(11,10,5), clampedOrder, vertMap);//top half
-		subdivide(new Face(10,11,7), clampedOrder, vertMap);//bottom half
+		subdivide(new Triangle(11,10,5), clampedOrder, vertMap);//top half
+		subdivide(new Triangle(10,11,7), clampedOrder, vertMap);//bottom half
 		
 		//pair of faces connected with front most positive z vertices
-		subdivide(new Face(0,1,8), clampedOrder, vertMap);//right half
-		subdivide(new Face(1,0,10), clampedOrder, vertMap);//left half
+		subdivide(new Triangle(0,1,8), clampedOrder, vertMap);//right half
+		subdivide(new Triangle(1,0,10), clampedOrder, vertMap);//left half
 		
 		//pair of faces connected with back most negative z vertices
-		subdivide(new Face(3,2,9), clampedOrder, vertMap);//right half
-		subdivide(new Face(2,3,11), clampedOrder, vertMap);//left half
+		subdivide(new Triangle(3,2,9), clampedOrder, vertMap);//right half
+		subdivide(new Triangle(2,3,11), clampedOrder, vertMap);//left half
 		
 		//positive z corners
-		subdivide(new Face(0,5,10), clampedOrder, vertMap);//top left
-		subdivide(new Face(0,8,4), clampedOrder, vertMap);//top right
-		subdivide(new Face(1,6,8), clampedOrder, vertMap);//bottom right
-		subdivide(new Face(1,10,7), clampedOrder, vertMap);//bottom left
+		subdivide(new Triangle(0,5,10), clampedOrder, vertMap);//top left
+		subdivide(new Triangle(0,8,4), clampedOrder, vertMap);//top right
+		subdivide(new Triangle(1,6,8), clampedOrder, vertMap);//bottom right
+		subdivide(new Triangle(1,10,7), clampedOrder, vertMap);//bottom left
 		
 		//negative z corners
-		subdivide(new Face(2,11,5), clampedOrder, vertMap);//top left
-		subdivide(new Face(2,4,9), clampedOrder, vertMap);//top right
-		subdivide(new Face(3,9,6), clampedOrder, vertMap);//bottom right
-		subdivide(new Face(3,7,11), clampedOrder, vertMap);//bottom left
+		subdivide(new Triangle(2,11,5), clampedOrder, vertMap);//top left
+		subdivide(new Triangle(2,4,9), clampedOrder, vertMap);//top right
+		subdivide(new Triangle(3,9,6), clampedOrder, vertMap);//bottom right
+		subdivide(new Triangle(3,7,11), clampedOrder, vertMap);//bottom left
 
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		vao.addVertexBuffer("default", vbo);
@@ -228,7 +228,7 @@ public final class Icosphere extends Mesh {
 	 * @param vertMap Map relating Vertices to their index values, this allows for more efficient use of 
 	 * memory on the GPU by reducing vertex redundancy
 	 */
-	private void subdivide(Face base, int order, HashMap<Vertex, Integer> vertMap){
+	private void subdivide(Triangle base, int order, HashMap<Vertex, Integer> vertMap){
 		//if we are at the lowest order then add the face to the mesh
 		if(order == 0){
 			geometry.add(base);
@@ -274,10 +274,10 @@ public final class Icosphere extends Mesh {
 			}
 			
 			//generate the faces
-			Face top = new Face(base.he1.sourceVert, vertMap.get(edge1), vertMap.get(edge3));
-			Face left = new Face(base.he2.sourceVert, vertMap.get(edge2), vertMap.get(edge1));
-			Face right = new Face(base.he3.sourceVert, vertMap.get(edge3), vertMap.get(edge2));
-			Face middle = new Face(vertMap.get(edge1), vertMap.get(edge2), vertMap.get(edge3));
+			Triangle top = new Triangle(base.he1.sourceVert, vertMap.get(edge1), vertMap.get(edge3));
+			Triangle left = new Triangle(base.he2.sourceVert, vertMap.get(edge2), vertMap.get(edge1));
+			Triangle right = new Triangle(base.he3.sourceVert, vertMap.get(edge3), vertMap.get(edge2));
+			Triangle middle = new Triangle(vertMap.get(edge1), vertMap.get(edge2), vertMap.get(edge3));
 
 			//recurse with a lower order
 			subdivide(top, order-1, vertMap);

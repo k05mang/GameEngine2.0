@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import mesh.primitives.Edge;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.HalfEdge;
 import mesh.primitives.Vertex;
 import renderers.RenderMode;
@@ -17,7 +17,7 @@ import gldata.BufferObject;
 public class Geometry {
 	private ArrayList<Vertex> vertices;
 	private HashMap<Vertex, Integer> hashVerts;
-	private ArrayList<Face> faces;
+	private ArrayList<Triangle> triangles;
 	private HashMap<Edge, HalfEdge> edgeMap;
 	
 	/**
@@ -26,25 +26,25 @@ public class Geometry {
 	public Geometry(){
 		vertices = new ArrayList<Vertex>();
 		hashVerts = new HashMap<Vertex, Integer>();
-		faces = new ArrayList<Face>();
+		triangles = new ArrayList<Triangle>();
 		edgeMap = new HashMap<Edge, HalfEdge>();
 	}
 	
-	public Geometry(Geometry geo){
-		vertices = new ArrayList<Vertex>(geo.vertices.size());
-		hashVerts = new HashMap<Vertex, Integer>(geo.vertices.size());
-		faces = new ArrayList<Face>(geo.faces.size());
+	public Geometry(Geometry copy){
+		vertices = new ArrayList<Vertex>(copy.vertices.size());
+		hashVerts = new HashMap<Vertex, Integer>(copy.vertices.size());
+		triangles = new ArrayList<Triangle>(copy.triangles.size());
 		edgeMap = new HashMap<Edge, HalfEdge>();
 		
 		//copy each vertex into this geometry object
-		for(Vertex vert : geo.vertices){
+		for(Vertex vert : copy.vertices){
 			vertices.add(new Vertex(vert));
 			hashVerts.put(vert, vertices.size()-1);
 		}
 		
 		//copy the faces
-		for(Face face : geo.faces){
-			add(face);
+		for(Triangle triangle : copy.triangles){
+			add(triangle);
 		}
 	}
 	
@@ -61,47 +61,47 @@ public class Geometry {
 	/**
 	 * Adds a face to this mesh, the face should contain indices that correspond to the inserted vertices of this mesh
 	 * 
-	 * @param face Face to add to this mesh
+	 * @param triangle Face to add to this mesh
 	 */
-	public void add(Face face){
-		faces.add(new Face(face));
+	public void add(Triangle triangle){
+		triangles.add(new Triangle(triangle));
 		
 		//create edge that the half edge is associated with but in reverse order, this is due to the edge that marked the half edge
 		//potentially in the map has an opposite ordering
-		Edge mapEdge1 = new Edge(face.e1.end, face.e1.start);
+		Edge mapEdge1 = new Edge(triangle.e1.end, triangle.e1.start);
 		//check if the edgemap has that edge which should return the corresponding halfedge
 		HalfEdge mapHE1 = edgeMap.get(mapEdge1);
 		//check if we found the half edge
 		if(mapHE1 != null){
 			//if we did set their opposites to be each other
-			face.he1.opposite = mapHE1;
-			mapHE1.opposite = face.he1;
+			triangle.he1.opposite = mapHE1;
+			mapHE1.opposite = triangle.he1;
 		}else{//if not add it to the map
-			edgeMap.put(face.e1, face.he1);
+			edgeMap.put(triangle.e1, triangle.he1);
 		}
 		
-		Edge mapEdge2 = new Edge(face.e2.end, face.e2.start);
+		Edge mapEdge2 = new Edge(triangle.e2.end, triangle.e2.start);
 		//check if the edgemap has that edge which should return the corresponding halfedge
 		HalfEdge mapHE2 = edgeMap.get(mapEdge2);
 		//check if we found the half edge
 		if(mapHE2 != null){
 			//if we did set their opposites to be each other
-			face.he2.opposite = mapHE2;
-			mapHE2.opposite = face.he2;
+			triangle.he2.opposite = mapHE2;
+			mapHE2.opposite = triangle.he2;
 		}else{//if not add it to the map
-			edgeMap.put(face.e2, face.he2);
+			edgeMap.put(triangle.e2, triangle.he2);
 		}
 		
-		Edge mapEdge3 = new Edge(face.e3.end, face.e3.start);
+		Edge mapEdge3 = new Edge(triangle.e3.end, triangle.e3.start);
 		//check if the edgemap has that edge which should return the corresponding halfedge
 		HalfEdge mapHE3 = edgeMap.get(mapEdge3);
 		//check if we found the half edge
 		if(mapHE3 != null){
 			//if we did set their opposites to be each other
-			face.he3.opposite = mapHE3;
-			mapHE3.opposite = face.he3;
+			triangle.he3.opposite = mapHE3;
+			mapHE3.opposite = triangle.he3;
 		}else{//if not add it to the map
-			edgeMap.put(face.e3, face.he3);
+			edgeMap.put(triangle.e3, triangle.he3);
 		}
 	}
 	
@@ -111,7 +111,7 @@ public class Geometry {
 	public void empty(){
 		vertices.clear();
 		hashVerts.clear();
-		faces.clear();
+		triangles.clear();
 		edgeMap.clear();
 	}
 	
@@ -147,7 +147,7 @@ public class Geometry {
 	 * @return Number of faces in this mesh
 	 */
 	public int getNumFaces(){
-		return faces.size();
+		return triangles.size();
 	}
 	
 	/**
@@ -174,7 +174,7 @@ public class Geometry {
 	}
 	
 	public void genNormals(){
-		for(Face curFace : faces){
+		for(Triangle curFace : triangles){
 			Vertex v0 = vertices.get(curFace.he1.sourceVert);
 			Vertex v1 = vertices.get(curFace.he2.sourceVert);
 			Vertex v2 = vertices.get(curFace.he3.sourceVert);
@@ -197,7 +197,7 @@ public class Geometry {
 	}
 	
 	public void genTangentBitangent(){
-		for(Face curFace : faces){
+		for(Triangle curFace : triangles){
 			Vertex v0 = vertices.get(curFace.he1.sourceVert);
 			Vertex v1 = vertices.get(curFace.he2.sourceVert);
 			Vertex v2 = vertices.get(curFace.he3.sourceVert);
@@ -237,11 +237,11 @@ public class Geometry {
 	 * @return Face at the specified index in this mesh
 	 * @throws IndexOutOfBoundsException
 	 */
-	public Face getFace(int index) throws IndexOutOfBoundsException{
-		if(index > faces.size()-1 || index < 0){
+	public Triangle getFace(int index) throws IndexOutOfBoundsException{
+		if(index > triangles.size()-1 || index < 0){
 			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Face from mesh");
 		}else{
-			return faces.get(index);
+			return triangles.get(index);
 		}
 	}
 	
@@ -290,12 +290,12 @@ public class Geometry {
 				break;
 				
 			case TRIANGLES:
-				for(Face curFace : faces){
+				for(Triangle curFace : triangles){
 					curFace.insertPrim(buffer);
 				}
 				break;
 			case TRIANGLES_ADJ:
-				for(Face curFace : faces){
+				for(Triangle curFace : triangles){
 					curFace.insertPrimAdj(buffer);
 				}
 				break;
@@ -319,7 +319,7 @@ public class Geometry {
 	 */
 	private void insertLines(IndexBuffer buffer){
 		HashMap<Edge, Boolean> visited = new HashMap<Edge, Boolean>();
-		for(Face curFace : faces){
+		for(Triangle curFace : triangles){
 			//create edge that is ordered opposite since the edge in the map will have an opposite ordering when it was added
 			Edge edge1 = new Edge(curFace.e1.end, curFace.e1.start);
 			//check if the line being processed from this face was already added as part of another face iteration

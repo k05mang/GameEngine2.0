@@ -4,7 +4,7 @@ import gldata.IndexBuffer;
 import gldata.VertexArray;
 import gldata.BufferObject;
 
-public class Face {
+public class Triangle {
 	public Edge e1, e2, e3;
 	public HalfEdge he1, he2, he3;
 	//public boolean isStored;
@@ -20,7 +20,7 @@ public class Face {
 	 * @param v1 Second vertex of the triangle 
 	 * @param v2 Third vertex of the triangle 
 	 */
-	public Face(int v0, int v1, int v2){
+	public Triangle(int v0, int v1, int v2){
 		//isStored = false;
 		
 		e1 = new Edge(v0, v1);
@@ -52,10 +52,10 @@ public class Face {
 	 * primitive indices copied, other information stored in the face, such as adjacency information,
 	 * will not be copied.
 	 * 
-	 * @param face Face to copy
+	 * @param triangle Face to copy
 	 */
-	public Face(Face face){
-		this(face.he1.sourceVert, face.he2.sourceVert, face.he3.sourceVert);
+	public Triangle(Triangle triangle){
+		this(triangle.he1.sourceVert, triangle.he2.sourceVert, triangle.he3.sourceVert);
 	}
 	
 	/**
@@ -89,11 +89,11 @@ public class Face {
 	
 	@Override
 	public boolean equals(Object o){
-		if(o instanceof Face){
-			Face face = (Face)o;
-			return face.he1.sourceVert == he1.sourceVert &&
-					face.he2.sourceVert == he2.sourceVert &&
-					face.he3.sourceVert == he3.sourceVert;
+		if(o instanceof Triangle){
+			Triangle triangle = (Triangle)o;
+			return triangle.he1.sourceVert == he1.sourceVert &&
+					triangle.he2.sourceVert == he2.sourceVert &&
+					triangle.he3.sourceVert == he3.sourceVert;
 		}else{
 			return false;
 		}

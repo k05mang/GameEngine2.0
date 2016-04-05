@@ -23,7 +23,7 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 	public static final String SOLID_MODE = "solid", EDGE_MODE = "edges";
 	
 	/**
-	 * Constructs a Renderable with a VertexArray, Mesh, Transform, and array of BufferObjects and IndexBuffers
+	 * Constructs a Mesh with a VertexArray, Mesh, Transform, and array of BufferObjects and IndexBuffers
 	 */
 	public Mesh(){
 		super();
@@ -36,12 +36,12 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 	}
 	
 	/**
-	 * Creates a copy of the given Renderable.
+	 * Creates a copy of the given Mesh.
 	 * <p>
-	 * This Renderable will share the underlying VertexArray object as well as the Mesh object. Caution should be taken as this
+	 * This Mesh will share the underlying VertexArray object as well as the Mesh object. Caution should be taken as this
 	 * can lead to errors when the delete function is called since the shared VertexArray will be deleted.
 	 * 
-	 * The Transform object for this Renderable will be a copy of the Transform for the given Renderable and will not be shared.
+	 * The Transform object for this Mesh will be a copy of the Transform for the given Mesh and will not be shared.
 	 * </p>
 	 * 
 	 * @param copy Mesh to copy from
@@ -66,16 +66,16 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 	}
 	
 	/**
-	 * Gets the mesh associated with this Renderable
+	 * Gets the geometry associated with this Mesh
 	 * 
-	 * @return The mesh used by this Renderable
+	 * @return The geometry used by this Mesh
 	 */
-	public Geometry getMesh(){
+	public Geometry getGeometry(){
 		return geometry;
 	}
 	
 	/**
-	 * Gets the number of vertices associated with this Renderable
+	 * Gets the number of vertices associated with this Mesh
 	 * 
 	 * @return Number of vertices in this renderable's mesh
 	 */
@@ -84,7 +84,7 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 	}
 
 	/**
-	 * Gets the number of faces associated with this Renderable
+	 * Gets the number of faces associated with this Mesh
 	 * 
 	 * @return Number of faces in this renderable's mesh
 	 */

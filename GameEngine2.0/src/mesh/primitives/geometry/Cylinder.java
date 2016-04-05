@@ -3,7 +3,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import mesh.Mesh;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import renderers.RenderMode;
 import gldata.AttribType;
@@ -81,7 +81,7 @@ public final class Cylinder extends Mesh{
 			geometry.add(sideBottom);
 			
 			if(segment < maxSegment){
-				Face left = new Face(
+				Triangle left = new Triangle(
 						segment*4,//current segment top left
 						(segment+1)*4+1,//next segment bottom right
 						segment*4+1//current segment bottom left
@@ -89,7 +89,7 @@ public final class Cylinder extends Mesh{
 				//left side face
 				geometry.add(left);
 				
-				Face right = new Face(
+				Triangle right = new Triangle(
 						segment*4,//current segment top left
 						(segment+1)*4,//next segment top right
 						(segment+1)*4+1//next segment bottom right
@@ -123,7 +123,7 @@ public final class Cylinder extends Mesh{
 				geometry.add(capTop);
 				geometry.add(capBottom);
 				if(segment < maxSegment-2){
-					Face top = new Face(
+					Triangle top = new Triangle(
 							2,//base top cap vert which is 2
 							(segment+2)*4+2,//vert that is the second next segment
 							(segment+1)*4+2//vert that is the next segment
@@ -131,7 +131,7 @@ public final class Cylinder extends Mesh{
 					//top cap face
 					geometry.add(top);
 
-					Face bottom = new Face(
+					Triangle bottom = new Triangle(
 							3,//base bottom cap vert which is 3
 							(segment+1)*4+3,//vert that is the next segment
 							(segment+2)*4+3//vert that is the second next segment

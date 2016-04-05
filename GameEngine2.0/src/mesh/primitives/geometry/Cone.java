@@ -4,7 +4,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import mesh.Mesh;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
@@ -91,7 +91,7 @@ public final class Cone extends Mesh {
 			geometry.add(bottomVert);
 			bottomVert.addTo(vbo);
 			
-			Face side = new Face(
+			Triangle side = new Triangle(
 					0,	
 					(segment+1)%(subdiv+1) == 0 ? 1 : (segment+1)%(subdiv+1),
 					segment
@@ -101,7 +101,7 @@ public final class Cone extends Mesh {
 			side.insertPrim(solidIbo);
 			//generate faces for the bottom cap, only when on the third to last vertex
 			if(segment < subdiv-1){
-				Face bottom = new Face(
+				Triangle bottom = new Triangle(
 						1,			//the first bottom vertex
 						segment+1, 	//the vertex that is segment+1 of the bottom ring
 						segment+2   //the vertex that is segment+2 of the bottom ring

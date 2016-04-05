@@ -1,7 +1,7 @@
 package mesh.primitives.geometry;
 
 import mesh.Mesh;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
@@ -94,8 +94,8 @@ public final class Plane extends Mesh{
 		geometry.add(topRight);
 		geometry.add(bottomRight);
 		
-		geometry.add(new Face(0,1,2));
-		geometry.add(new Face(2,1,3));
+		geometry.add(new Triangle(0,1,2));
+		geometry.add(new Triangle(2,1,3));
 
 		//solid ibo
 		solidIbo.add(0);

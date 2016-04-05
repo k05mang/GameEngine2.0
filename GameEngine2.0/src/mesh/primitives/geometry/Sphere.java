@@ -6,7 +6,7 @@ import static java.lang.Math.cos;
 
 
 import mesh.Mesh;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
@@ -138,7 +138,7 @@ public final class Sphere extends Mesh{
 					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u-uvOffset, 1-v);
 					geometry.add(vert);
 					
-					Face top = new Face(
+					Triangle top = new Triangle(
 							curSlice,//current vertex index
 							nextStackIndex+1,//next slice of the next stack 
 							nextStackIndex//current slice of the next stack
@@ -165,7 +165,7 @@ public final class Sphere extends Mesh{
 					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u-uvOffset, 1-v);
 					geometry.add(vert);
 					
-					Face bottom = new Face(
+					Triangle bottom = new Triangle(
 							curIndex,//current vertex index
 							curIndex+1,//next index of current stack
 							nextStackIndex//next stack same slice
@@ -191,14 +191,14 @@ public final class Sphere extends Mesh{
 					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
 					geometry.add(vert);
 					if(curSlice < maxSlice && curStack < maxStack-1){
-						Face left = new Face(
+						Triangle left = new Triangle(
 								curIndex,//current vertex index
 								nextStackIndex+1,//next slice of the next stack 
 								nextStackIndex//current slice of the next stack
 								);
 						geometry.add(left);
 						
-						Face right = new Face(
+						Triangle right = new Triangle(
 								curIndex,//current vertex index
 								curIndex+1,//next index of current stack
 								nextStackIndex+1//next stack next slice

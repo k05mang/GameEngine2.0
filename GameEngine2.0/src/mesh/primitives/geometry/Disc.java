@@ -4,7 +4,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import mesh.Mesh;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import gldata.AttribType;
 import gldata.BufferObject;
@@ -85,13 +85,13 @@ public final class Disc extends Mesh {
 			//since we are generating indices two segments ahead of the current one
 			//this will prevent redundant face generation at the end
 			if(segment < maxSegment-2){
-				Face face = new Face(
+				Triangle triangle = new Triangle(
 						0,//base vert
 						(segment+2)%maxSegment,//vert that is the second next segment
 						nextSeg//vert that is the next segment
 						);
-				geometry.add(face);
-				face.insertPrim(solidIbo);
+				geometry.add(triangle);
+				triangle.insertPrim(solidIbo);
 			}
 		}
 

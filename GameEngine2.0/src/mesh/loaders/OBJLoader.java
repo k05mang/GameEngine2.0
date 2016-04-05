@@ -12,7 +12,7 @@ import java.util.Scanner;
 import mesh.Geometry;
 import mesh.Material;
 import mesh.OBJ;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import textures.Texture;
 import textures.enums.InternalFormat;
@@ -176,7 +176,7 @@ public class OBJLoader implements MeshLoader {
 		//now generate faces for the indices found
 		//since more than 3 vertices can define a face in OBJ triangulation may be necessary
 		for(int curFace = 1; curFace < indices.size()-1; curFace++){
-			curMesh.add(new Face(
+			curMesh.add(new Triangle(
 					indices.get(0),
 					indices.get(curFace),
 					indices.get(curFace+1)

@@ -1,7 +1,7 @@
 package mesh.primitives.geometry;
 
 import mesh.Mesh;
-import mesh.primitives.Face;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
 import glMath.vectors.Vec3;
 import gldata.AttribType;
@@ -317,12 +317,12 @@ public final class Cube extends Mesh {
 		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
 		//generate the face indices
 		for (int face = 0; face < 6; face++) {
-			geometry.add(new Face(
+			geometry.add(new Triangle(
 					0 + 4 * face,
 					1 + 4 * face,
 					3 + 4 * face
 					));
-			geometry.add(new Face(
+			geometry.add(new Triangle(
 					0 + 4 * face,
 					3 + 4 * face,
 					2 + 4 * face
