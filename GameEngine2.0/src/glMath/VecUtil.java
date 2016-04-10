@@ -55,7 +55,7 @@ public abstract class VecUtil {
 		if(vectors.length > 1){
 			Vec3 result = vectors[0].cross(vectors[1]);
 			for(int curVec = 2; curVec < vectors.length; curVec++){
-				result.cross(vectors[curVec]);
+				result.set(result.cross(vectors[curVec]));
 			}
 			return result;
 		}else{

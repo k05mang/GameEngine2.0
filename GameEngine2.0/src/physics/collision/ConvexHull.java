@@ -77,7 +77,7 @@ public class ConvexHull extends CollisionMesh {
 		}
 		
 		//compute the vertex pair that would create the longest edge
-		int startVert, endVert;//vertex indices that make the longest edge
+		int startVert = 0, endVert = 0;//vertex indices that make the longest edge
 		float curLongest = 0;//value to keep track of the current edge length of start and end
 		//iterate over each vertex and compute its length with the other vertices and decide if it's the longest
 		for(int curVal = 0; curVal < 6; curVal++){
@@ -98,8 +98,38 @@ public class ConvexHull extends CollisionMesh {
 		}
 		
 		//find the vertex that is farthest from this edge
+		int vertIndex = -1;//variable to hold the farthest vertex index
+		float farthestDist = 0;//variable to hold the current farthest vertex distance
+		Vec3 edge = VecUtil.subtract(mesh.getVertex(endVert).getPos(), mesh.getVertex(startVert).getPos());//edge vector relative to the start vertex
+		Vec3 normal = null;//triangle normal, this is computed to determine the normal of the edge relative to the vertex vector\
+		//iterate over all the vertices and test which is the farthest
+		for(int curVertex = 0; curVertex < mesh.getNumVertices(); curVertex++){
+			//get the edge vector from the start vertex to the current vertex
+			Vec3 vertEdge = VecUtil.subtract(mesh.getVertex(curVertex).getPos(), mesh.getVertex(startVert).getPos());//cache these for reuse in triangle loop
+			
+			//compute the normal vector of the edge being tested relative to the current vertex vector, then get the scalar of the projection of the
+			//vertex vector with the normal to get the distance of the vertex from the edge
+			float distance = vertEdge.comp(VecUtil.cross(vertEdge, edge, edge));
+			
+			//test if the distance computed is farther than the previous distance computed and update the variables
+			if(distance > farthestDist){
+				farthestDist = distance;
+				vertIndex = curVertex;
+				normal = VecUtil.cross(vertEdge, edge);
+			}
+		}
 		
+		//create the initial triangle for the hull
+		faces.add(new Triangle(startVert, endVert, vertIndex));
 		//find the vertex that is farthest from this triangle in the direction of the triangle normal
+		//reset variables for reuse with the next vertex search
+		normal.normalize();//normalize the face normal so that distance can be calculated with a simple dot product
+		farthestDist = 0;
+		vertIndex = -1;
+		//iterate over all the vertices and test which is the farthest
+		for(int curVertex = 0; curVertex < mesh.getNumVertices(); curVertex++){
+			
+		}
 		
 		//expand the initial tetrahedra to comprise the convex hull of the mesh
 	}
@@ -118,7 +148,8 @@ public class ConvexHull extends CollisionMesh {
 	private Vec3 findSupport(Vec3 direction, HalfEdge startEdge){
 		
 		//compute the dot product with the computed direction
-		float foundDotDir = direction.dot(mesh.getVertex(startEdge.sourceVert).getPos());
+		float foundDotDir = direction.dot(mesh.getVertex(startEdge.sourceVert).getPos())
+				/mesh.getVertex(startEdge.sourceVert).getPos().length();//normalize the vector without generating a new vector
 
 		//iterate over all the adjacent vertices to the given vertex and find the vertex
 		//most in the direction of the given vector
@@ -126,7 +157,8 @@ public class ConvexHull extends CollisionMesh {
 		
 		while(!curEdge.equals(startEdge)){//if the edge we are comparing with is the same as the start end the loop
 			//get the adjacent vertex and get it's dot product with the direction
-			float curDotDir = direction.dot(mesh.getVertex(curEdge.sourceVert).getPos());
+			float curDotDir = direction.dot(mesh.getVertex(curEdge.sourceVert).getPos())
+					/mesh.getVertex(curEdge.sourceVert).getPos().length();//normalize the vector without generating a new vector
 			
 			//compare the dot product of the current adjacent vertex with the previous found vertex dot product
 			if(curDotDir > foundDotDir){
