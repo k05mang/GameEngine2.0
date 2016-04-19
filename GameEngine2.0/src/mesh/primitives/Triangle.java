@@ -1,12 +1,17 @@
 package mesh.primitives;
 
+import glMath.VecUtil;
+import glMath.vectors.Vec3;
 import gldata.IndexBuffer;
-import gldata.VertexArray;
-import gldata.BufferObject;
+
+import java.util.Arrays;
+
+import mesh.Geometry;
 
 public class Triangle {
 	public Edge e1, e2, e3;
 	public HalfEdge he1, he2, he3;
+	private int hashCode;
 	//public boolean isStored;
 	public static final int INDEX_ADJ = 6, INDEX_NOADJ = 3;
 	
@@ -45,6 +50,8 @@ public class Triangle {
 		he1.parent = this;
 		he2.parent = this;
 		he3.parent = this;
+		
+		hashCode = Arrays.hashCode(new int[]{he1.sourceVert, he2.sourceVert, he3.sourceVert});
 	}
 	
 	/**
@@ -87,6 +94,23 @@ public class Triangle {
 		buffer.add(he3.opposite != null ? he3.opposite.prev.sourceVert : -1);
 	}
 	
+	/**
+	 * Gets the normal of the face based on the vertices from the given Geometry class that this Triangles
+	 * vertex indices are associated with
+	 * 
+	 * @param mesh Geometry that this faces vertex indices are associated with, and that will be used in
+	 * calculating the normal of the Triangle
+	 * 
+	 * @return Normalized Vec3 that represents the normal of the Triangle
+	 */
+	public Vec3 getNormal(Geometry mesh){
+		Vec3 edge1 = VecUtil.subtract(mesh.getVertex(he2.sourceVert).getPos(), 
+				mesh.getVertex(he1.sourceVert).getPos());
+		Vec3 edge2 = VecUtil.subtract(mesh.getVertex(he3.sourceVert).getPos(), 
+				mesh.getVertex(he1.sourceVert).getPos());
+		return edge2.cross(edge1).normalize();
+	}
+	
 	@Override
 	public boolean equals(Object o){
 		if(o instanceof Triangle){
@@ -97,5 +121,10 @@ public class Triangle {
 		}else{
 			return false;
 		}
+	}
+	
+	@Override 
+	public int hashCode(){
+		return hashCode;
 	}
 }

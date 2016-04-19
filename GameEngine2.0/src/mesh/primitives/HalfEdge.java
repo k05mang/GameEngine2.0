@@ -24,13 +24,6 @@ public class HalfEdge {
 		prev = null;
 	}
 	
-//	public HalfEdge(HalfEdge copy){
-//		parent = copy.parent;
-//		opposite = copy.opposite;
-//		next = copy.next;
-//		sourceVert = copy.sourceVert;
-//	}
-	
 	@Override
 	public boolean equals(Object o){
 		if(o instanceof HalfEdge){
@@ -40,11 +33,4 @@ public class HalfEdge {
 			return false;
 		}
 	}
-	
-//	public void set(HalfEdge setter){
-//		parent = setter.parent;
-//		opposite = setter.opposite;
-//		next = setter.next;
-//		sourceVert = setter.sourceVert;
-//	}
 }

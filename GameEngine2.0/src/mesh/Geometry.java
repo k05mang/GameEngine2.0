@@ -17,7 +17,7 @@ import gldata.BufferObject;
 public class Geometry {
 	private ArrayList<Vertex> vertices;
 	private HashMap<Vertex, Integer> hashVerts;
-	private ArrayList<Triangle> triangles;
+	private ArrayList<Triangle> faces;
 	private HashMap<Edge, HalfEdge> edgeMap;
 	
 	/**
@@ -26,14 +26,14 @@ public class Geometry {
 	public Geometry(){
 		vertices = new ArrayList<Vertex>();
 		hashVerts = new HashMap<Vertex, Integer>();
-		triangles = new ArrayList<Triangle>();
+		faces = new ArrayList<Triangle>();
 		edgeMap = new HashMap<Edge, HalfEdge>();
 	}
 	
 	public Geometry(Geometry copy){
 		vertices = new ArrayList<Vertex>(copy.vertices.size());
 		hashVerts = new HashMap<Vertex, Integer>(copy.vertices.size());
-		triangles = new ArrayList<Triangle>(copy.triangles.size());
+		faces = new ArrayList<Triangle>(copy.faces.size());
 		edgeMap = new HashMap<Edge, HalfEdge>();
 		
 		//copy each vertex into this geometry object
@@ -43,7 +43,7 @@ public class Geometry {
 		}
 		
 		//copy the faces
-		for(Triangle triangle : copy.triangles){
+		for(Triangle triangle : copy.faces){
 			add(triangle);
 		}
 	}
@@ -64,12 +64,12 @@ public class Geometry {
 	 * @param triangle Face to add to this mesh
 	 */
 	public void add(Triangle triangle){
-		triangles.add(new Triangle(triangle));
+		faces.add(new Triangle(triangle));
 		
 		//create edge that the half edge is associated with but in reverse order, this is due to the edge that marked the half edge
 		//potentially in the map has an opposite ordering
 		Edge mapEdge1 = new Edge(triangle.e1.end, triangle.e1.start);
-		//check if the edgemap has that edge which should return the corresponding halfedge
+		//check if the edge map has that edge which should return the corresponding HalfEdge
 		HalfEdge mapHE1 = edgeMap.get(mapEdge1);
 		//check if we found the half edge
 		if(mapHE1 != null){
@@ -81,7 +81,7 @@ public class Geometry {
 		}
 		
 		Edge mapEdge2 = new Edge(triangle.e2.end, triangle.e2.start);
-		//check if the edgemap has that edge which should return the corresponding halfedge
+		//check if the edge map has that edge which should return the corresponding HalfEdge
 		HalfEdge mapHE2 = edgeMap.get(mapEdge2);
 		//check if we found the half edge
 		if(mapHE2 != null){
@@ -93,7 +93,7 @@ public class Geometry {
 		}
 		
 		Edge mapEdge3 = new Edge(triangle.e3.end, triangle.e3.start);
-		//check if the edgemap has that edge which should return the corresponding halfedge
+		//check if the edge map has that edge which should return the corresponding HalfEdge
 		HalfEdge mapHE3 = edgeMap.get(mapEdge3);
 		//check if we found the half edge
 		if(mapHE3 != null){
@@ -111,7 +111,7 @@ public class Geometry {
 	public void empty(){
 		vertices.clear();
 		hashVerts.clear();
-		triangles.clear();
+		faces.clear();
 		edgeMap.clear();
 	}
 	
@@ -147,7 +147,7 @@ public class Geometry {
 	 * @return Number of faces in this mesh
 	 */
 	public int getNumFaces(){
-		return triangles.size();
+		return faces.size();
 	}
 	
 	/**
@@ -174,7 +174,7 @@ public class Geometry {
 	}
 	
 	public void genNormals(){
-		for(Triangle curFace : triangles){
+		for(Triangle curFace : faces){
 			Vertex v0 = vertices.get(curFace.he1.sourceVert);
 			Vertex v1 = vertices.get(curFace.he2.sourceVert);
 			Vertex v2 = vertices.get(curFace.he3.sourceVert);
@@ -197,7 +197,7 @@ public class Geometry {
 	}
 	
 	public void genTangentBitangent(){
-		for(Triangle curFace : triangles){
+		for(Triangle curFace : faces){
 			Vertex v0 = vertices.get(curFace.he1.sourceVert);
 			Vertex v1 = vertices.get(curFace.he2.sourceVert);
 			Vertex v2 = vertices.get(curFace.he3.sourceVert);
@@ -238,10 +238,10 @@ public class Geometry {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public Triangle getFace(int index) throws IndexOutOfBoundsException{
-		if(index > triangles.size()-1 || index < 0){
+		if(index > faces.size()-1 || index < 0){
 			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Face from mesh");
 		}else{
-			return triangles.get(index);
+			return faces.get(index);
 		}
 	}
 	
@@ -290,12 +290,12 @@ public class Geometry {
 				break;
 				
 			case TRIANGLES:
-				for(Triangle curFace : triangles){
+				for(Triangle curFace : faces){
 					curFace.insertPrim(buffer);
 				}
 				break;
 			case TRIANGLES_ADJ:
-				for(Triangle curFace : triangles){
+				for(Triangle curFace : faces){
 					curFace.insertPrimAdj(buffer);
 				}
 				break;
@@ -319,7 +319,7 @@ public class Geometry {
 	 */
 	private void insertLines(IndexBuffer buffer){
 		HashMap<Edge, Boolean> visited = new HashMap<Edge, Boolean>();
-		for(Triangle curFace : triangles){
+		for(Triangle curFace : faces){
 			//create edge that is ordered opposite since the edge in the map will have an opposite ordering when it was added
 			Edge edge1 = new Edge(curFace.e1.end, curFace.e1.start);
 			//check if the line being processed from this face was already added as part of another face iteration

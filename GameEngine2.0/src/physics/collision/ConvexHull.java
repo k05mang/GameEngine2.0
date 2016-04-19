@@ -5,6 +5,9 @@ import glMath.vectors.Vec3;
 import glMath.vectors.Vec4;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import mesh.Geometry;
 import mesh.primitives.HalfEdge;
@@ -138,7 +141,7 @@ public class ConvexHull extends CollisionMesh {
 			//the current point onto the normal is simply the dot product between them
 			
 			//check if the point is in front of the triangle or behind it based on whether the distance is positive or negative
-			if(distance >= 0){
+			if(distance > 0){
 				posList.add(curPoint); 
 			}else{
 				negList.add(curPoint);
@@ -150,7 +153,7 @@ public class ConvexHull extends CollisionMesh {
 				vertIndex = curPoint;
 				//determine if the current farthest point is in front of the triangle or behind it, this is so we know what list to assign to
 				//triangle after the loop completes
-				inFront = distance >= 0;
+				inFront = distance > 0;
 			}
 		}
 		
@@ -176,6 +179,122 @@ public class ConvexHull extends CollisionMesh {
 		face3.he3.opposite = face1.he1;
 		
 		//expand the initial tetrahedra to comprise the convex hull of the mesh
+		//create a hashmap to assign the triangles conflict lists in the expansion process
+		HashMap<Triangle, ArrayList<Integer>> conflictLists = new HashMap<Triangle, ArrayList<Integer>>(4);
+		ArrayList<Integer> partitionList = null;
+		//first determine if the final vertex to make the tetrahedra was in front of or behind the triangle
+		//this will decide which set of points to partition to the faces
+		if(inFront){
+			//since the vertex for the tetrahedra was in front of the triangle the positive list will
+			//be partitioned for the other faces
+			partitionList = posList;
+			conflictLists.put(baseTri, negList);
+		}else{
+			//since the vertex for the tetrahedra was behind the triangle the negative list will
+			//be partitioned for the other faces
+			partitionList = negList;
+			conflictLists.put(baseTri, posList);
+		}
+		
+		//add faces to a list to be passed to the point partitioning function
+		ArrayList<Triangle> faceList = new ArrayList<Triangle>(3);
+		faceList.add(face1);
+		faceList.add(face2);
+		faceList.add(face3);
+		
+		partitionPoints(partitionList, faceList, conflictLists);
+		expandTetrahedra(conflictLists);
+	}
+	
+	private void partitionPoints(ArrayList<Integer> points, ArrayList<Triangle> faces, HashMap<Triangle, ArrayList<Integer>> conflictLists){
+		//iterate over each face of the list of faces that the points need to be partitioned to
+		for(Triangle face : faces){
+			//create an array list that will contain the found conflicting points for the current face
+			ArrayList<Integer> conflictList = new ArrayList<Integer>(points.size());
+			//calculate the face normal for use in determining whether the points is in front of the Triangle
+			Vec3 normal = face.getNormal(mesh);
+			//iterate over all the points that could be in front of the current face
+			Iterator<Integer> pointsList = points.iterator();
+			while(pointsList.hasNext()){
+				Integer curIndex = pointsList.next();
+				Vec3 curPoint = mesh.getVertex(curIndex).getPos();
+				//determine if the point is in front of the face based on whether the dot product is positive
+				//additionally 0 is considered behind the face
+				if(normal.dot(curPoint) > 0){
+					//if so then add the point to the conflict list for the current Triangle face
+					conflictList.add(curIndex);
+					pointsList.remove();
+				}
+			}
+			//after finding all the relevant points for the current face add the Triangle, List pair to the map
+			conflictLists.put(face, conflictList);
+		}
+	}
+	
+	private void expandTetrahedra(HashMap<Triangle, ArrayList<Integer>> conflictLists){
+		//create a "queue" that will track what Triangles need to be tested for points and extruded
+		LinkedList<Triangle> faces = new LinkedList<Triangle>();
+		//add the faces from the initial tetrahedra to the queue
+		faces.add(baseTri);
+		faces.add(baseTri.he1.opposite.parent);
+		faces.add(baseTri.he2.opposite.parent);
+		faces.add(baseTri.he3.opposite.parent);
+		//iterate over the faces of the queue until the queue is empty
+		while(!faces.isEmpty()){
+			//get the next face in the queue
+			Triangle curFace = faces.poll();
+			//if it has a conflict list then determine what point in the list is farthest from the face
+			ArrayList<Integer> curConflict = conflictLists.get(curFace);
+			if(curConflict != null){
+				//find the point farthest from the face
+				//calculate the face normal
+				Vec3 normal = curFace.getNormal(mesh);
+				float prevDist = 0;
+				int farIndex = -1;
+				for(Integer curIndex : curConflict){
+					float distance = mesh.getVertex(curIndex).getPos().dot(normal);
+					
+					//check if the distance is greater than the previous distance
+					if(distance > prevDist){
+						//update the variables
+						prevDist = distance;
+						farIndex = curIndex;
+					}
+				}
+				//update the hull with the new point
+				extendHull(farIndex, curFace, faces, conflictLists);
+			}//otherwise the face was either deleted in a previous iteration or has been finalized on the hull
+		}
+	}
+	
+	private void extendHull(int newPoint, Triangle base, LinkedList<Triangle> faces, HashMap<Triangle, ArrayList<Integer>> conflictLists){
+		//create a list of the edges of the hull that will create the new faces
+		//this list will maintain a clockwise ordering
+		ArrayList<HalfEdge> horizon = new ArrayList<HalfEdge>();
+		ArrayList<Triangle> toRemove = new ArrayList<Triangle>();
+		findHorizon(base.he1.opposite, newPoint, horizon, toRemove);
+		
+		//compute the edge horizon on the hull for the given point
+		
+		//update the hull with the new point and extrude the edges of the horizon to the new point
+		
+		//partition the removed faces conflict lists to the new faces and remove the old faces from the lists
+		
+		//add the new faces to the faces list for later iteration
+	}
+	
+	private void findHorizon(HalfEdge current, int pointIndex, ArrayList<HalfEdge> horizon, ArrayList<Triangle> remove){
+		//check if the current face can be "seen" from the new point of the hull
+		//get the normal of the current face
+		Vec3 normal = current.parent.getNormal(mesh);
+		//get the vector from a point on the triangle to the new point
+		Vec3 newEdge = VecUtil.subtract(mesh.getVertex(pointIndex).getPos(), mesh.getVertex(current.sourceVert).getPos());
+		//if it can, continue searching through the edges of the current face
+		if(normal.dot(newEdge) > 0){
+			
+		}else{//otherwise add the current half edge to the horizon list
+			
+		}
 	}
 
 	@Override
