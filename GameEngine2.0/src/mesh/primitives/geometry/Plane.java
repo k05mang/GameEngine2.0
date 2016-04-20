@@ -79,20 +79,20 @@ public final class Plane extends Mesh{
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
 		
-		Vertex topLeft = new Vertex(-this.width/2.0f,0,-this.length/2.0f, 0,1,0, 0,1, 1,0,0, 0,0,-1);
-		Vertex bottomLeft = new Vertex(-this.width/2.0f,0,this.length/2.0f, 0,1,0, 0,0, 1,0,0, 0,0,-1);
-		Vertex topRight = new Vertex(this.width/2.0f,0,-this.length/2.0f, 0,1,0, 1,1, 1,0,0, 0,0,-1);
-		Vertex bottomRight = new Vertex(this.width/2.0f,0,this.length/2.0f, 0,1,0, 1,0, 1,0,0, 0,0,-1);
+		Vertex backLeft = new Vertex(-this.width/2.0f,0,-this.length/2.0f, 0,1,0, 0,1, 1,0,0, 0,0,-1);
+		Vertex frontLeft = new Vertex(-this.width/2.0f,0,this.length/2.0f, 0,1,0, 0,0, 1,0,0, 0,0,-1);
+		Vertex backRight = new Vertex(this.width/2.0f,0,-this.length/2.0f, 0,1,0, 1,1, 1,0,0, 0,0,-1);
+		Vertex frontRight = new Vertex(this.width/2.0f,0,this.length/2.0f, 0,1,0, 1,0, 1,0,0, 0,0,-1);
 		
-		topLeft.addTo(vbo);
-		bottomLeft.addTo(vbo);
-		topRight.addTo(vbo);
-		bottomRight.addTo(vbo);
+		backLeft.addTo(vbo);
+		frontLeft.addTo(vbo);
+		backRight.addTo(vbo);
+		frontRight.addTo(vbo);
 		
-		geometry.add(topLeft);
-		geometry.add(bottomLeft);
-		geometry.add(topRight);
-		geometry.add(bottomRight);
+		geometry.add(backLeft);
+		geometry.add(frontLeft);
+		geometry.add(backRight);
+		geometry.add(frontRight);
 		
 		geometry.add(new Triangle(0,1,2));
 		geometry.add(new Triangle(2,1,3));
