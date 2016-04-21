@@ -33,4 +33,9 @@ public class HalfEdge {
 			return false;
 		}
 	}
+	
+	@Override
+	public String toString(){
+		return sourceVert+"->"+next.sourceVert;
+	}
 }

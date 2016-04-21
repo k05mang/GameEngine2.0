@@ -58,9 +58,11 @@ public class OBJLoader implements MeshLoader {
 		}
 		//add the last mesh that was processed after we reached the end of the file
 		if(normals.isEmpty()){
+			//compute the normals for the loaded mesh
 			curMesh.genNormals();
-			//add tangent and bitangent computation
 		}
+		//compute the tangents and bitangents
+		curMesh.genTangentBitangent();
 		
 		SceneManager.meshes.put(curGroup+"_"+curMat, new OBJ(curMesh, curMat));
 		obj.close();
@@ -102,10 +104,12 @@ public class OBJLoader implements MeshLoader {
 			case "usemtl":
 				if(curMat != null){
 					//add the finished model to the scene
+					//if no normals were collected in the mesh generation compute them now
 					if(normals.isEmpty()){
 						curMesh.genNormals();
-						//add tangent and bitangent computation
 					}
+					//compute the tangents and bitangents
+					curMesh.genTangentBitangent();
 					
 					SceneManager.meshes.put(curGroup+"_"+curMat, new OBJ(curMesh, curMat));
 				}

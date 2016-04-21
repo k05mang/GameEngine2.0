@@ -108,7 +108,7 @@ public class Triangle {
 				mesh.getVertex(he1.sourceVert).getPos());
 		Vec3 edge2 = VecUtil.subtract(mesh.getVertex(he3.sourceVert).getPos(), 
 				mesh.getVertex(he1.sourceVert).getPos());
-		return edge2.cross(edge1).normalize();
+		return edge1.cross(edge2).normalize();
 	}
 	
 	@Override
@@ -126,5 +126,11 @@ public class Triangle {
 	@Override 
 	public int hashCode(){
 		return hashCode;
+	}
+	
+	@Override
+	public String toString(){
+		return "Vertices: "+he1.sourceVert+"->"+he2.sourceVert+"->"+he3.sourceVert+
+				"\nHalf Edge 1: "+he1.toString()+"\nHalf Edge 2: "+he2.toString()+"\nHalf Edge 3: "+he3.toString();
 	}
 }

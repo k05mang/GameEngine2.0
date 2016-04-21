@@ -17,12 +17,12 @@ public class OBJ extends Mesh {
 		//create vertex buffer
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
-		vao.addVertexBuffer("default", vbo);
+		vao.addVertexBuffer(SOLID_MODE, vbo);
 		
 		//construct index buffer
 		IndexBuffer ibo = new IndexBuffer(getIndexType(geometry.getNumVertices()-1));
 		ibos.add(ibo);
-		vao.addIndexBuffer("default", RenderMode.TRIANGLES, ibo);
+		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, ibo);
 		
 		//add indices and vertices to the buffers
 		geometry.insertVertices(vbo);
@@ -31,7 +31,7 @@ public class OBJ extends Mesh {
 		vbo.flush(BufferUsage.STATIC_DRAW);
 		ibo.flush(BufferUsage.STATIC_DRAW);
 		
-		vao.setIndexBuffer("default");
+		vao.setIndexBuffer(SOLID_MODE);
 
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
 		vao.addAttrib(AttribType.VEC3, false, 0);//normal
@@ -39,13 +39,13 @@ public class OBJ extends Mesh {
 		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
 		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
 		
-		vao.registerVBO("default");
+		vao.registerVBO(SOLID_MODE);
 
-		vao.setAttribVBO(0, "default");
-		vao.setAttribVBO(1, "default");
-		vao.setAttribVBO(2, "default");
-		vao.setAttribVBO(3, "default");
-		vao.setAttribVBO(4, "default");
+		vao.setAttribVBO(0, SOLID_MODE);
+		vao.setAttribVBO(1, SOLID_MODE);
+		vao.setAttribVBO(2, SOLID_MODE);
+		vao.setAttribVBO(3, SOLID_MODE);
+		vao.setAttribVBO(4, SOLID_MODE);
 
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
