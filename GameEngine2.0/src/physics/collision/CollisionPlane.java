@@ -3,6 +3,7 @@ package physics.collision;
 import glMath.Transform;
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
 
 public class CollisionPlane extends CollisionMesh{
 	
@@ -41,6 +42,10 @@ public class CollisionPlane extends CollisionMesh{
 
 	@Override
 	public Vec3 support(Vec3 direction){
-		return null;
+		Vec3 orientedDir = transforms.getOrientation().multVec(direction);
+		Vec4 result = new Vec4(Math.copySign(halfDimensions.x, orientedDir.x), 0, Math.copySign(halfDimensions.y, orientedDir.z), 1);
+		//transforms the point on the plane back into it's world space coordinate
+		return (Vec3)transforms.getTransform().multVec(result).swizzle("xyz");
+		
 	}
 }

@@ -1,5 +1,6 @@
 package mesh;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import mesh.primitives.Edge;
@@ -19,6 +20,22 @@ public class Geometry {
 	private HashMap<Vertex, Integer> hashVerts;
 	private ArrayList<Triangle> faces;
 	private HashMap<Edge, HalfEdge> edgeMap;
+	private int[] minMax;//cache for points that are farthest along each axis
+	/*
+	 * minMax[0] = Min x value
+	 * minMax[1] = Max x value
+	 * minMax[2] = Min y value
+	 * minMax[3] = Max y value
+	 * minMax[4] = Min z value
+	 * minMax[5] = Max z value
+	 */
+	public static final int 
+	MIN_X = 0,
+	MAX_X = 1,
+	MIN_Y = 2,
+	MAX_Y = 3,
+	MIN_Z = 4,
+	MAX_Z = 5;
 	
 	/**
 	 * Constructs an empty mesh for storing vertices and triangular faces
@@ -28,6 +45,7 @@ public class Geometry {
 		hashVerts = new HashMap<Vertex, Integer>();
 		faces = new ArrayList<Triangle>();
 		edgeMap = new HashMap<Edge, HalfEdge>();
+		minMax = new int[6];
 	}
 	
 	public Geometry(Geometry copy){
@@ -46,6 +64,8 @@ public class Geometry {
 		for(Triangle triangle : copy.faces){
 			add(triangle);
 		}
+		//copy the minMax indices
+		minMax = Arrays.copyOf(copy.minMax, 6);
 	}
 	
 	/**
@@ -56,6 +76,55 @@ public class Geometry {
 	public void add(Vertex vert){
 		vertices.add(new Vertex(vert));
 		hashVerts.put(vert, vertices.size()-1);
+		
+		//additionally check if this vertex is a minimum or maximum along any axis
+		//X min
+		if(vert.getPos().x < vertices.get(minMax[0]).getPos().x){
+			minMax[0] = vertices.size()-1;
+		}
+
+		//X max
+		if(vert.getPos().x > vertices.get(minMax[1]).getPos().x){
+			minMax[1] = vertices.size()-1;
+		}
+		
+		//Y min
+		if(vert.getPos().y < vertices.get(minMax[2]).getPos().y){
+			minMax[2] = vertices.size()-1;
+		}
+
+		//Y max
+		if(vert.getPos().y > vertices.get(minMax[3]).getPos().y){
+			minMax[3] = vertices.size()-1;
+		}
+		
+		//Z min
+		if(vert.getPos().z < vertices.get(minMax[4]).getPos().z){
+			minMax[4] = vertices.size()-1;
+		}
+
+		//Z max
+		if(vert.getPos().z > vertices.get(minMax[5]).getPos().z){
+			minMax[5] = vertices.size()-1;
+		}
+	}
+	
+	/**
+	 * Gets the index of the vertex of this geometry based on the requested value passed to {@code index}.
+	 * Appropriate index values are defined as constants of this class.
+	 * 
+	 * @param index Value to query about this geometry
+	 * 
+	 * @return Index of the vertex that matches the requested value, if the index does not exist then a -1 is returned instead
+	 */
+	public int getMinMaxIndex(int index){
+		//check to make sure the index is within the bounds of the array
+		if(index < minMax.length && index > -1){
+			return minMax[index];
+		}else{
+			//otherwise return -1 indicating unknown index
+			return -1;
+		}
 	}
 	
 	/**
@@ -113,6 +182,12 @@ public class Geometry {
 		hashVerts.clear();
 		faces.clear();
 		edgeMap.clear();
+		minMax[0] = 0;
+		minMax[1] = 0;
+		minMax[2] = 0;
+		minMax[3] = 0;
+		minMax[4] = 0;
+		minMax[5] = 0;
 	}
 	
 	/**
@@ -159,7 +234,7 @@ public class Geometry {
 	 */
 	public Vertex getVertex(int index) throws IndexOutOfBoundsException{
 		if(index > vertices.size()-1 || index < 0){
-			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Vertex from mesh");
+			throw new IndexOutOfBoundsException("Index out of bounds for retrieval of Vertex from mesh, Index: "+index+" Size: "+vertices.size());
 		}else{
 			return vertices.get(index);
 		}
