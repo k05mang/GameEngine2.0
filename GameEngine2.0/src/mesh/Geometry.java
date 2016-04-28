@@ -69,42 +69,99 @@ public class Geometry {
 	}
 	
 	/**
+	 * Gets the number of indices of the given value there are in the minMax array. This is to help
+	 * determine if a new index should be asigned a min max value based on the quantity of that index
+	 * in the array. This will help increase array diversity.
+	 * 
+	 * @param value Value to count in the array
+	 * 
+	 * @return number of indices in minMax with that value
+	 */
+	private int getCount(int value){
+		int count = 0;
+		if(minMax[MIN_X] == value){
+			count++;
+		}
+		if(minMax[MAX_X] == value){
+			count++;
+		}
+		if(minMax[MIN_Y] == value){
+			count++;
+		}
+		if(minMax[MAX_Y] == value){
+			count++;
+		}
+		if(minMax[MIN_Z] == value){
+			count++;
+		}
+		if(minMax[MAX_Z] == value){
+			count++;
+		}
+		
+		return count;
+	}
+	
+	/**
 	 * Adds a vertex to this mesh
 	 * 
 	 * @param vert Vertex to add to this mesh
 	 */
 	public void add(Vertex vert){
 		vertices.add(new Vertex(vert));
-		hashVerts.put(vert, vertices.size()-1);
+		hashVerts.put(vertices.get(vertices.size()-1), vertices.size()-1);
 		
-		//additionally check if this vertex is a minimum or maximum along any axis
+		//check if this vertex is a minimum or maximum along any axis
 		//X min
 		if(vert.getPos().x < vertices.get(minMax[0]).getPos().x){
+			minMax[0] = vertices.size()-1;
+		}else if(vert.getPos().x == vertices.get(minMax[0]).getPos().x && getCount(minMax[0]) > 1){
+			//if the value we checked would also qualify for the min value and the value already in the list
+			//has multiple assignments, then we can replace this with the new vertex
 			minMax[0] = vertices.size()-1;
 		}
 
 		//X max
 		if(vert.getPos().x > vertices.get(minMax[1]).getPos().x){
 			minMax[1] = vertices.size()-1;
+		}else if(vert.getPos().x == vertices.get(minMax[1]).getPos().x && getCount(minMax[1]) > 1){
+			//if the value we checked would also qualify for the min value and the value already in the list
+			//has multiple assignments, then we can replace this with the new vertex
+			minMax[1] = vertices.size()-1;
 		}
 		
 		//Y min
 		if(vert.getPos().y < vertices.get(minMax[2]).getPos().y){
+			minMax[2] = vertices.size()-1;
+		}else if(vert.getPos().y == vertices.get(minMax[2]).getPos().y && getCount(minMax[2]) > 1){
+			//if the value we checked would also qualify for the min value and the value already in the list
+			//has multiple assignments, then we can replace this with the new vertex
 			minMax[2] = vertices.size()-1;
 		}
 
 		//Y max
 		if(vert.getPos().y > vertices.get(minMax[3]).getPos().y){
 			minMax[3] = vertices.size()-1;
+		}else if(vert.getPos().y == vertices.get(minMax[3]).getPos().y && getCount(minMax[3]) > 1){
+			//if the value we checked would also qualify for the min value and the value already in the list
+			//has multiple assignments, then we can replace this with the new vertex
+			minMax[3] = vertices.size()-1;
 		}
 		
 		//Z min
 		if(vert.getPos().z < vertices.get(minMax[4]).getPos().z){
 			minMax[4] = vertices.size()-1;
+		}else if(vert.getPos().z == vertices.get(minMax[4]).getPos().z && getCount(minMax[4]) > 1){
+			//if the value we checked would also qualify for the min value and the value already in the list
+			//has multiple assignments, then we can replace this with the new vertex
+			minMax[4] = vertices.size()-1;
 		}
 
 		//Z max
 		if(vert.getPos().z > vertices.get(minMax[5]).getPos().z){
+			minMax[5] = vertices.size()-1;
+		}else if(vert.getPos().z == vertices.get(minMax[5]).getPos().z && getCount(minMax[5]) > 1){
+			//if the value we checked would also qualify for the min value and the value already in the list
+			//has multiple assignments, then we can replace this with the new vertex
 			minMax[5] = vertices.size()-1;
 		}
 	}
@@ -254,15 +311,8 @@ public class Geometry {
 			Vertex v1 = vertices.get(curFace.he2.sourceVert);
 			Vertex v2 = vertices.get(curFace.he3.sourceVert);
 			
-			//construct vectors with the first vertex as their origin
-			//v1-v0
-			Vec3 e1 = VecUtil.subtract(v1.getPos(), v0.getPos());
-			
-			//v2-v0
-			Vec3 e2 = VecUtil.subtract(v2.getPos(), v0.getPos());
-			
-			//then compute their cross product
-			Vec3 faceNormal = e1.cross(e2);
+			//get the current face normal
+			Vec3 faceNormal = curFace.getNormal(this);
 			
 			//sum the current vertex normal and the face normal to get a normal that is the average of the faces sharing that normal
 			v0.setNormal(VecUtil.add(v0.getNormal(), faceNormal));

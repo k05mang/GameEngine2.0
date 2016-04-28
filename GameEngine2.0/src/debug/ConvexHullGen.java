@@ -1,11 +1,5 @@
 package debug;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-
-import renderers.RenderMode;
 import glMath.VecUtil;
 import glMath.vectors.Vec3;
 import gldata.AttribType;
@@ -14,33 +8,57 @@ import gldata.BufferType;
 import gldata.BufferUsage;
 import gldata.IndexBuffer;
 import gldata.IndexBuffer.IndexType;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+
 import mesh.Geometry;
 import mesh.Mesh;
 import mesh.primitives.HalfEdge;
 import mesh.primitives.Triangle;
+import renderers.RenderMode;
+import shaders.ShaderProgram;
 
 public class ConvexHullGen extends Mesh {
 
 	private Triangle baseTri;
-	HashMap<Triangle, ArrayList<Integer>> conflictLists;//create a "queue" that will track what Triangles need to be tested for points and extruded
-	LinkedList<Triangle> faces;
+	private HashMap<Triangle, ArrayList<Integer>> conflictLists;//create a "queue" that will track what Triangles need to be tested for points and extruded
+	private LinkedList<Triangle> faces;
+	private ArrayList<HalfEdge> horizon;
+	private ArrayList<Triangle> toDelete;
+	private int currentStep, newIndex;
+	private Triangle curFace;
+	private ArrayList<Integer> partition;
 	
 	public ConvexHullGen(Geometry mesh) {
 		conflictLists = new HashMap<Triangle, ArrayList<Integer>>(4);
 		faces = new LinkedList<Triangle>();
+		horizon = new ArrayList<HalfEdge>();
+		toDelete = new ArrayList<Triangle>();
+		partition = new ArrayList<Integer>();
+		currentStep = 0;
+		
 		geometry = mesh;
 		//create the buffer for containing the vertices
 		vbos.add(new BufferObject(BufferType.ARRAY));
+		//create separate ibo for rendering faces
+		ibos.add(new IndexBuffer(IndexType.INT));
 		//create separate ibo for rendering lines
 		ibos.add(new IndexBuffer(IndexType.INT));
 		//create separate ibo for rendering the points
+		ibos.add(new IndexBuffer(IndexType.INT));
+		//create separate ibo for rendering the lines of the horizon
+		ibos.add(new IndexBuffer(IndexType.INT));
+		//create separate ibo for rendering the faces to be deleted
 		ibos.add(new IndexBuffer(IndexType.INT));
 		
 		//add just the vertex position information to the vbo
 		for(int curVert = 0; curVert < geometry.getNumVertices(); curVert++){
 			vbos.get(0).add(geometry.getVertex(curVert).getPos());
 			//initialize the point ibo with all the points
-			ibos.get(1).add(curVert);
+			ibos.get(2).add(curVert);
 		}
 		//generate the initial hull
 		genHull();
@@ -50,14 +68,13 @@ public class ConvexHullGen extends Mesh {
 		faces.add(baseTri.he1.opposite.parent);
 		faces.add(baseTri.he2.opposite.parent);
 		faces.add(baseTri.he3.opposite.parent);
-//		expandTetrahedra();
 		//insert the base hull faces
 		insertFaces();
 		//flush vertices to the GPU
 		vbos.get(0).flush(BufferUsage.STATIC_DRAW);
 		
 		//flush indices to the GPU
-		ibos.get(1).flush(BufferUsage.STATIC_DRAW);
+		ibos.get(2).flush(BufferUsage.STATIC_DRAW);
 		
 		//setup the vao
 		//add attribute
@@ -69,27 +86,69 @@ public class ConvexHullGen extends Mesh {
 		vao.setAttribVBO(0, "mesh");
 		
 		//add index buffers
-		vao.addIndexBuffer("lines", RenderMode.LINES, ibos.get(0));
-		vao.addIndexBuffer("points", RenderMode.POINTS, ibos.get(1));
+		vao.addIndexBuffer("faces", RenderMode.TRIANGLES, ibos.get(0));
+		vao.addIndexBuffer("lines", RenderMode.LINES, ibos.get(1));
+		vao.addIndexBuffer("points", RenderMode.POINTS, ibos.get(2));
+		vao.addIndexBuffer("delete", RenderMode.TRIANGLES, ibos.get(3));
+		vao.addIndexBuffer("horizon", RenderMode.LINES, ibos.get(4));
 		
-		vao.setIndexBuffer("lines");
-		
-		//expand the initial tetrahedra to comprise the convex hull of the mesh
-//		expandTetrahedra();
+		vao.setIndexBuffer("faces");
 	}
 
 	public ConvexHullGen(Mesh copy) {
 		super(copy);
 	}
 	
+	public void render(ShaderProgram shader){
+		shader.setUniform("model", getModelView());
+		
+		shader.setUniform("color", 1, 1, 1, 1);
+		setRenderMode("points");
+		render();
+		shader.setUniform("color", .1f, .1f, .1f, 1);
+		setRenderMode("lines");
+		render();
+		shader.setUniform("color", 1, .5f, .6f, .5f);
+		setRenderMode("faces");
+		render();
+		shader.setUniform("color", .5f, .5f, 0, .5f);
+		setRenderMode("delete");
+		render();
+		shader.setUniform("color", 1, 0, 0, 1);
+		setRenderMode("horizon");
+		render();
+	}
+	
+	public void next(){
+		switch(currentStep){
+			case 0:
+				//find the farthest point on the conflict list of the current triangle
+				expandTetrahedra();
+				insertFaces();
+				break;
+			case 1:
+				//create the new faces
+				closeHull();
+				insertFaces();
+				break;
+		}
+		currentStep = (currentStep+1)%2;
+	}
+	
 	private void insertFaces(){
 		HashMap<Triangle, Boolean> visited = new HashMap<Triangle, Boolean>();
 
 		ibos.get(0).reset(IndexType.INT);
+		ibos.get(1).reset(IndexType.INT);
+		ibos.get(3).reset(IndexType.INT);
+		ibos.get(4).reset(IndexType.INT);
 		
 		insertFace(baseTri, visited);
 
 		ibos.get(0).flush(BufferUsage.STATIC_DRAW);
+		ibos.get(1).flush(BufferUsage.STATIC_DRAW);
+		ibos.get(3).flush(BufferUsage.STATIC_DRAW);
+		ibos.get(4).flush(BufferUsage.STATIC_DRAW);
 	}
 	
 	private void insertFace(Triangle face, HashMap<Triangle, Boolean> visited){
@@ -99,16 +158,35 @@ public class ConvexHullGen extends Mesh {
 			//mark it as visited
 			visited.put(face, true);
 			
-//			face.insertPrim(ibos.get(0));
+			if(!toDelete.contains(face)){
+				face.insertPrim(ibos.get(0));
+			}else{
+				face.insertPrim(ibos.get(3));
+			}
 			//insert the lines
-			ibos.get(0).add(face.he1.sourceVert);
-			ibos.get(0).add(face.he2.sourceVert);
+			if(!horizon.contains(face.he1) && !horizon.contains(face.he1.opposite)){
+				ibos.get(1).add(face.he1.sourceVert);
+				ibos.get(1).add(face.he2.sourceVert);
+			}else{
+				ibos.get(4).add(face.he1.sourceVert);
+				ibos.get(4).add(face.he2.sourceVert);
+			}
 
-			ibos.get(0).add(face.he2.sourceVert);
-			ibos.get(0).add(face.he3.sourceVert);
+			if(!horizon.contains(face.he2) && !horizon.contains(face.he2.opposite)){
+				ibos.get(1).add(face.he2.sourceVert);
+				ibos.get(1).add(face.he3.sourceVert);
+			}else{
+				ibos.get(4).add(face.he2.sourceVert);
+				ibos.get(4).add(face.he3.sourceVert);
+			}
 
-			ibos.get(0).add(face.he3.sourceVert);
-			ibos.get(0).add(face.he1.sourceVert);
+			if(!horizon.contains(face.he3) && !horizon.contains(face.he3.opposite)){
+				ibos.get(1).add(face.he3.sourceVert);
+				ibos.get(1).add(face.he1.sourceVert);
+			}else{
+				ibos.get(4).add(face.he3.sourceVert);
+				ibos.get(4).add(face.he1.sourceVert);
+			}
 			
 			//continue recursing along the face edges
 			insertFace(face.he1.opposite.parent, visited);
@@ -118,11 +196,11 @@ public class ConvexHullGen extends Mesh {
 	}
 	
 	private void setCurrentPoints(ArrayList<Integer> points){
-		ibos.get(1).reset(IndexType.INT);
+		ibos.get(2).reset(IndexType.INT);
 		for(Integer point : points){
-			ibos.get(1).add(point);
+			ibos.get(2).add(point);
 		}
-		ibos.get(1).flush(BufferUsage.STATIC_DRAW);
+		ibos.get(2).flush(BufferUsage.STATIC_DRAW);
 	}
 	
 	private void genHull(){
@@ -285,93 +363,59 @@ public class ConvexHullGen extends Mesh {
 	}
 	
 	public void expandTetrahedra(){
-		
 		//iterate over the faces of the queue until the queue is empty
 		if(!faces.isEmpty()){
-			//get the next face in the queue
-			Triangle curFace = faces.poll();
 			//if it has a conflict list then determine what point in the list is farthest from the face
 			ArrayList<Integer> curConflict = conflictLists.get(curFace);
+			do{
+				do{
+					//get the next face in the queue
+					curFace = faces.poll();
+					curConflict = conflictLists.get(curFace);
+				}while(curConflict == null && !faces.isEmpty());
+			}while(curConflict.isEmpty() && !faces.isEmpty());
 			if(curConflict != null){
-				if(!curConflict.isEmpty()){
-//					setCurrentPoints(curConflict);
-					//find the point farthest from the face
-					//calculate the face normal
-					Vec3 normal = curFace.getNormal(geometry);
-					Vec3 vert1 = geometry.getVertex(curFace.he1.sourceVert).getPos();
-					float prevDist = 0;
-					int farIndex = -1;
-					for(Integer curIndex : curConflict){
-						float distance = normal.dot(VecUtil.subtract(geometry.getVertex(curIndex).getPos(), vert1));
-						//check if the distance is greater than the previous distance
-						if(distance > prevDist){
-							//update the variables
-							prevDist = distance;
-							farIndex = curIndex;
-						}
+				setCurrentPoints(curConflict);
+				//find the point farthest from the face
+				//calculate the face normal
+				Vec3 normal = curFace.getNormal(geometry);
+				Vec3 vert1 = geometry.getVertex(curFace.he1.sourceVert).getPos();
+				float prevDist = 0;
+				newIndex = -1;
+				for(Integer curIndex : curConflict){
+					float distance = normal.dot(VecUtil.subtract(geometry.getVertex(curIndex).getPos(), vert1));
+					//check if the distance is greater than the previous distance
+					if(distance > prevDist){
+						//update the variables
+						prevDist = distance;
+						newIndex = curIndex;
 					}
-					//update the hull with the new point
-					extendHull(farIndex, curFace, faces);
 				}
-			}//otherwise the face was either deleted in a previous iteration or has been finalized on the hull
+				getHorizon();
+			}
 		}
 	}
 	
-	private void extendHull(int newPoint, Triangle base, LinkedList<Triangle> faces){
-		//create a list that will store the conflict list points of all the removed triangles
-		ArrayList<Integer> partition = new ArrayList<Integer>(conflictLists.remove(base));//remove the first triangle from the conflict list 
-		//since we know it will be deleted
-		//create another list that will store the horizon edges
-		ArrayList<HalfEdge> horizon = new ArrayList<HalfEdge>();
-		//compute the edge horizon on the hull for the given point
-		findHorizon(geometry.getVertex(newPoint).getPos(), base.he1.opposite, partition, horizon);
-		findHorizon(geometry.getVertex(newPoint).getPos(), base.he2.opposite, partition, horizon);
-		findHorizon(geometry.getVertex(newPoint).getPos(), base.he3.opposite, partition, horizon);
-		
-		Iterator<HalfEdge> edges = horizon.iterator();
-		Triangle initial = null;
-		Triangle prevTri = null;
-		
-		do{
-			HalfEdge current = edges.next();
-			//compute the new triangle
-			Triangle curTri = new Triangle(newPoint, current.next.sourceVert, current.sourceVert);
-			//setup adjacency information for the new triangle
-			//connect to the previous face only if the previous faces exists which with the first face it won't
-			if(prevTri != null){
-				curTri.he1.opposite = prevTri.he3;
-				prevTri.he3.opposite = curTri.he1;
-			}else{
-				initial = curTri;//since the first triangle needs to be remembered store it now since we are operating on it
-			}
-			//connect with the "hidden" face that is part of the hull
-			curTri.he2.opposite = current;
-			current.opposite = curTri.he2;
-			
-			//if this is the last triangle being created then we need to setup the adjacency with the 
-			//first triangle to complete the loop
-			if(!edges.hasNext()){
-				curTri.he3.opposite = initial.he1;
-				initial.he1.opposite = curTri.he3;
-			}
-			
-			//partition the removed faces conflict lists to the new face
-			partitionPoints(partition, curTri);
-			
-			//add the new face to the faces list for later iteration
-			faces.add(curTri);
-			
-			//set the current triangle to be the previous triangle for the next iteration
-			prevTri = curTri;
-		}while(edges.hasNext());
-
-		//check if the face we removed also was the triangle we use as an entry point into the half edge data structure
-		if(conflictLists.get(baseTri) == null){
-			//if it is then set the first new triangle to be the new entry triangle
-			baseTri = initial;
+	public void expandAll(){
+		while(!faces.isEmpty()){
+			expandTetrahedra();
 		}
-		
-		insertFaces();
+	}
+	
+	public void getHorizon(){
+		if(!faces.isEmpty()){
+			partition.clear();
+			horizon.clear();
+			toDelete.clear();
+			//create a list that will store the conflict list points of all the removed triangles
+			partition.addAll(conflictLists.remove(curFace));//remove the first triangle from the conflict list 
+			toDelete.add(curFace);
+			//since we know it will be deleted
+			//compute the edge horizon on the hull for the given point
+			findHorizon(geometry.getVertex(newIndex).getPos(), curFace.he1.opposite);
+			findHorizon(geometry.getVertex(newIndex).getPos(), curFace.he2.opposite);
+			findHorizon(geometry.getVertex(newIndex).getPos(), curFace.he3.opposite);
+		}
 	}
 	
 	/**
@@ -379,17 +423,8 @@ public class ConvexHullGen extends Mesh {
 	 * 
 	 * @param newPoint Point being added to the hull
 	 * @param current Current half edge being processed for the DFS of the triangle faces of the hull
-	 * @param partitionPoints List of all the collected points to partition as a result of removing faces from the hull
-	 * @param horizon Array list to store the edges of the horizon
-	 * @param conflictLists List of the points that are in front of a triangle that are used to generate a new point
-	 * this list is also doubling as a "visited" marker for the recursive search. Once a face is visited it
-	 * will be removed from this list and have it's points collected for later partitioning among the new faces, this
-	 * process is necessary for removing the old faces from the hull.
 	 */
-	private void findHorizon(Vec3 newPoint, 
-			HalfEdge current, 
-			ArrayList<Integer> partitionPoints, 
-			ArrayList<HalfEdge> horizon){
+	private void findHorizon(Vec3 newPoint, HalfEdge current){
 		//check if the current half edges parent face has already not been visited or deleted
 		if(conflictLists.get(current.parent) != null){
 			//check if the current half edges parent face can be "seen" from the new point of the hull
@@ -398,15 +433,70 @@ public class ConvexHullGen extends Mesh {
 			//get the vector from a point on the triangle to the new point
 			Vec3 newEdge = VecUtil.subtract(newPoint, geometry.getVertex(current.sourceVert).getPos());
 			//if it can, continue searching through the edges of the current face
-			if(normal.dot(newEdge) > 0){
+			if(normal.dot(newEdge) >= 0){
 				//mark the current half edges parent face as being visited
-				partitionPoints.addAll(conflictLists.remove(current.parent));//add it's conflict list to the list of points and remove it from the map
+				partition.addAll(conflictLists.remove(current.parent));//add it's conflict list to the list of points and remove it from the map
+				toDelete.add(current.parent);
 				//continue the search through the other edges that we haven't come from
-				findHorizon(newPoint, current.next.opposite, partitionPoints, horizon);
-				findHorizon(newPoint, current.prev.opposite, partitionPoints, horizon);
+				findHorizon(newPoint, current.next.opposite);
+				findHorizon(newPoint, current.prev.opposite);
 			}else{//otherwise add the half edge to the horizon
 				horizon.add(current);
 			}
 		}
 	}
+	
+	private void closeHull(){
+		if(!faces.isEmpty()){
+
+			Iterator<HalfEdge> edges = horizon.iterator();
+			Triangle initial = null;
+			Triangle prevTri = null;
+			
+			do{
+				HalfEdge current = edges.next();
+				//compute the new triangle
+				Triangle curTri = new Triangle(newIndex, current.next.sourceVert, current.sourceVert);
+				//setup adjacency information for the new triangle
+				//connect to the previous face only if the previous faces exists which with the first face it won't
+				if(prevTri != null){
+					curTri.he1.opposite = prevTri.he3;
+					prevTri.he3.opposite = curTri.he1;
+				}else{
+					initial = curTri;//since the first triangle needs to be remembered store it now since we are operating on it
+				}
+				//connect with the "hidden" face that is part of the hull
+				curTri.he2.opposite = current;
+				current.opposite = curTri.he2;
+				
+				//if this is the last triangle being created then we need to setup the adjacency with the 
+				//first triangle to complete the loop
+				if(!edges.hasNext()){
+					curTri.he3.opposite = initial.he1;
+					initial.he1.opposite = curTri.he3;
+				}
+				
+				//partition the removed faces conflict lists to the new face
+				partitionPoints(partition, curTri);
+				
+				//add the new face to the faces list for later iteration
+				faces.add(curTri);
+				
+				//set the current triangle to be the previous triangle for the next iteration
+				prevTri = curTri;
+			}while(edges.hasNext());
+
+			//check if the face we removed also was the triangle we use as an entry point into the half edge data structure
+			if(conflictLists.get(baseTri) == null){
+				//if it is then set the first new triangle to be the new entry triangle
+				baseTri = initial;
+			}
+
+			partition.clear();
+			horizon.clear();
+			toDelete.clear();
+		}
+	}
+	
+	
 }

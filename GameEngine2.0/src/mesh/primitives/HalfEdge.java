@@ -23,6 +23,26 @@ public class HalfEdge {
 		next = null;
 		prev = null;
 	}
+
+	/**
+	 * Tests whether the given HalfEdge is a valid opposite edge to this HalfEdge. A valid opposite HalfEdge
+	 * is one where the source vertex is equal to the next vertex of the opposite edge and vice versa.
+	 * Below is an example of how an opposite HalfEdge is formed:
+	 * <br>
+	 * 13->10 original
+	 * 	  |
+	 * 13<-10 opposite
+	 * <br>
+	 * the edge formed from these would be:
+	 * (13, 10)
+	 * 
+	 * @param test HalfEdge to compare this HalfEdge to as being opposite
+	 * 
+	 * @return True if the given HalfEdge is a valid opposite edge to this HalfEdge, false otherwise
+	 */
+	public boolean isOpposite(HalfEdge test){
+		return test == null ? false : sourceVert.equals(test.next.sourceVert) && next.sourceVert.equals(test.sourceVert);
+	}
 	
 	@Override
 	public boolean equals(Object o){

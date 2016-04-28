@@ -246,10 +246,13 @@ public class ConvexHull extends CollisionMesh {
 		Triangle initial = null;
 		Triangle prevTri = null;
 		
+		//TODO check if other pointers from different edges of the triangle are keeping their pointers to the 
+		//old triangles something like the .next of an edge
 		do{
 			HalfEdge current = edges.next();
 			//compute the new triangle
 			Triangle curTri = new Triangle(newPoint, current.next.sourceVert, current.sourceVert);
+			
 			//setup adjacency information for the new triangle
 			//connect to the previous face only if the previous faces exists which with the first face it won't
 			if(prevTri != null){
@@ -303,7 +306,7 @@ public class ConvexHull extends CollisionMesh {
 			ArrayList<Integer> partitionPoints, 
 			ArrayList<HalfEdge> horizon, 
 			HashMap<Triangle, ArrayList<Integer>> conflictLists){
-		//check if the current half edges parent face has already not been visited or deleted
+		//check if the current half edges parent face has not been visited
 		if(conflictLists.get(current.parent) != null){
 			//check if the current half edges parent face can be "seen" from the new point of the hull
 			//get the normal of the current face
@@ -311,7 +314,7 @@ public class ConvexHull extends CollisionMesh {
 			//get the vector from a point on the triangle to the new point
 			Vec3 newEdge = VecUtil.subtract(newPoint, mesh.getVertex(current.sourceVert).getPos());
 			//if it can, continue searching through the edges of the current face
-			if(normal.dot(newEdge) > 0){
+			if(normal.dot(newEdge) >= 0){
 				//mark the current half edges parent face as being visited
 				partitionPoints.addAll(conflictLists.remove(current.parent));//add it's conflict list to the list of points and remove it from the map
 				//continue the search through the other edges that we haven't come from
