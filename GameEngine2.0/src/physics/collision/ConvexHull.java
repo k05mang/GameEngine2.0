@@ -331,7 +331,7 @@ public class ConvexHull extends CollisionMesh {
 		//change the direction vector based on the orientation of the hull
 		//this way the vertices don't need to be transformed to test against
 		//the direction vector
-		Vec3 orientedDir = transforms.getOrientation().multVec(direction).normalize();
+		Vec3 orientedDir = transforms.getOrientation().conjugate().multVec(direction).normalize();
 		
 		//transform the final vertex to reflect the world position of the vertex
 		return (Vec3)transforms.getTransform().multVec(new Vec4(findSupport(orientedDir, baseTri.he1),1)).swizzle("xyz");
