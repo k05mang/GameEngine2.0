@@ -26,7 +26,6 @@ public class Triangle {
 	 * @param v2 Third vertex of the triangle 
 	 */
 	public Triangle(int v0, int v1, int v2){
-		//isStored = false;
 		
 		e1 = new Edge(v0, v1);
 		e2 = new Edge(v1, v2);
