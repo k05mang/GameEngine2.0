@@ -1,5 +1,7 @@
 package mesh.primitives;
 
+import java.util.Arrays;
+
 /**
  * Acts as a node in the half edge data structure used for mesh data traversal.
  * 
@@ -52,6 +54,11 @@ public class HalfEdge {
 		}else{
 			return false;
 		}
+	}
+	
+	@Override
+	public int hashCode(){
+		return Arrays.hashCode(new int[]{next.sourceVert, sourceVert, prev.sourceVert});
 	}
 	
 	@Override

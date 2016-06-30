@@ -22,17 +22,11 @@ public class ConvexHull2D extends ConvexHull {
 		//start by getting the triangle normal to use in calculating the normals for the edges
 		Vec3 normal = baseTri.getNormal(mesh);
 		//calculate the edge normals that will be initially used in determining the partition
-		Vec3 edge1 = VecUtil.cross(
-				VecUtil.subtract(mesh.getVertex(baseTri.he2.sourceVert).getPos(), mesh.getVertex(baseTri.he1.sourceVert).getPos()), //edge1
-				normal).normalize();
+		Vec3 edge1 = getEdgeNormal(normal, baseTri.he1.sourceVert, baseTri.he2.sourceVert);
 
-		Vec3 edge2 = VecUtil.cross(
-				VecUtil.subtract(mesh.getVertex(baseTri.he3.sourceVert).getPos(), mesh.getVertex(baseTri.he2.sourceVert).getPos()), //edge2
-				normal).normalize();
+		Vec3 edge2 = getEdgeNormal(normal, baseTri.he2.sourceVert, baseTri.he3.sourceVert);
 
-		Vec3 edge3 = VecUtil.cross(
-				VecUtil.subtract(mesh.getVertex(baseTri.he1.sourceVert).getPos(), mesh.getVertex(baseTri.he3.sourceVert).getPos()), //edge3
-				normal).normalize();
+		Vec3 edge3 = getEdgeNormal(normal, baseTri.he3.sourceVert, baseTri.he1.sourceVert);
 		//create the index list to partition
 		ArrayList<Integer> partitionList = new ArrayList<Integer>(mesh.getNumVertices());
 		//initialize the index list
@@ -48,6 +42,7 @@ public class ConvexHull2D extends ConvexHull {
 
 		conflictLists.put(baseTri.he3, 
 				partitionPoints(mesh, partitionList, edge3, mesh.getVertex(baseTri.he3.sourceVert).getPos()));
+		expand(normal, conflictLists);
 		
 	}
 
@@ -73,11 +68,11 @@ public class ConvexHull2D extends ConvexHull {
 				//check if there are any points to extend this edge to
 				if(!curConflict.isEmpty()){
 					//find the point farthest from the edge
-					Vec3 vert1 = mesh.getVertex(curEdge.sourceVert).getPos();
+					Vec3 edgeNormal = getEdgeNormal(planeNormal, curEdge.sourceVert, curEdge.next.sourceVert);
 					float prevDist = 0;
 					int farIndex = -1;
 					for(Integer curIndex : curConflict){
-						float distance = planeNormal.dot(VecUtil.subtract(mesh.getVertex(curIndex).getPos(), vert1));
+						float distance = edgeNormal.dot(VecUtil.subtract(mesh.getVertex(curIndex).getPos(), mesh.getVertex(curEdge.sourceVert).getPos()));
 						//check if the distance is greater than the previous distance
 						if(distance > prevDist){
 							//update the variables
@@ -86,109 +81,91 @@ public class ConvexHull2D extends ConvexHull {
 						}
 					}
 					//update the hull with the new point
-					extendHull(farIndex, curFace, edges, conflictLists);
+					extendHull(farIndex, curEdge, planeNormal, edges, conflictLists);
 				}
 			}//otherwise the edge was either deleted in a previous iteration or has been finalized on the hull
 		}
 	}
 	
-	private void extendHull(int newPoint, HalfEdge base, LinkedList<Triangle> faces, HashMap<Triangle, ArrayList<Integer>> conflictLists){
+	private void extendHull(int newPoint, HalfEdge base, Vec3 planeNormal, LinkedList<HalfEdge> edges, HashMap<HalfEdge, ArrayList<Integer>> conflictLists){
 		//create a list that will store the conflict list points of all the removed edges
 		ArrayList<Integer> partition = new ArrayList<Integer>(conflictLists.remove(base));//remove the first triangle from the conflict list 
 		//since we know it will be deleted
-		//create another list that will store the horizon edges
-		ArrayList<HalfEdge> horizon = new ArrayList<HalfEdge>();
-		//TODO figure out how to go about computing and storing the horizon since it would be better to compute triangles at the end
-		//this way they can also be triangulated
 		
-		//compute the edge horizon on the hull for the given point
-		findHorizon(mesh.getVertex(newPoint).getPos(), base.he1.opposite, partition, horizon, conflictLists);
-		findHorizon(mesh.getVertex(newPoint).getPos(), base.he2.opposite, partition, horizon, conflictLists);
-		findHorizon(mesh.getVertex(newPoint).getPos(), base.he3.opposite, partition, horizon, conflictLists);
-		
-		Iterator<HalfEdge> edges = horizon.iterator();
-		Triangle initial = null;
-		Triangle prevTri = null;
-		
-		//TODO check if other pointers from different edges of the triangle are keeping their pointers to the 
-		//old triangles something like the .next of an edge
+		//the base half edge acts as a pointer into the hull structure that is being formed using the half edge pointers
+		//so we can simply loop through all the edges "in front" of the base half edge and then again through the edges "behind"
+		//the base edge, stopping when we reached edge boundaries that represent the horizon of the hull
+		HalfEdge forward = base.next, backward = base, curEdge = base.next;
+		float dot = 0;
+		//forward check loop
 		do{
-			HalfEdge current = edges.next();
-			//compute the new triangle
-			Triangle curTri = new Triangle(newPoint, current.next.sourceVert, current.sourceVert);
-			
-			//setup adjacency information for the new triangle
-			//connect to the previous face only if the previous faces exists which with the first face it won't
-			if(prevTri != null){
-				curTri.he1.opposite = prevTri.he3;
-				prevTri.he3.opposite = curTri.he1;
+			//get the current edge normal
+			Vec3 edgeNormal = getEdgeNormal(planeNormal, curEdge.next.sourceVert, curEdge.sourceVert);
+			Vec3 newPointLine = VecUtil.subtract(mesh.getVertex(newPoint).getPos(), mesh.getVertex(curEdge.sourceVert).getPos());//line from the new point to the 
+			//current vertex that may qualify as a horizon point
+			dot = newPointLine.dot(edgeNormal);//get the dot product between the new point line and the edge normal
+			//if the edge is visible to the new point remove it from the conflict lists
+			if(dot >= 0){
+				partition.addAll(conflictLists.remove(curEdge));
 			}else{
-				initial = curTri;//since the first triangle needs to be remembered store it now since we are operating on it
+				forward = curEdge;
 			}
-			//connect with the "hidden" face that is part of the hull
-			curTri.he2.opposite = current;
-			current.opposite = curTri.he2;
-			
-			//if this is the last triangle being created then we need to setup the adjacency with the 
-			//first triangle to complete the loop
-			if(!edges.hasNext()){
-				curTri.he3.opposite = initial.he1;
-				initial.he1.opposite = curTri.he3;
+			curEdge = curEdge.next;
+		}while(dot >= 0);//while the forward edge can still be seen by the new point
+		
+		//back check loop
+		curEdge = base;
+		dot = 0;
+		do{
+			//get the current edge normal
+			Vec3 edgeNormal = getEdgeNormal(planeNormal, curEdge.prev.sourceVert, curEdge.sourceVert);
+			Vec3 newPointLine = VecUtil.subtract(mesh.getVertex(newPoint).getPos(), mesh.getVertex(curEdge.sourceVert).getPos());//line from the new point to the 
+			//current vertex that may qualify as a horizon point
+			dot = newPointLine.dot(edgeNormal);//get the dot product between the new point line and the edge normal
+			//if the edge is visible to the new point remove it from the conflict lists
+			partition.addAll(conflictLists.remove(curEdge));
+			if(dot < 0){
+				backward = curEdge;
 			}
-			
-			//partition the removed faces conflict lists to the new face
-			conflictLists.put(curTri, 
-					partitionPoints(mesh, partition, curTri.getNormal(mesh), mesh.getVertex(curTri.he1.sourceVert).getPos()));
-			
-			//add the new face to the faces list for later iteration
-			faces.add(curTri);
-			
-			//set the current triangle to be the previous triangle for the next iteration
-			prevTri = curTri;
-		}while(edges.hasNext());
-
-		//check if a face we removed also was the triangle we use as an entry point into the half edge data structure
-		if(conflictLists.get(baseTri) == null){
-			//if it is then set the first new triangle to be the new entry triangle
-			baseTri = initial;
-		}
+			curEdge = curEdge.prev;
+		}while(dot >= 0);//while the backward edge can still be seen by the new point
+		//we will need to remove the backward edge since it's next pointer will be re-assigned to establish the new edge leading toward the new point
+		
+		//after finding the horizon points, we need to partition the list of conflicting points for all the edges removed between the new edges being formed
+		//additionally we need to change the half edge pointers to represent the new hull
+		HalfEdge newEdge = new HalfEdge(newPoint);//create the new edge
+		//establish its forward and backward pointers to the horizon edges
+		newEdge.next = forward;
+		newEdge.prev = backward;
+		
+		//since the hashcode for reading conflict lists is based on the next and previous values of the half edge we need to re-assign the current forward
+		//half edge in the conflict lists hashmap
+		//first we need the current conflict lists
+		ArrayList<Integer> forwardList = conflictLists.remove(forward);
+		//establish the horizon edges with the new edge to disconnect the removed half edges from the hull
+		forward.prev = newEdge;
+		backward.next = newEdge;
+		
+		//after adjusting the forward half edge pointer we can re-assign the old conflict lists
+		conflictLists.put(forward, forwardList);
+		
+		//partition the conflicting points from removed edges to the newly created edges
+		conflictLists.put(newEdge, 
+				partitionPoints(mesh, partition, getEdgeNormal(planeNormal, newEdge.next.sourceVert, newPoint), mesh.getVertex(newPoint).getPos()));
+		conflictLists.put(backward, 
+				partitionPoints(mesh, partition, getEdgeNormal(planeNormal, newPoint, backward.sourceVert), mesh.getVertex(backward.sourceVert).getPos()));
+		
+		//then we add the new edges to the linked list for further parsing
+		edges.add(forward);//needs to be re-added due to value re-assignment that changed hashcode values
+		edges.add(backward);
+		edges.add(newEdge);
+		
 	}
 	
-	/**
-	 * Finds the Horizon edges for adding the new point of the hull
-	 * 
-	 * @param newPoint Point being added to the hull
-	 * @param current Current half edge being processed for the DFS of the triangle faces of the hull
-	 * @param partitionPoints List of all the collected points to partition as a result of removing faces from the hull
-	 * @param horizon Array list to store the edges of the horizon
-	 * @param conflictLists List of the points that are in front of a triangle that are used to generate a new point
-	 * this list is also doubling as a "visited" marker for the recursive search. Once a face is visited it
-	 * will be removed from this list and have it's points collected for later partitioning among the new faces, this
-	 * process is necessary for removing the old faces from the hull.
-	 */
-	private void findHorizon(Vec3 newPoint, 
-			HalfEdge current, 
-			ArrayList<Integer> partitionPoints, 
-			ArrayList<HalfEdge> horizon, 
-			HashMap<Triangle, ArrayList<Integer>> conflictLists){
-		//check if the current half edges parent face has not been visited
-		if(conflictLists.get(current.parent) != null){
-			//check if the current half edges parent face can be "seen" from the new point of the hull
-			//get the normal of the current face
-			Vec3 normal = current.parent.getNormal(mesh);
-			//get the vector from a point on the triangle to the new point
-			Vec3 newEdge = VecUtil.subtract(newPoint, mesh.getVertex(current.sourceVert).getPos());
-			//if it can, continue searching through the edges of the current face
-			if(normal.dot(newEdge) >= 0){
-				//mark the current half edges parent face as being visited
-				partitionPoints.addAll(conflictLists.remove(current.parent));//add it's conflict list to the list of points and remove it from the map
-				//continue the search through the other edges that we haven't come from
-				findHorizon(newPoint, current.next.opposite, partitionPoints, horizon, conflictLists);
-				findHorizon(newPoint, current.prev.opposite, partitionPoints, horizon, conflictLists);
-			}else{//otherwise add the half edge to the horizon
-				horizon.add(current);
-			}
-		}
+	private Vec3 getEdgeNormal(Vec3 planeNormal, int baseIndex, int nextIndex){
+		return VecUtil.cross(
+				VecUtil.subtract(mesh.getVertex(nextIndex).getPos(), mesh.getVertex(baseIndex).getPos()),
+				planeNormal).normalize();
 	}
 
 	@Override
