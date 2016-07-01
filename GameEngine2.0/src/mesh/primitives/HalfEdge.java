@@ -50,7 +50,7 @@ public class HalfEdge {
 	public boolean equals(Object o){
 		if(o instanceof HalfEdge){
 			HalfEdge cast = (HalfEdge)o;
-			return sourceVert == cast.sourceVert && parent.equals(cast.parent);
+			return sourceVert == cast.sourceVert && (parent == null ? cast.parent == null : parent.equals(cast.parent));
 		}else{
 			return false;
 		}

@@ -14,10 +14,11 @@ import mesh.primitives.HalfEdge;
 import mesh.primitives.Triangle;
 
 public class ConvexHull3D extends ConvexHull {
+	private Triangle baseTri;
 	
 	protected ConvexHull3D(Triangle baseTri, int vertIndex, boolean inFront, Geometry mesh, ArrayList<Integer> posList, ArrayList<Integer> negList){
+		super(mesh);
 		this.baseTri = baseTri;
-		this.mesh = mesh;
 		//create a hashmap to assign the triangles conflict lists in the expansion process
 		HashMap<Triangle, ArrayList<Integer>> conflictLists = new HashMap<Triangle, ArrayList<Integer>>(4);
 		ArrayList<Integer> partitionList = null;
@@ -82,7 +83,7 @@ public class ConvexHull3D extends ConvexHull {
 	}
 	
 	public ConvexHull3D(ConvexHull3D copy){
-		mesh = copy.mesh;
+		super(copy);
 		baseTri = copy.baseTri;
 	}
 	
@@ -224,12 +225,12 @@ public class ConvexHull3D extends ConvexHull {
 
 	@Override
 	public Vec3 support(Vec3 direction) {
-		//change the direction vector based on the orientation of the hull
-		//this way the vertices don't need to be transformed to test against
+		//change the direction vector based on the orientation of the hull to bring it into model space
+		//this way the vertices don't need to be transformed to world space to test against
 		//the direction vector
 		Vec3 orientedDir = transforms.getOrientation().conjugate().multVec(direction).normalize();
 		
-		//transform the final vertex to reflect the world position of the vertex
+		//transform the final vertex back into world space
 		return (Vec3)transforms.getTransform().multVec(new Vec4(findSupport(orientedDir, baseTri.he1),1)).swizzle("xyz");
 	}
 	

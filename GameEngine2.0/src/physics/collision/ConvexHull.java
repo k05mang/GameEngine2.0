@@ -10,16 +10,14 @@ import glMath.VecUtil;
 import glMath.vectors.Vec3;
 
 public abstract class ConvexHull extends CollisionMesh {
-	protected Triangle baseTri;
 	protected Geometry mesh;
 	
-	public ConvexHull() {
-		
+	public ConvexHull(Geometry mesh) {
+		this.mesh = mesh;
 	}
 
 	public ConvexHull(ConvexHull copy) {
 		super(copy);
-		baseTri = copy.baseTri;
 		mesh = copy.mesh;
 	}
 	
