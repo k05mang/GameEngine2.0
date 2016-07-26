@@ -52,13 +52,13 @@ public class ConvexHull2D extends ConvexHull {
 			partitionList.add(curPoint);
 		}
 		//partition the points
-		conflictLists.put(baseTri.he1, 
+		conflictLists.put(baseEdge, 
 				partitionPoints(mesh, partitionList, edge1, mesh.getVertex(baseTri.he1.sourceVert).getPos()));
 
-		conflictLists.put(baseTri.he2, 
+		conflictLists.put(baseEdge.next, 
 				partitionPoints(mesh, partitionList, edge2, mesh.getVertex(baseTri.he2.sourceVert).getPos()));
 
-		conflictLists.put(baseTri.he3, 
+		conflictLists.put(baseEdge.prev, 
 				partitionPoints(mesh, partitionList, edge3, mesh.getVertex(baseTri.he3.sourceVert).getPos()));
 		expand(conflictLists);
 		
@@ -108,7 +108,7 @@ public class ConvexHull2D extends ConvexHull {
 	
 	private void extendHull(int newPoint, HalfEdge base, LinkedList<HalfEdge> edges, HashMap<HalfEdge, ArrayList<Integer>> conflictLists){
 		//create a list that will store the conflict list points of all the removed edges
-		ArrayList<Integer> partition = new ArrayList<Integer>(conflictLists.remove(base));//remove the first triangle from the conflict list 
+		ArrayList<Integer> partition = new ArrayList<Integer>();//remove the first triangle from the conflict list 
 		//since we know it will be deleted
 		
 		//the base half edge acts as a pointer into the hull structure that is being formed using the half edge pointers
@@ -120,7 +120,7 @@ public class ConvexHull2D extends ConvexHull {
 		//forward check loop
 		do{
 			//get the current edge normal
-			Vec3 edgeNormal = getEdgeNormal(curEdge.next.sourceVert, curEdge.sourceVert);
+			Vec3 edgeNormal = getEdgeNormal(curEdge.sourceVert, curEdge.next.sourceVert);
 			Vec3 newPointLine = VecUtil.subtract(mesh.getVertex(newPoint).getPos(), mesh.getVertex(curEdge.sourceVert).getPos());//line from the new point to the 
 			//current vertex that may qualify as a horizon point
 			dot = newPointLine.dot(edgeNormal);//get the dot product between the new point line and the edge normal
@@ -142,18 +142,19 @@ public class ConvexHull2D extends ConvexHull {
 		dot = 0;
 		do{
 			//get the current edge normal
-			Vec3 edgeNormal = getEdgeNormal(curEdge.prev.sourceVert, curEdge.sourceVert);
+			Vec3 edgeNormal = getEdgeNormal(curEdge.sourceVert, curEdge.next.sourceVert);
 			Vec3 newPointLine = VecUtil.subtract(mesh.getVertex(newPoint).getPos(), mesh.getVertex(curEdge.sourceVert).getPos());//line from the new point to the 
 			//current vertex that may qualify as a horizon point
 			dot = newPointLine.dot(edgeNormal);//get the dot product between the new point line and the edge normal
 			//if the edge is visible to the new point remove it from the conflict lists
-			partition.addAll(conflictLists.remove(curEdge));
-			//check if the edge we are removing is the baseEdge, in which case we need to re-assign baseEdge at the end
-			if(curEdge.equals(baseEdge)){
-				removedBase = true;
-			}
-			if(dot < 0){
-				backward = curEdge;
+			if(dot >= 0){
+				partition.addAll(conflictLists.remove(curEdge));
+				//check if the edge we are removing is the baseEdge, in which case we need to re-assign baseEdge at the end
+				if(curEdge.equals(baseEdge)){
+					removedBase = true;
+				}
+			}else{
+				backward = curEdge.next;
 			}
 			curEdge = curEdge.prev;
 		}while(dot >= 0);//while the backward edge can still be seen by the new point
@@ -166,7 +167,7 @@ public class ConvexHull2D extends ConvexHull {
 		if(removedBase){
 			baseEdge = newEdge;
 		}
-		//establish its forward and backward pointers to the horizon edges
+		//establish forward and backward pointers to the horizon edges
 		newEdge.next = forward;
 		newEdge.prev = backward;
 		
@@ -185,20 +186,17 @@ public class ConvexHull2D extends ConvexHull {
 		
 		//partition the conflicting points from removed edges to the newly created edges
 		conflictLists.put(newEdge, 
-				partitionPoints(mesh, partition, getEdgeNormal(newEdge.next.sourceVert, newPoint), mesh.getVertex(newPoint).getPos()));
+				partitionPoints(mesh, partition, getEdgeNormal(newPoint, forward.sourceVert), mesh.getVertex(newPoint).getPos()));
 		conflictLists.put(backward, 
-				partitionPoints(mesh, partition, getEdgeNormal(newPoint, backward.sourceVert), mesh.getVertex(backward.sourceVert).getPos()));
+				partitionPoints(mesh, partition, getEdgeNormal(backward.sourceVert, newPoint), mesh.getVertex(backward.sourceVert).getPos()));
 		
-		//then we add the new edges to the linked list for further parsing
-		edges.add(forward);//needs to be re-added due to value re-assignment that changed hashcode values
-		edges.add(backward);
+		//then we add the new edge to the linked list for further parsing
 		edges.add(newEdge);
+		edges.add(forward);//needs to be re-added due to value re-assignment that changed hashcode values
 		
 	}
 	
 	private Vec3 getEdgeNormal(int baseIndex, int nextIndex){
-//		System.out.println(mesh.getVertex(baseIndex));
-//		System.out.println(mesh.getVertex(nextIndex));
 		return VecUtil.cross(
 				VecUtil.subtract(mesh.getVertex(nextIndex).getPos(), mesh.getVertex(baseIndex).getPos()),
 				planeNormal).normalize();

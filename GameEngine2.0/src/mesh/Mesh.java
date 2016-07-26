@@ -29,7 +29,6 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 		super();
 		vao = new VertexArray();
 		geometry = new Geometry();
-		transforms = new Transform();
 		vbos = new ArrayList<BufferObject>();
 		ibos = new ArrayList<IndexBuffer>();
 		material = "default";
@@ -52,7 +51,6 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 		vbos = copy.vbos;
 		ibos = copy.ibos;
 		geometry = copy.geometry;//new Geometry(copy.geometry);
-		transforms = new Transform(copy.transforms);
 		material = new String(copy.material);
 	}
 	

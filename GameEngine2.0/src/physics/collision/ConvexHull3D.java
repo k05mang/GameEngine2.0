@@ -142,8 +142,6 @@ public class ConvexHull3D extends ConvexHull {
 		Triangle initial = null;
 		Triangle prevTri = null;
 		
-		//TODO check if other pointers from different edges of the triangle are keeping their pointers to the 
-		//old triangles something like the .next of an edge
 		do{
 			HalfEdge current = edges.next();
 			//compute the new triangle
