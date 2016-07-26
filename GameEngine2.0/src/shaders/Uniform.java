@@ -50,6 +50,8 @@ public class Uniform {
 	 * this is used when calling a set on a matrix type
 	 */
 	private void set(int program, boolean transpose){
+		//set the buffers limit to be it's capacity, this will avoid buffer size expectations from the GL
+		dataBuffer.limit(dataBuffer.capacity());
 		if(type.isFloat()){
 			switch(type.size){
 				case 1:

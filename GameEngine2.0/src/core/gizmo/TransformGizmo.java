@@ -18,9 +18,12 @@ public abstract class TransformGizmo {
 	}
 	
 	public void render(ShaderProgram program){
-		program.setUniform("model", sphereTrans.getTransform());
-		program.setUniform("color", centerColor);
-		center.render();
+		//only render if a target exists
+		if(target != null){
+			program.setUniform("model", sphereTrans.getTransform());
+			program.setUniform("color", centerColor);
+			center.render();
+		}
 	}
 	
 	public void bind(SpatialAsset target){

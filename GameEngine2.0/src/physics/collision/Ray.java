@@ -1,10 +1,11 @@
 package physics.collision;
 
 import glMath.Transform;
+import glMath.VecUtil;
 import glMath.vectors.Vec3;
 import core.SpatialAsset;
 
-public class Ray extends SpatialAsset {
+public class Ray extends CollisionMesh {
 
 	private Vec3 direction;
 	private float length;
@@ -50,5 +51,21 @@ public class Ray extends SpatialAsset {
 	public void transform(Transform transform){
 		transforms.translate(transform);
 		transforms.rotate(transform);
+	}
+
+	@Override
+	public Vec3 support(Vec3 direction) {
+		//test the end points of the ray to see which is furthest in the direction of the given direction vector
+		//start point
+		float start = direction.dot(transforms.getTranslation());
+		Vec3 endPoint = VecUtil.add(transforms.getTranslation(), transforms.getOrientation().multVec(VecUtil.scale(this.direction, length)));
+		//end point
+		float end = direction.dot(endPoint);
+
+		if(start > end){
+			return transforms.getTranslation();
+		}else{
+			return endPoint;
+		}
 	}
 }
