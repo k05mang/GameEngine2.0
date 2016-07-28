@@ -35,7 +35,7 @@ public abstract class TransformGizmo {
 		target = null;
 	}
 	
-	public abstract void update();
-	
-	public abstract void select(Vec3 origin, float screenX, float screenY);
+//	public abstract void update();
+//	
+//	public abstract void select(Vec3 origin, float screenX, float screenY);
 }

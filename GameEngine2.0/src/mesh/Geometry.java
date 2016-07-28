@@ -21,6 +21,7 @@ public class Geometry {
 	private ArrayList<Triangle> faces;
 	private HashMap<Edge, HalfEdge> edgeMap;
 	private int[] minMax;//cache for points that are farthest along each axis
+	private Vec3 geometricCenter;//center point of all the vertices
 	/*
 	 * minMax[0] = Min x value
 	 * minMax[1] = Max x value
@@ -46,6 +47,7 @@ public class Geometry {
 		faces = new ArrayList<Triangle>();
 		edgeMap = new HashMap<Edge, HalfEdge>();
 		minMax = new int[6];
+		geometricCenter = new Vec3();
 	}
 	
 	public Geometry(Geometry copy){
@@ -53,11 +55,12 @@ public class Geometry {
 		hashVerts = new HashMap<Vertex, Integer>(copy.vertices.size());
 		faces = new ArrayList<Triangle>(copy.faces.size());
 		edgeMap = new HashMap<Edge, HalfEdge>();
+		geometricCenter = new Vec3(copy.geometricCenter);
 		
 		//copy each vertex into this geometry object
 		for(Vertex vert : copy.vertices){
 			vertices.add(new Vertex(vert));
-			hashVerts.put(vert, vertices.size()-1);
+			hashVerts.put(vertices.get(vertices.size()-1), vertices.size()-1);
 		}
 		
 		//copy the faces
@@ -70,7 +73,7 @@ public class Geometry {
 	
 	/**
 	 * Gets the number of indices of the given value there are in the minMax array. This is to help
-	 * determine if a new index should be asigned a min max value based on the quantity of that index
+	 * determine if a new index should be assigned a min max value based on the quantity of that index
 	 * in the array. This will help increase array diversity.
 	 * 
 	 * @param value Value to count in the array
@@ -109,6 +112,13 @@ public class Geometry {
 	public void add(Vertex vert){
 		vertices.add(new Vertex(vert));
 		hashVerts.put(vertices.get(vertices.size()-1), vertices.size()-1);
+		//compute the new geomtric center
+		geometricCenter.scale((vertices.size()-1)/(float)vertices.size());//scale the current center by (n-1)/n
+		//this brings the previous vertices into the appropriate average range
+		//the center is defined as the average of the sums of the vertices, but since we don't know when 
+		//the max number of vertices has been added we only have the n-1 average stored in the geometric center
+		//to adjust those previous values to bring them into the n average with the scalar (n-1)/n
+		geometricCenter.add(VecUtil.scale(vert.getPos(), 1.0f/vertices.size()));
 		
 		//check if this vertex is a minimum or maximum along any axis
 		//X min
@@ -163,6 +173,36 @@ public class Geometry {
 			//if the value we checked would also qualify for the min value and the value already in the list
 			//has multiple assignments, then we can replace this with the new vertex
 			minMax[5] = vertices.size()-1;
+		}
+	}
+	
+	/**
+	 * Gets the geometric center of all the vertices
+	 * 
+	 * @return Center point relative to all this geometries vertices
+	 */
+	public Vec3 getGeometricCenter(){
+		return geometricCenter;
+	}
+	
+	/**
+	 * Translates all the vertices in this geometric object to the geometric center of the vertices
+	 * this also changes the geometric center to be the origin, as all the points were moved
+	 */
+	public void moveToGeoCenter(){
+		//only perform the move operation if the center is anything but the origin
+		if(geometricCenter.x != 0.0f && geometricCenter.y != 0.0f && geometricCenter.z != 0.0f){
+			//iterate over the vertices and translate their position vector by the geometric center
+			for(int curVert = 0; curVert < vertices.size(); curVert++){
+				//remove the old hashmap value for the current vertex, since it will need to be updated after the translation
+				hashVerts.remove(vertices.get(curVert));
+				//adjust the vertex position
+				vertices.get(curVert).setPos(VecUtil.subtract(vertices.get(curVert).getPos(), geometricCenter));
+				//add the adjusted vertex back into the hash map
+				hashVerts.put(vertices.get(curVert), curVert);
+			}
+			//adjust the geometric center variable
+			geometricCenter.set(0,0,0);
 		}
 	}
 	

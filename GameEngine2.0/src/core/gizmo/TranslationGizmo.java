@@ -32,15 +32,15 @@ public class TranslationGizmo extends TransformGizmo{
 		zaxis.setPos(target.getPos());
 	}
 
-	@Override
-	public void update() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void select(Camera view, float screenX, float screenY) {
-		// TODO Auto-generated method stub
-		
-	}
+//	@Override
+//	public void update() {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//
+//	@Override
+//	public void select(Camera view, float screenX, float screenY) {
+//		// TODO Auto-generated method stub
+//		
+//	}
 }

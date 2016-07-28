@@ -10,7 +10,7 @@ public abstract class CollisionDetector {
 	
 	protected static final float MAX_THRESHOLD = .001f;
 	
-	public static boolean checkCollision(CollisionMesh objA, CollisionMesh objB){
+	public static boolean intersects(CollisionMesh objA, CollisionMesh objB){
 		Vec3 direction = new Vec3(1,1,1);
 		Simplex simplex = new Simplex(
 				objB.support(direction.inverse()).subtract(objA.support(direction)), 
@@ -27,6 +27,40 @@ public abstract class CollisionDetector {
 			simplex.add(newPoint);
 		}
 		return true;
+	}
+	
+	public static boolean intersects(Ray ray, CollisionMesh mesh){
+		if(mesh instanceof ConvexHull2D){
+			return intersects(ray, (ConvexHull2D)mesh);
+		}else if(mesh instanceof ConvexHull3D){
+			return intersects(ray, (ConvexHull3D)mesh);
+		}else if(mesh instanceof CollisionPlane){
+			return intersects(ray, (CollisionPlane)mesh);
+		}else if(mesh instanceof AABB){
+			return intersects(ray, (AABB)mesh);
+		}/*else if(mesh instanceof OBB){
+			return intersects(ray, (OBB)mesh);
+		}else if(mesh instanceof CollisionSphere){
+			return intersects(ray, (CollisionSphere)mesh);
+		}else if(mesh instanceof CollisionCone){
+			return intersects(ray, (CollisionCone)mesh);
+		}else if(mesh instanceof CollisionCylinder){
+			return intersects(ray, (CollisionCylinder)mesh);
+		}else if(mesh instanceof CollisionCapsule){
+			return intersects(ray, (CollisionCapsule)mesh);
+		}
+		
+		*/
+		
+		return false;
+	}
+	
+	public static boolean intersects(Ray ray, ConvexHull2D hull){
+		return false;
+	}
+	
+	public static boolean intersects(Ray ray, ConvexHull3D hull){
+		return false;
 	}
 	
 	public static boolean intersects(Ray ray, CollisionPlane plane){

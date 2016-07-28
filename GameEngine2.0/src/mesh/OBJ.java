@@ -14,6 +14,7 @@ public class OBJ extends Mesh {
 		super();
 		
 		geometry = new Geometry(mesh);
+		geometry.moveToGeoCenter();
 		//create vertex buffer
 		BufferObject vbo = new BufferObject(BufferType.ARRAY);
 		vbos.add(vbo);
