@@ -1,9 +1,7 @@
 package mesh;
 
 import static org.lwjgl.opengl.GL11.glDrawElements;
-import glMath.Transform;
 import glMath.matrices.Mat4;
-import glMath.vectors.Vec3;
 import gldata.BufferObject;
 import gldata.IndexBuffer;
 import gldata.VertexArray;

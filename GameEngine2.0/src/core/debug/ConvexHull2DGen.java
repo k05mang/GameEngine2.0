@@ -1,5 +1,6 @@
-package physics.collision;
+package core.debug;
 
+import physics.collision.ConvexHull2D;
 import gldata.AttribType;
 import gldata.BufferObject;
 import gldata.BufferType;

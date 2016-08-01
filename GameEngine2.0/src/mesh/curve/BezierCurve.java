@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import mesh.Mesh;
 import mesh.primitives.Vertex;
+import mesh.primitives.geometry.Cone;
 import glMath.VecUtil;
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;

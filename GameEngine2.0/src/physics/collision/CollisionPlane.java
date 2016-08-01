@@ -26,6 +26,11 @@ public class CollisionPlane extends CollisionMesh{
 		normal = new Vec3(copy.normal);
 	}
 	
+	@Override
+	public CollisionMesh copy(){
+		return new CollisionPlane(this);
+	}
+	
 	public Vec3 getNormal(){
 		return transforms.getOrientation().multVec(normal);
 	}

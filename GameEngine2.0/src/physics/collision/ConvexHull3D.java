@@ -87,6 +87,11 @@ public class ConvexHull3D extends ConvexHull {
 		baseTri = copy.baseTri;
 	}
 	
+	@Override
+	public CollisionMesh copy(){
+		return new ConvexHull3D(this);
+	}
+	
 	private void expandTetrahedra(HashMap<Triangle, ArrayList<Integer>> conflictLists){
 		//create a "queue" that will track what Triangles need to be tested for points and extruded
 		LinkedList<Triangle> faces = new LinkedList<Triangle>();

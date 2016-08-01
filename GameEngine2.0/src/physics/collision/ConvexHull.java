@@ -21,6 +21,12 @@ public abstract class ConvexHull extends CollisionMesh {
 		mesh = copy.mesh;
 	}
 	
+	@Override
+	public abstract CollisionMesh copy();
+
+	@Override
+	public abstract Vec3 support(Vec3 direction);
+	
 	/**
 	 * Partitions the index list {@code points} that correspond to vertices in the {@code mesh}. The list is split into two parts
 	 * based on the {@code normal} passed to the function. Points are calculated relative to the given {@code relaPoint}, from there
@@ -53,9 +59,6 @@ public abstract class ConvexHull extends CollisionMesh {
 		}
 		return conflictList;
 	}
-
-	@Override
-	public abstract Vec3 support(Vec3 direction);
 	
 	public static ConvexHull get(Geometry mesh){
 		//compute the vertex pair that would create the longest edge

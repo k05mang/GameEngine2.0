@@ -87,6 +87,11 @@ public class AABB extends CollisionMesh{
 	}
 	
 	@Override
+	public CollisionMesh copy(){
+		return new AABB(this);
+	}
+	
+	@Override
 	public Vec3 support(Vec3 direction){
 		//make the point 
 		Vec3 point = new Vec3(

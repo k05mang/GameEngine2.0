@@ -3,6 +3,7 @@ package core.gizmo;
 import glMath.Transform;
 import glMath.vectors.Vec3;
 import mesh.primitives.geometry.Sphere;
+import physics.collision.Ray;
 import shaders.ShaderProgram;
 import core.SpatialAsset;
 
@@ -12,6 +13,7 @@ public abstract class TransformGizmo {
 	protected static final Vec3 centerColor = new Vec3(1,1,0);
 	protected Transform sphereTrans;
 	private static SpatialAsset target;
+	private Object activeModifier;
 	
 	public TransformGizmo(){
 		sphereTrans = new Transform();
@@ -35,7 +37,13 @@ public abstract class TransformGizmo {
 		target = null;
 	}
 	
-//	public abstract void update();
-//	
-//	public abstract void select(Vec3 origin, float screenX, float screenY);
+	public void check(Ray clickRay){
+		//this version will check if the sphere was intersected
+	}
+	
+	public boolean isSelected(){
+		return activeModifier != null;
+	}
+	
+	public abstract void update(float screenX, float screenY);
 }

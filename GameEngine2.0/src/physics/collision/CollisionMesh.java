@@ -22,6 +22,13 @@ public abstract class CollisionMesh extends SpatialAsset{
 	}
 	
 	/**
+	 * Creates a copy of this instance of the CollisionMesh
+	 * 
+	 * @return New instance that is an identical copy of this CollisionMesh
+	 */
+	public abstract CollisionMesh copy();
+	
+	/**
 	 * Gets the farthest point on the mesh in the given direction.
 	 * 
 	 * @param direction Direction to sample a point from on the mesh

@@ -69,6 +69,11 @@ public class ConvexHull2D extends ConvexHull {
 		this.baseEdge = copy.baseEdge;
 	}
 	
+	@Override
+	public CollisionMesh copy(){
+		return new ConvexHull2D(this);
+	}
+	
 	private void expand(HashMap<HalfEdge, ArrayList<Integer>> conflictLists){
 		//create a "queue" that will track what Edges need to be tested for points and extended
 		LinkedList<HalfEdge> edges = new LinkedList<HalfEdge>();

@@ -1,4 +1,4 @@
-package debug;
+package core.debug;
 
 import glMath.VecUtil;
 import glMath.vectors.Vec3;
