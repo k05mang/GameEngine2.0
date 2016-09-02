@@ -1,10 +1,9 @@
 package physics.collision;
 
-import glMath.MatrixUtil;
-import glMath.Quaternion;
 import glMath.Transform;
-import glMath.matrices.Mat4;
 import glMath.vectors.Vec3;
+import mesh.Geometry;
+import mesh.Mesh;
 
 /**
  * AABB is an Axis Aligned Bounding Box (AABB) used in collision detection.
@@ -39,6 +38,20 @@ public class AABB extends CollisionMesh{
 	 */
 	public AABB(float scale){
 		this(scale, scale, scale);
+	}
+	
+	public AABB(Mesh mesh){
+		this(mesh.getGeometry());
+	}
+	
+	public AABB(Geometry mesh){
+		super();
+		halfDimensions = new Vec3(
+				(mesh.getVertex(mesh.getMinMaxIndex(Geometry.MAX_X)).getPos().x-mesh.getVertex(mesh.getMinMaxIndex(Geometry.MIN_X)).getPos().x)/2.0f, 
+				(mesh.getVertex(mesh.getMinMaxIndex(Geometry.MAX_Y)).getPos().y-mesh.getVertex(mesh.getMinMaxIndex(Geometry.MIN_Y)).getPos().y)/2.0f, 
+				(mesh.getVertex(mesh.getMinMaxIndex(Geometry.MAX_Z)).getPos().z-mesh.getVertex(mesh.getMinMaxIndex(Geometry.MIN_Z)).getPos().z)/2.0f);
+		//translate the AABB to the geometric center of the mesh, this way it is aligned to the vertex data
+		transforms.translate(mesh.getGeometricCenter());
 	}
 	
 	/**

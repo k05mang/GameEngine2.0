@@ -1,13 +1,14 @@
 package physics.collision;
 
+import glMath.VecUtil;
+import glMath.vectors.Vec3;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import mesh.Geometry;
+import mesh.Mesh;
 import mesh.primitives.Triangle;
-import glMath.VecUtil;
-import glMath.vectors.Vec3;
 
 public abstract class ConvexHull extends CollisionMesh {
 	protected Geometry mesh;
@@ -58,6 +59,10 @@ public abstract class ConvexHull extends CollisionMesh {
 			}
 		}
 		return conflictList;
+	}
+	
+	public static ConvexHull get(Mesh mesh){
+		return get(mesh.getGeometry());
 	}
 	
 	public static ConvexHull get(Geometry mesh){

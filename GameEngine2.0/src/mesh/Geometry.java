@@ -1,19 +1,20 @@
 package mesh;
+import glMath.VecUtil;
+import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
+import gldata.BufferObject;
+import gldata.IndexBuffer;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
 import mesh.primitives.Edge;
-import mesh.primitives.Triangle;
 import mesh.primitives.HalfEdge;
+import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
+import physics.collision.AABB;
 import renderers.RenderMode;
-import glMath.VecUtil;
-import glMath.vectors.Vec2;
-import glMath.vectors.Vec3;
-import gldata.IndexBuffer;
-import gldata.VertexArray;
-import gldata.BufferObject;
 
 public class Geometry {
 	private ArrayList<Vertex> vertices;
