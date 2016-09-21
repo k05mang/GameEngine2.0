@@ -1,6 +1,5 @@
 package mesh;
 
-import physics.collision.Ray;
 import glMath.Quaternion;
 import glMath.Transform;
 import glMath.VecUtil;
@@ -8,9 +7,9 @@ import glMath.vectors.Vec3;
 import mesh.primitives.geometry.Cone;
 import mesh.primitives.geometry.Cube;
 import mesh.primitives.geometry.Cylinder;
-import renderers.RenderMode;
+import physics.collision.Ray;
 import shaders.ShaderProgram;
-import core.Resource;
+import core.Entity;
 import core.SceneManager;
 
 /**
@@ -22,12 +21,12 @@ import core.SceneManager;
  */
 public class Arrow{
 	
-	private Transform shaftTrans, tipTrans;
+//	private Transform shaftTrans, tipTrans;
 	private float shaftLength, tipLength;
 	private final float origLength, origTipLength;
 	private Vec3 direction, position, color;
 	private boolean useCube;
-	private Mesh shaft, tip;
+	private Entity shaft, tip;
 
 	/**
 	 * Constructs an arrow that represents a Ray object
@@ -149,9 +148,9 @@ public class Arrow{
 		if(SceneManager.meshes.get("arrow_cube") == null){
 			SceneManager.meshes.put("arrow_cube", new Cube(1));
 		}
-		shaft = (Mesh)SceneManager.meshes.get("arrow_shaft");
+		shaft = new Entity(SceneManager.meshes.get("arrow_shaft"), true);
 		useCube = cubeTip;
-		tip = useCube ? (Mesh)SceneManager.meshes.get("arrow_cube") : (Mesh)SceneManager.meshes.get("arrow_cone");
+		tip = new Entity(useCube ? SceneManager.meshes.get("arrow_cube") : SceneManager.meshes.get("arrow_cone"), true);
 		
 		origTipLength = useCube ? 2 : 2.5f;
 		tipLength = origTipLength;
@@ -163,9 +162,9 @@ public class Arrow{
 		position = new Vec3(posx, posy, posz);
 		direction = new Vec3(dirx, diry, dirz).normalize();
 		//create the initial transforms for the shaft and tip
-		shaftTrans = new Transform().scale(.5f, shaftLength, .5f);
+		Transform shaftTrans = new Transform().scale(.5f, shaftLength, .5f);
 		float xzScale = useCube ? tipLength : 1;
-		tipTrans = new Transform().scale(xzScale, tipLength, xzScale);
+		Transform tipTrans = new Transform().scale(xzScale, tipLength, xzScale);
 		//first orient the meshes
 		Vec3 axis = VecUtil.yAxis.cross(direction);
 		float angle = (float)(Math.acos(VecUtil.yAxis.dot(direction))*180/Math.PI);
@@ -184,6 +183,8 @@ public class Arrow{
 		shaftTrans.translate(position);
 		tipTrans.translate(position);
 		
+		shaft.setTransform(shaftTrans);
+		tip.setTransform(tipTrans);
 	}
 	
 	/**
@@ -195,10 +196,10 @@ public class Arrow{
 	 */
 	public void render(ShaderProgram program){
 		program.setUniform("color", color);
-		program.setUniform("model", shaftTrans.getTransform());
-		shaft.render();
-		program.setUniform("model", tipTrans.getTransform());
-		tip.render();
+		program.setUniform("model", shaft.getTransform().getMatrix());
+		shaft.getMesh().render();
+		program.setUniform("model", tip.getTransform().getMatrix());
+		tip.getMesh().render();
 	}
 	
 	/**
@@ -208,8 +209,8 @@ public class Arrow{
 	 * @param trans Transform to modify this Arrow with
 	 */
 	public void transform(Transform trans){
-		shaftTrans.transform(trans);
-		tipTrans.transform(trans);
+		Transform shaftTrans = new Transform().transform(trans);
+		Transform tipTrans = new Transform().transform(trans);
 		//translate
 		position.add(trans.getTranslation());
 
@@ -242,6 +243,9 @@ public class Arrow{
 		//store the new direction of the vector
 		direction.set(shaftPoint);
 		direction.normalize();
+		
+		shaft.setTransform(shaftTrans);
+		tip.setTransform(tipTrans);
 	}
 	
 	/**
@@ -253,11 +257,11 @@ public class Arrow{
 	 */
 	public void setLength(float length){
 		float scale = (length-tipLength)/shaftLength;//calculate how much to scale the cylinder by
-		shaftTrans.scale(1, scale, 1);//scale the shaft
+		shaft.getTransform().scale(1, scale, 1);//scale the shaft
 		Vec3 translation = new Vec3(direction);//copy the direction vector for translating the pieces of the arrow
 		translation.scale((length-tipLength-shaftLength)/2);//scale direction copy for translation of cylinder
-		shaftTrans.translate(translation);//translate the shaft
-		tipTrans.translate(translation.scale(2));//translate the tip after scaling the translation vector
+		shaft.getTransform().translate(translation);//translate the shaft
+		tip.getTransform().translate(translation.scale(2));//translate the tip after scaling the translation vector
 		shaftLength = length-tipLength;
 	}
 	
@@ -280,8 +284,8 @@ public class Arrow{
 		float newLength = scale*origLength;
 		float newTipLength = scale*origTipLength;
 		//translate the meshes to maintain the position
-		shaftTrans.translate((newLength-shaftLength)/2*direction.x, (newLength-shaftLength)/2*direction.y, (newLength-shaftLength)/2*direction.z);
-		tipTrans.translate(
+		Transform shaftTrans = new Transform().translate((newLength-shaftLength)/2*direction.x, (newLength-shaftLength)/2*direction.y, (newLength-shaftLength)/2*direction.z);
+		Transform tipTrans = new Transform().translate(
 				(newLength-shaftLength+newTipLength-tipLength)*direction.x, 
 				(newLength-shaftLength+newTipLength-tipLength)*direction.y, 
 				(newLength-shaftLength+newTipLength-tipLength)*direction.z
@@ -293,6 +297,9 @@ public class Arrow{
 		tipTrans.scale(scale);
 		shaftLength = newLength;
 		tipLength = newTipLength;
+
+		shaft.setTransform(shaftTrans);
+		tip.setTransform(tipTrans);
 	}
 	
 	/**
@@ -312,8 +319,8 @@ public class Arrow{
 	 * @param z Z value to set this Arrows position to
 	 */
 	public void setPos(float x, float y, float z){
-		shaftTrans.translate(x-position.x, y-position.y, z-position.z);
-		tipTrans.translate(x-position.x, y-position.y, z-position.z);
+		shaft.getTransform().translate(x-position.x, y-position.y, z-position.z);
+		tip.getTransform().translate(x-position.x, y-position.y, z-position.z);
 		position.set(x, y, z);
 	}
 	

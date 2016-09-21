@@ -234,7 +234,7 @@ public class ConvexHull3D extends ConvexHull {
 		Vec3 orientedDir = transforms.getOrientation().conjugate().multVec(direction).normalize();
 		
 		//transform the final vertex back into world space
-		return (Vec3)transforms.getTransform().multVec(new Vec4(findSupport(orientedDir, baseTri.he1),1)).swizzle("xyz");
+		return (Vec3)transforms.getMatrix().multVec(new Vec4(findSupport(orientedDir, baseTri.he1),1)).swizzle("xyz");
 	}
 	
 	private Vec3 findSupport(Vec3 direction, HalfEdge startEdge){
@@ -269,5 +269,10 @@ public class ConvexHull3D extends ConvexHull {
 			//recurse using the found vertex as a starting point
 			return findSupport(direction, foundEdge);
 		}
+	}
+
+	@Override
+	public boolean intersect(Ray ray){
+		
 	}
 }

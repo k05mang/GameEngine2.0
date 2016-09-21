@@ -217,7 +217,7 @@ public class ConvexHull2D extends ConvexHull {
 		//first check if the direction vector we are searching in is perpendicular to the plane the convex hull lies on
 		if(orientedDir.dot(planeNormal) == 0){
 			//in this case we will simply return the base edge vertex
-			return (Vec3)transforms.getTransform().multVec(new Vec4(mesh.getVertex(baseEdge.sourceVert).getPos(),1)).swizzle("xyz");
+			return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(baseEdge.sourceVert).getPos(),1)).swizzle("xyz");
 		}else{
 			//otherwise we need to find the vertex in the direction of the model space direction vector
 			//first we need to see how the base vertex relates to the neighboring vertices
@@ -239,7 +239,7 @@ public class ConvexHull2D extends ConvexHull {
 						curDotProd = forwardDotProd;
 					}else{
 						//if it is not then we found the vertex we are looking for and can return it
-						return (Vec3)transforms.getTransform().multVec(new Vec4(mesh.getVertex(foundEdge.sourceVert).getPos(),1)).swizzle("xyz");
+						return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(foundEdge.sourceVert).getPos(),1)).swizzle("xyz");
 					}
 					foundEdge = foundEdge.next;
 				}
@@ -253,13 +253,36 @@ public class ConvexHull2D extends ConvexHull {
 						curDotProd = backwardDotProd;
 					}else{
 						//if it is not then we found the vertex we are looking for and can return it
-						return (Vec3)transforms.getTransform().multVec(new Vec4(mesh.getVertex(foundEdge.sourceVert).getPos(),1)).swizzle("xyz");
+						return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(foundEdge.sourceVert).getPos(),1)).swizzle("xyz");
 					}
 					foundEdge = foundEdge.prev;
 				}
 			}
-			return (Vec3)transforms.getTransform().multVec(new Vec4(mesh.getVertex(baseEdge.sourceVert).getPos(),1)).swizzle("xyz");
+			return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(baseEdge.sourceVert).getPos(),1)).swizzle("xyz");
 		}
 	}
 
+	@Override
+	public boolean intersect(Ray ray){
+		//determine if the ray runs parallel to the plane the convex hull is on
+		if(ray.getDirection().dot(planeNormal) == 0){
+			//if it does, determine if the ray potentially runs through the plane
+			if(VecUtil.subtract(mesh.getGeometricCenter(), ray.getPos()).dot(ray.getDirection()) == 0){
+				//if it does determine if the ray passes through the convex hull
+			}else{
+				//otherwise we know the ray cannot intersect the convex hull
+				return false;
+			}
+		}else{
+			//if it doesn't then calculate the intersection of the ray with the plane
+			
+			//compute the depth along the line for the point on the line that intersects the plane
+			//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
+			float depth = VecUtil.subtract(mesh.getGeometricCenter(), ray.getPos()).dot(planeNormal)/ray.getDirection().dot(planeNormal);
+			Vec3 point = VecUtil.add(ray.getPos(), VecUtil.scale(ray.getDirection(), depth*ray.getLength()));
+			
+			//then determine if this point is contained inside the convex hull
+			
+		}
+	}
 }

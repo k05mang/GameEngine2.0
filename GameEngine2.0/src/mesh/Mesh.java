@@ -58,7 +58,7 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 	 * @return Matrix of this renderable's Transformations
 	 */
 	public Mat4 getModelView(){
-		return transforms.getTransform();
+		return transforms.getMatrix();
 	}
 	
 	/**

@@ -1,12 +1,14 @@
 package core;
 
+import glMath.Transform;
+import glMath.vectors.Vec3;
 import mesh.Mesh;
 import mesh.primitives.geometry.Cube;
 import physics.collision.AABB;
 import physics.collision.CollisionMesh;
 import physics.collision.ConvexHull;
 
-public class Entity {
+public class Entity extends SpatialAsset{
 
 	private Mesh mesh;
 	private CollisionMesh collider;
@@ -16,6 +18,7 @@ public class Entity {
 	}
 	
 	public Entity(Mesh mesh, boolean autoGenHull){
+		super();
 		if(mesh != null){
 			this.mesh = mesh;
 		}else{
@@ -33,9 +36,13 @@ public class Entity {
 		}else{
 			this.collider = null;
 		}
+		//establish a uniform transformation between all the objects and the Entity, with the mesh as the base transformation
+		this.transforms.set(this.mesh.getTransform());
+		this.collider.setTransform(this.mesh.getTransform());
 	}
 	
 	public Entity(Mesh mesh, CollisionMesh collider){
+		super();
 		if(mesh != null){
 			this.mesh = mesh;
 		}else{
@@ -81,5 +88,29 @@ public class Entity {
 	public boolean genHull(){
 		collider = ConvexHull.get(mesh);
 		return collider != null;
+	}
+	
+	/**
+	 * Gets the CollisionMesh currently being used by this Entity, this CollisionMesh will have 
+	 * the same transformations as this Entity
+	 * 
+	 * @return CollisionMesh or null if none was set to this Entity
+	 */
+	public CollisionMesh getCollider(){
+		if(collider != null){
+			collider.setTransform(transforms);
+		}
+		return collider;
+	}
+	
+	/**
+	 * Gets this Entity's renderable mesh object, this Mesh will have 
+	 * the same transformations as this Entity
+	 * 
+	 * @return The renderable Mesh object assigned to this Entity
+	 */
+	public Mesh getMesh(){
+		mesh.setTransform(transforms);
+		return mesh;
 	}
 }

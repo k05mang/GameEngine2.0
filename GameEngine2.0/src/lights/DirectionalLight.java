@@ -88,7 +88,7 @@ public class DirectionalLight extends Light {
 		shader.setUniform("dLight.intensity", intensity);
 		shader.setUniform("isPoint", false);
 		shader.setUniform("isSpot", false);
-		shader.setUniform("model", transforms.getTransform());
+		shader.setUniform("model", transforms.getMatrix());
 	}
 
 	@Override

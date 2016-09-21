@@ -151,6 +151,6 @@ public class SpotLight extends Light {
 		shader.setUniform("sLight.direction", direction);
 		shader.setUniform("isPoint", false);
 		shader.setUniform("isSpot", true);
-		shader.setUniform("model", transforms.getTransform());
+		shader.setUniform("model", transforms.getMatrix());
 	}
 }

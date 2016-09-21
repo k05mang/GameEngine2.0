@@ -62,6 +62,6 @@ public class PointLight extends Light {
 		shader.setUniform("pLight.radius", radius);
 		shader.setUniform("isPoint", true);
 		shader.setUniform("isSpot", false);
-		shader.setUniform("model", transforms.getTransform());
+		shader.setUniform("model", transforms.getMatrix());
 	}
 }

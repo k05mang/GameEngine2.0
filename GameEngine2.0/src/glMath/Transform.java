@@ -153,7 +153,7 @@ public class Transform {
 	 * Gets this transform's transformations as a 4x4 matrix. The matrix is constructed by first scaling, then orienting,
 	 * then lastly translating.
 	 */
-	public Mat4 getTransform(){
+	public Mat4 getMatrix(){
 		return MatrixUtil.multiply(getTranslateMat(position), orientation.asMatrix(), getScaleMat(scale));
 	}
 	

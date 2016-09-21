@@ -19,4 +19,9 @@ public class MeshManager extends ResourceManager{
 			((Mesh)resources.get(id)).transform(transformation);
 		}
 	}
+	
+	@Override
+	public Mesh get(String id){
+		return (Mesh)super.get(id);
+	}
 }

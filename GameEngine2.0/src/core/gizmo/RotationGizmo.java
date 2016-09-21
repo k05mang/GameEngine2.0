@@ -1,11 +1,10 @@
 package core.gizmo;
 
 import glMath.Transform;
-import glMath.vectors.Vec3;
-import mesh.Mesh;
 import mesh.primitives.geometry.Torus;
 import shaders.ShaderProgram;
 import core.Camera;
+import core.Entity;
 import core.SceneManager;
 import core.SpatialAsset;
 
@@ -13,7 +12,7 @@ public class RotationGizmo extends TransformGizmo {
 
 	private static final float WHEEL_RADIUS = 10f;
 	private float wheelRadius;
-	private Transform xRot, yRot, zRot;
+	private Entity xWheel, yWheel, zWheel;
 	
 	public RotationGizmo(){
 		super();
@@ -21,31 +20,34 @@ public class RotationGizmo extends TransformGizmo {
 			SceneManager.meshes.put("rot_wheel", new Torus(WHEEL_RADIUS, .5f, 40));
 		}
 		wheelRadius = WHEEL_RADIUS;
-		xRot = new Transform().rotate(0,0,1,90); 
-		yRot = new Transform(); 
-		zRot = new Transform().rotate(-1,0,0,90);
+		//null should be replaced with a suitable collisionmesh when it is created
+		xWheel = new Entity(SceneManager.meshes.get("rot_wheel"), null);
+		xWheel.getTransform().rotate(0,0,1,90);
+		yWheel = new Entity(SceneManager.meshes.get("rot_wheel"), null);
+		zWheel = new Entity(SceneManager.meshes.get("rot_wheel"), null);
+		zWheel.getTransform().rotate(-1,0,0,90);
 	}
 
 	@Override
 	public void render(ShaderProgram program){
 		super.render(program);
-		program.setUniform("model", xRot.getTransform());
+		program.setUniform("model", xWheel.getTransform().getMatrix());
 		program.setUniform("color", 1,0,0);
-		((Mesh)SceneManager.meshes.get("rot_wheel")).render();
-		program.setUniform("model", yRot.getTransform());
+		SceneManager.meshes.get("rot_wheel").render();
+		program.setUniform("model", yWheel.getTransform().getMatrix());
 		program.setUniform("color", 0,1,0);
-		((Mesh)SceneManager.meshes.get("rot_wheel")).render();
-		program.setUniform("model", zRot.getTransform());
+		SceneManager.meshes.get("rot_wheel").render();
+		program.setUniform("model", zWheel.getTransform().getMatrix());
 		program.setUniform("color", 0,0,1);
-		((Mesh)SceneManager.meshes.get("rot_wheel")).render();
+		SceneManager.meshes.get("rot_wheel").render();
 	}
 	
 	@Override
 	public void bind(SpatialAsset target){
 		super.bind(target);
-		xRot.setTranslation(target.getPos());
-		yRot.setTranslation(target.getPos());
-		zRot.setTranslation(target.getPos());
+		xWheel.getTransform().setTranslation(target.getPos());
+		yWheel.getTransform().setTranslation(target.getPos());
+		zWheel.getTransform().setTranslation(target.getPos());
 	}
 
 	@Override
