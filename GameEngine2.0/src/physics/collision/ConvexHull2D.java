@@ -15,8 +15,8 @@ import mesh.primitives.Triangle;
 
 public class ConvexHull2D extends ConvexHull {
 
-	private HalfEdge baseEdge;
-	private Vec3 planeNormal;
+	protected HalfEdge baseEdge;
+	protected Vec3 planeNormal;
 	
 	protected ConvexHull2D(Triangle baseTri, Geometry mesh) {
 		super(mesh);
@@ -259,30 +259,6 @@ public class ConvexHull2D extends ConvexHull {
 				}
 			}
 			return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(baseEdge.sourceVert).getPos(),1)).swizzle("xyz");
-		}
-	}
-
-	@Override
-	public boolean intersect(Ray ray){
-		//determine if the ray runs parallel to the plane the convex hull is on
-		if(ray.getDirection().dot(planeNormal) == 0){
-			//if it does, determine if the ray potentially runs through the plane
-			if(VecUtil.subtract(mesh.getGeometricCenter(), ray.getPos()).dot(ray.getDirection()) == 0){
-				//if it does determine if the ray passes through the convex hull
-			}else{
-				//otherwise we know the ray cannot intersect the convex hull
-				return false;
-			}
-		}else{
-			//if it doesn't then calculate the intersection of the ray with the plane
-			
-			//compute the depth along the line for the point on the line that intersects the plane
-			//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
-			float depth = VecUtil.subtract(mesh.getGeometricCenter(), ray.getPos()).dot(planeNormal)/ray.getDirection().dot(planeNormal);
-			Vec3 point = VecUtil.add(ray.getPos(), VecUtil.scale(ray.getDirection(), depth*ray.getLength()));
-			
-			//then determine if this point is contained inside the convex hull
-			
 		}
 	}
 }

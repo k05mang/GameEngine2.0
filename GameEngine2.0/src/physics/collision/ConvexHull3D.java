@@ -14,7 +14,7 @@ import mesh.primitives.HalfEdge;
 import mesh.primitives.Triangle;
 
 public class ConvexHull3D extends ConvexHull {
-	private Triangle baseTri;
+	protected Triangle baseTri;
 	
 	protected ConvexHull3D(Triangle baseTri, int vertIndex, boolean inFront, Geometry mesh, ArrayList<Integer> posList, ArrayList<Integer> negList){
 		super(mesh);
@@ -269,10 +269,5 @@ public class ConvexHull3D extends ConvexHull {
 			//recurse using the found vertex as a starting point
 			return findSupport(direction, foundEdge);
 		}
-	}
-
-	@Override
-	public boolean intersect(Ray ray){
-		
 	}
 }

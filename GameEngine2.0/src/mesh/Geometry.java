@@ -192,7 +192,7 @@ public class Geometry {
 	 */
 	public void moveToGeoCenter(){
 		//only perform the move operation if the center is anything but the origin
-		if(geometricCenter.x != 0.0f && geometricCenter.y != 0.0f && geometricCenter.z != 0.0f){
+		if(!geometricCenter.isZero()){
 			//iterate over the vertices and translate their position vector by the geometric center
 			for(int curVert = 0; curVert < vertices.size(); curVert++){
 				//remove the old hashmap value for the current vertex, since it will need to be updated after the translation

@@ -28,8 +28,6 @@ public abstract class ConvexHull extends CollisionMesh {
 	@Override
 	public abstract Vec3 support(Vec3 direction);
 	
-	public abstract boolean intersect(Ray ray);
-	
 	/**
 	 * Partitions the index list {@code points} that correspond to vertices in the {@code mesh}. The list is split into two parts
 	 * based on the {@code normal} passed to the function. Points are calculated relative to the given {@code relaPoint}, from there

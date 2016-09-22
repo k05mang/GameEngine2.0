@@ -56,7 +56,55 @@ public abstract class CollisionDetector {
 	}
 	
 	public static boolean intersects(Ray ray, ConvexHull2D hull){
-		return false;
+		//determine if the ray runs parallel to the plane the convex hull is on
+		if(ray.getDirection().dot(hull.planeNormal) == 0){
+			//if it does, determine if the ray potentially runs through the plane
+			if(VecUtil.subtract(hull.getPos(), ray.getPos()).dot(ray.getDirection()) == 0){
+				//if it does determine if the ray passes through the convex hull
+			}else{
+				//otherwise we know the ray cannot intersect the convex hull
+				return false;
+			}
+		}else{
+			//if it doesn't then calculate the intersection of the ray with the plane
+			
+			//compute the depth along the line for the point on the line that intersects the plane
+			//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
+			float depth = VecUtil.subtract(hull.getPos(), ray.getPos()).dot(hull.planeNormal)/ray.getDirection().dot(hull.planeNormal);
+			Vec3 point = VecUtil.add(ray.getPos(), VecUtil.scale(ray.getDirection(), depth*ray.getLength()));
+			
+			//then determine if this point is contained inside the convex hull
+			
+			//first construct an initial triangle that may contain the point, 
+			//the triangle is composed of vertices from the hull and is known to be within the hull
+			Vec3 a, b, c;//these are the points that make up the triangle
+			//the first point is farthest in the direction from the mesh center to the point
+			Vec3 relaPoint = VecUtil.subtract(point, hull.getPos());//point relative to the hull center
+			a = hull.support(relaPoint);
+			
+			Vec3 relativeA = VecUtil.subtract(a, hull.getPos());
+			//the next point is found by searching in the normal direction of the edge from the center to a in the direction of the point
+			//first get the direction vector
+			Vec3 direction = VecUtil.cross(relaPoint, relativeA, relativeA).normalize();
+			//check if the direction we found is the zero vector then this means the point lies on the edge from the center to a
+			if(direction.isZero()){
+				//if it does then check if the point lies within the center and a
+				return relaPoint.length() <= relativeA.length();
+			}
+			b = hull.support(direction);
+			
+			//the last point is from the edge in the direction of the point
+			relaPoint = VecUtil.subtract(point, a);//point relative to a
+			Vec3 ab = VecUtil.subtract(b, a);
+			direction = VecUtil.cross(relaPoint, ab, ab).normalize();
+			
+			//check if the direction we found is the zero vector then this means the point lies on the edge from the a to b
+			if(direction.isZero()){
+				//if it does then check if the point lies within the a and b
+				return relaPoint.length() <= ab.length();
+			}
+			c = hull.support(direction);
+		}
 	}
 	
 	public static boolean intersects(Ray ray, ConvexHull3D hull){
