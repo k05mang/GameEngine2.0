@@ -215,7 +215,7 @@ public class ConvexHull2D extends ConvexHull {
 		Vec3 orientedDir = transforms.getOrientation().conjugate().multVec(direction).normalize();
 		
 		//first check if the direction vector we are searching in is perpendicular to the plane the convex hull lies on
-		if(orientedDir.dot(planeNormal) == 0){
+		if(orientedDir.dot(planeNormal) == 1 || orientedDir.dot(planeNormal) == -1){
 			//in this case we will simply return the base edge vertex
 			return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(baseEdge.sourceVert).getPos(),1)).swizzle("xyz");
 		}else{
