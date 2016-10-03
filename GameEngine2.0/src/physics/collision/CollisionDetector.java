@@ -56,12 +56,34 @@ public abstract class CollisionDetector {
 	}
 	
 	public static boolean intersects(Ray ray, ConvexHull2D hull){
+		Vec3 point = null;
+		//find a point that may lie in the convex hull
 		//determine if the ray runs parallel to the plane the convex hull is on
 		if(ray.getDirection().dot(hull.planeNormal) == 0){
 			//if it does, determine if the ray potentially runs through the plane
-			if(VecUtil.subtract(hull.getPos(), ray.getPos()).dot(ray.getDirection()) == 0){
+			//however first check if the ray and hull have the same position
+			if(hull.getPos().equals(ray.getPos())){
+				//in this case the ray is emitting from the hulls center which will result in a collision
+				return true;
+			}else if(Math.abs(hull.planeNormal.dot(hull.getPos().cross(ray.getPos()).normalize())) == 1){
 				//if it does determine if the ray passes through the convex hull
-				return false;
+				
+				//find the point closest to the convex hull center along the ray line
+				//get the vector from the ray position to the hull center
+				Vec3 hullLine = VecUtil.subtract(hull.getPos(), ray.getPos());
+				//project the hull line onto the ray to get the point along the ray that is closest to the hull center
+				point = hullLine.proj(ray.getDirection());
+				//determine if the point we acquired is within the bounds of the ray
+				if(ray.getDirection().dot(point) < 0){
+					//if it was less than the ray then use the start position
+					point.set(ray.getPos());
+				}else if(point.length() > ray.getLength()){
+					//if it was longer than the ray then use the end of the ray
+					point.set(ray.getPoint(1));
+				}else{
+					point.add(ray.getPos());//adding the ray's position brings
+					//point into world space and is the actual point we want
+				}
 			}else{
 				//otherwise we know the ray cannot intersect the convex hull
 				return false;
@@ -77,59 +99,60 @@ public abstract class CollisionDetector {
 			if(depth < 0 || depth > ray.getLength()){
 				return false;
 			}
-			Vec3 point = VecUtil.add(ray.getPos(), VecUtil.scale(ray.getDirection(), depth));
-			
-			//then determine if this point is contained inside the convex hull
-			
-			//first construct an initial triangle that may contain the point, 
-			//the triangle is composed of vertices from the hull and is known to be within the hull
-			Vec3 a, b, c,//points that make up the triangle
-			ab, bc, ca;//edges for the current triangle
-			//the first point is farthest in the direction from the mesh center to the point
-			Vec3 relaPoint = VecUtil.subtract(point, hull.getPos());//point relative to the hull center
-			a = hull.support(relaPoint);
-			
-			Vec3 relativeA = VecUtil.subtract(a, hull.getPos());
-			//the next point is found by searching in the normal direction of the edge from the center to a in the direction of the point
-			//first get the direction vector
-			Vec3 direction = VecUtil.cross(relativeA, relaPoint, relativeA);
-			//check if the direction we found is the zero vector then this means the point lies on the edge from the center to a
-			if(direction.isZero()){
-				//if it does then check if the point lies within the center and a
-				return relaPoint.length() <= relativeA.length();
-			}
-			b = hull.support(direction);
-			
-			//the last point is from the edge in the direction of the point
-			relaPoint = VecUtil.subtract(point, a);//point relative to a
-			ab = VecUtil.subtract(b, a);
-			direction = VecUtil.cross(ab, relaPoint, ab);
-			
-			//check if the direction we found is the zero vector then this means the point lies on the edge from the a to b
-			if(direction.isZero()){
-				//if it does then check if the point lies within the a and b
-				return relaPoint.length() <= ab.length();
-			}
-			c = hull.support(direction);
-			
-			//there is a possibility that the first triangle we make is the best triangle that can be made
-			//if this is the case then that means that whether this triangle contains the ray or not decides
-			//the entirety of the algorithm, and an iterative approach is unnecessary, this will be the assumption
-			//for the remaining code, if it proves faulty then it will be adjusted
-			
-			bc = VecUtil.subtract(c, b);
-			ca = VecUtil.subtract(a, c);
-			
-			//to determine if the point lies within the triangle we can simply test if the dot product between the point
-			//relative to a triangle point and the edge normal pointing in towards the triangle center is greater than or equal to 0 
-			//if the dot product is the same for each edge then the point is contained in the triangle and therefore inside the hull
-			
-			//note using >= was meant to check cases where the point lies on the edge of the triangle
-			//how ever this might be handled in the previous search for the triangle, to be tested
-			return VecUtil.dot(relaPoint, VecUtil.cross(ab, bc, ab)) > 0 &&						//check for edge ab
-					VecUtil.dot(VecUtil.subtract(point, b), VecUtil.cross(bc, ca, bc)) > 0 &&	//check for edge bc
-					VecUtil.dot(VecUtil.subtract(point, c), VecUtil.cross(ca, ab, ca)) > 0;		//check for edge ca
+			point = VecUtil.add(ray.getPos(), VecUtil.scale(ray.getDirection(), depth));
 		}
+
+		
+		//then determine if this point is contained inside the convex hull
+		
+		//first construct an initial triangle that may contain the point, 
+		//the triangle is composed of vertices from the hull and is known to be within the hull
+		Vec3 a, b, c,//points that make up the triangle
+		ab, bc, ca;//edges for the current triangle
+		//the first point is farthest in the direction from the mesh center to the point
+		Vec3 relaPoint = VecUtil.subtract(point, hull.getPos());//point relative to the hull center
+		a = hull.support(relaPoint);
+		
+		Vec3 relativeA = VecUtil.subtract(a, hull.getPos());
+		//the next point is found by searching in the normal direction of the edge from the center to a in the direction of the point
+		//first get the direction vector
+		Vec3 direction = VecUtil.cross(relativeA, relaPoint, relativeA);
+		//check if the direction we found is the zero vector then this means the point lies on the edge from the center to a
+		if(direction.isZero()){
+			//if it does then check if the point lies within the center and a
+			return relaPoint.length() <= relativeA.length();
+		}
+		b = hull.support(direction);
+		
+		//the last point is from the edge in the direction of the point
+		relaPoint = VecUtil.subtract(point, a);//point relative to a
+		ab = VecUtil.subtract(b, a);
+		direction = VecUtil.cross(ab, relaPoint, ab);
+		
+		//check if the direction we found is the zero vector then this means the point lies on the edge from the a to b
+		if(direction.isZero()){
+			//if it does then check if the point lies within the a and b
+			return relaPoint.length() <= ab.length();
+		}
+		c = hull.support(direction);
+		
+		//there is a possibility that the first triangle we make is the best triangle that can be made
+		//if this is the case then that means that whether this triangle contains the ray or not decides
+		//the entirety of the algorithm, and an iterative approach is unnecessary, this will be the assumption
+		//for the remaining code, if it proves faulty then it will be adjusted
+		
+		bc = VecUtil.subtract(c, b);
+		ca = VecUtil.subtract(a, c);
+		
+		//to determine if the point lies within the triangle we can simply test if the dot product between the point
+		//relative to a triangle point and the edge normal pointing in towards the triangle center is greater than or equal to 0 
+		//if the dot product is the same for each edge then the point is contained in the triangle and therefore inside the hull
+		
+		//note using >= was meant to check cases where the point lies on the edge of the triangle
+		//how ever this might be handled in the previous search for the triangle, to be tested
+		return VecUtil.dot(relaPoint, VecUtil.cross(ab, bc, ab)) > 0 &&						//check for edge ab
+				VecUtil.dot(VecUtil.subtract(point, b), VecUtil.cross(bc, ca, bc)) > 0 &&	//check for edge bc
+				VecUtil.dot(VecUtil.subtract(point, c), VecUtil.cross(ca, ab, ca)) > 0;		//check for edge ca
 	}
 	
 	public static boolean intersects(Ray ray, ConvexHull3D hull){
