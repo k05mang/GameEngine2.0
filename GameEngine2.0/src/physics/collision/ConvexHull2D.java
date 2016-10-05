@@ -217,7 +217,7 @@ public class ConvexHull2D extends ConvexHull {
 		//first check if the direction vector we are searching in is perpendicular to the plane the convex hull lies on
 		if(orientedDir.dot(planeNormal) == 1 || orientedDir.dot(planeNormal) == -1){
 			//in this case we will simply return the base edge vertex
-			return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(baseEdge.sourceVert).getPos(),1)).swizzle("xyz");
+			return transforms.transform(mesh.getVertex(baseEdge.sourceVert).getPos());
 		}else{
 			//otherwise we need to find the vertex in the direction of the model space direction vector
 			//first we need to see how the base vertex relates to the neighboring vertices
@@ -239,7 +239,7 @@ public class ConvexHull2D extends ConvexHull {
 						curDotProd = forwardDotProd;
 					}else{
 						//if it is not then we found the vertex we are looking for and can return it
-						return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(foundEdge.sourceVert).getPos(),1)).swizzle("xyz");
+						return transforms.transform(mesh.getVertex(foundEdge.sourceVert).getPos());
 					}
 					foundEdge = foundEdge.next;
 				}
@@ -253,12 +253,16 @@ public class ConvexHull2D extends ConvexHull {
 						curDotProd = backwardDotProd;
 					}else{
 						//if it is not then we found the vertex we are looking for and can return it
-						return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(foundEdge.sourceVert).getPos(),1)).swizzle("xyz");
+						return transforms.transform(mesh.getVertex(foundEdge.sourceVert).getPos());
 					}
 					foundEdge = foundEdge.prev;
 				}
 			}
-			return (Vec3)transforms.getMatrix().multVec(new Vec4(mesh.getVertex(baseEdge.sourceVert).getPos(),1)).swizzle("xyz");
+			return transforms.transform(mesh.getVertex(baseEdge.sourceVert).getPos());
 		}
+	}
+	
+	public Vec3 getPlaneNormal(){
+		return transforms.getMatrix().getNormalMatrix().multVec(planeNormal).normalize();
 	}
 }

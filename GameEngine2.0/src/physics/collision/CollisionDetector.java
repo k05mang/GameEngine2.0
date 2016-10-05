@@ -57,20 +57,20 @@ public abstract class CollisionDetector {
 	
 	public static boolean intersects(Ray ray, ConvexHull2D hull){
 		Vec3 point = null;
+		Vec3 planeNormal = hull.getPlaneNormal();//this guarantees a plane normal for the hull that represents the current state of the hull
+		//post transformations
+		
 		//find a point that may lie in the convex hull
 		//determine if the ray runs parallel to the plane the convex hull is on
-		if(ray.getDirection().dot(hull.planeNormal) == 0){
+		if(ray.getDirection().dot(planeNormal) == 0){
 			//if it does, determine if the ray potentially runs through the plane
-			//however first check if the ray and hull have the same position
-			if(hull.getPos().equals(ray.getPos())){
-				//in this case the ray is emitting from the hulls center which will result in a collision
-				return true;
-			}else if(Math.abs(hull.planeNormal.dot(hull.getPos().cross(ray.getPos()).normalize())) == 1){
+			//find the point closest to the convex hull center along the ray line
+			//get the vector from the ray position to the hull center
+			Vec3 hullLine = VecUtil.subtract(hull.getPos(), ray.getPos());
+			//if the dot product of the vector between the hull center and ray start is perpendicular to the plane normal then the ray lies on the plane
+			if(hullLine.dot(planeNormal) == 0){
 				//if it does determine if the ray passes through the convex hull
 				
-				//find the point closest to the convex hull center along the ray line
-				//get the vector from the ray position to the hull center
-				Vec3 hullLine = VecUtil.subtract(hull.getPos(), ray.getPos());
 				//project the hull line onto the ray to get the point along the ray that is closest to the hull center
 				point = hullLine.proj(ray.getDirection());
 				//determine if the point we acquired is within the bounds of the ray
@@ -93,7 +93,7 @@ public abstract class CollisionDetector {
 			
 			//compute the depth along the line for the point on the line that intersects the plane
 			//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
-			float depth = VecUtil.subtract(hull.getPos(), ray.getPos()).dot(hull.planeNormal)/ray.getDirection().dot(hull.planeNormal);
+			float depth = VecUtil.subtract(hull.getPos(), ray.getPos()).dot(planeNormal)/ray.getDirection().dot(planeNormal);
 			//check if the depth is negative, in this case the arrow is pointing away from the plane but could still mathematically intersect
 			//if the ray is considered an infinite line, additionally check for cases where the depth is longer than the rays length
 			if(depth < 0 || depth > ray.getLength()){

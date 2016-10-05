@@ -172,6 +172,25 @@ public class Transform {
 	}
 	
 	/**
+	 * Transforms the target vector by the transformations of this Transform. The Vector is 
+	 * scaled, rotated, then translated in that order.
+	 * 
+	 * @param target Vector to transform
+	 * 
+	 * @return New vector representing the {@code target} post transformation, {@code target} is unchanged
+	 */
+	public Vec3 transform(Vec3 target){
+		Vec3 result = new Vec3(target);
+		//scale the vector
+		result.set(result.x*scale.x, result.y*scale.y, result.z*scale.z);
+		//rotate the vector
+		result.set(orientation.multVec(result));
+		//translate the vector
+		result.add(position);
+		return result;
+	}
+	
+	/**
 	 * Sets this transform equal to the given transform
 	 * 
 	 * @param trans Transform to copy into this transform

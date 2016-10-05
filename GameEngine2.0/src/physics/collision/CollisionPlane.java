@@ -49,9 +49,8 @@ public class CollisionPlane extends CollisionMesh{
 	public Vec3 support(Vec3 direction){
 		//adjust the orientation of the direction vector to bring it in relative space to the plane to simplify calculations 
 		Vec3 orientedDir = transforms.getOrientation().conjugate().multVec(direction);
-		Vec4 result = new Vec4(Math.copySign(halfDimensions.x, orientedDir.x), 0, Math.copySign(halfDimensions.y, orientedDir.z), 1);
 		//transforms the point on the plane back into it's world space coordinate
-		return (Vec3)transforms.getMatrix().multVec(result).swizzle("xyz");
+		return transforms.transform(new Vec3(Math.copySign(halfDimensions.x, orientedDir.x), 0, Math.copySign(halfDimensions.y, orientedDir.z)));
 		
 	}
 }
