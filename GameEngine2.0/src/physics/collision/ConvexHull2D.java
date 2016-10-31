@@ -201,6 +201,14 @@ public class ConvexHull2D extends ConvexHull {
 		
 	}
 	
+	/**
+	 * Gets the edge normal for a given edge based on a base vertex index and the next index in the edge
+	 * 
+	 * @param baseIndex Base index to start the edge from
+	 * @param nextIndex Next index to extend the previous index to, to create the edge from base index to next index
+	 * 
+	 * @return Outward facing normal for the given edge
+	 */
 	private Vec3 getEdgeNormal(int baseIndex, int nextIndex){
 		return VecUtil.cross(
 				VecUtil.subtract(mesh.getVertex(nextIndex).getPos(), mesh.getVertex(baseIndex).getPos()),
