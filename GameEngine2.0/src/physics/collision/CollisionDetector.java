@@ -62,6 +62,36 @@ public abstract class CollisionDetector {
 		return false;
 	}
 	
+	public static boolean intersects(Vec3 point, CollisionMesh mesh){
+		if(mesh instanceof ConvexHull2D){
+			return intersects(point, (ConvexHull2D)mesh);
+		}/*else if(mesh instanceof ConvexHull3D){
+			return intersects(point, (ConvexHull3D)mesh);
+		}else if(mesh instanceof CollisionPlane){
+			return intersects(point, (CollisionPlane)mesh);
+		}else if(mesh instanceof AABB){
+			return intersects(point, (AABB)mesh);
+		}else if(mesh instanceof OBB){
+			return intersects(point, (OBB)mesh);
+		}else if(mesh instanceof CollisionSphere){
+			return intersects(point, (CollisionSphere)mesh);
+		}else if(mesh instanceof CollisionCone){
+			return intersects(point, (CollisionCone)mesh);
+		}else if(mesh instanceof CollisionCylinder){
+			return intersects(point, (CollisionCylinder)mesh);
+		}else if(mesh instanceof CollisionCapsule){
+			return intersects(point, (CollisionCapsule)mesh);
+		}
+		
+		*/
+		
+		return false;
+	}
+	
+	public static boolean intersects(Vec3 point, ConvexHull2D hull){
+		
+	}
+	
 	public static boolean intersects(Ray ray, ConvexHull2D hull){
 		Vec3 planeNormal = hull.getPlaneNormal();//this guarantees a plane normal for the hull that represents the current state of the hull
 		//post transformations
@@ -78,7 +108,7 @@ public abstract class CollisionDetector {
 				//so we need to find t, which can be found using this formula t = ((Vi-P0)·ni)/((P1-P0)·ni), where ni is the edge normal
 				
 				float tE = 0.0f;//maximum t for entering the hull from the ray pos
-				float tL = 1.0f;//minimum value the ray can leave the hull from
+				float tL = ray.getLength();//minimum value the ray can leave the hull from
 				HalfEdge curEdge = hull.baseEdge;//tracks the current edge
 				do{
 					Vec3 vi = hull.getTransform().transform(hull.mesh.getVertex(curEdge.sourceVert).getPos());
@@ -99,14 +129,14 @@ public abstract class CollisionDetector {
 			        //get the depth the ray intersects the hull on this edge
 			        float t = n/d;//the case for when d would be 0 is handled above
 			        //determine whether the ray is entering the edge or leaving the edge
-			        if (d < 0){
+			        if (d < 0){//entering the edge case
 			            tE = Math.max(tE, t);
 			            //check if the depth that the ray enters the hull is greater than the depth the ray leaves the hull
 			            if (tE > tL){
 			            	//if the entry depth is greater than the exit depth then the ray is not intersecting
 			                return false;
 			            }
-			        }else{
+			        }else{//leaving the edge
 			            tL = Math.min(tL, t);
 			        	//check if the depth that the ray leaves the hull is less than the depth the ray enters the hull
 			            if (tL < tE){
@@ -118,7 +148,7 @@ public abstract class CollisionDetector {
 				}
 				while(!curEdge.equals(hull.baseEdge));
 				
-			    return tE < 1.0f || tL < 1.0f;
+			    return tE <= ray.getLength() && tL >= 0.0f;
 			}else{
 				//otherwise we know the ray cannot intersect the convex hull
 				return false;
