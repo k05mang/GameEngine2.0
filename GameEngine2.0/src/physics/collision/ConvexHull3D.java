@@ -15,9 +15,11 @@ import mesh.primitives.Triangle;
 
 public class ConvexHull3D extends ConvexHull {
 	protected Triangle baseTri;
+	protected HashMap<Triangle, Vec3> normals;
 	
 	protected ConvexHull3D(Triangle baseTri, int vertIndex, boolean inFront, Geometry mesh, ArrayList<Integer> posList, ArrayList<Integer> negList){
 		super(mesh);
+		normals = new HashMap<Triangle, Vec3>();
 		this.baseTri = baseTri;
 		//create a hashmap to assign the triangles conflict lists in the expansion process
 		HashMap<Triangle, ArrayList<Integer>> conflictLists = new HashMap<Triangle, ArrayList<Integer>>(4);
@@ -80,6 +82,18 @@ public class ConvexHull3D extends ConvexHull {
 
 		//expand the initial tetrahedra to comprise the convex hull of the mesh
 		expandTetrahedra(conflictLists);
+		insertNormals(this.baseTri);
+	}
+	
+	private void insertNormals(Triangle curFace){
+		if(normals.get(curFace) != null){
+			return;
+		}
+		
+		normals.put(curFace, curFace.getNormal(mesh));
+		insertNormals(curFace.he1.opposite.parent);
+		insertNormals(curFace.he2.opposite.parent);
+		insertNormals(curFace.he3.opposite.parent);
 	}
 	
 	public ConvexHull3D(ConvexHull3D copy){
@@ -106,9 +120,9 @@ public class ConvexHull3D extends ConvexHull {
 			Triangle curFace = faces.poll();
 			//if it has a conflict list then determine what point in the list is farthest from the face
 			ArrayList<Integer> curConflict = conflictLists.get(curFace);
-			//this indicates that the face was deleted
+			//Check if the face was deleted, which is indicated by a null value
 			if(curConflict != null){
-				//check if there are any points to extend this faces to
+				//check if there are any points to extend this face to
 				if(!curConflict.isEmpty()){
 					//find the point farthest from the face
 					//calculate the face normal
@@ -181,7 +195,7 @@ public class ConvexHull3D extends ConvexHull {
 			//set the current triangle to be the previous triangle for the next iteration
 			prevTri = curTri;
 		}while(edges.hasNext());
-
+		
 		//check if a face we removed also was the triangle we use as an entry point into the half edge data structure
 		if(conflictLists.get(baseTri) == null){
 			//if it is then set the first new triangle to be the new entry triangle

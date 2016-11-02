@@ -75,7 +75,6 @@ public class Triangle {
 		vao.add(he3.sourceVert);
 	}
 
-	
 	/**
 	 * Stores this face's vertex indices, representing the primitive and adjacent information compatible with
 	 * GL_TRIANGLES_ADJACENCY, in the given index buffer
@@ -100,7 +99,7 @@ public class Triangle {
 	 * @param mesh Geometry that this faces vertex indices are associated with, and that will be used in
 	 * calculating the normal of the Triangle
 	 * 
-	 * @return Normalized Vec3 that represents the normal of the Triangle
+	 * @return Normalized Vec3 that represents the normal of the Triangle in model space
 	 */
 	public Vec3 getNormal(Geometry mesh){
 		Vec3 edge1 = VecUtil.subtract(mesh.getVertex(he2.sourceVert).getPos(), 

@@ -3,9 +3,15 @@ package physics.collision;
 import glMath.Quaternion;
 import glMath.Transform;
 import glMath.VecUtil;
+import glMath.matrices.Mat4;
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
+
+import java.util.Set;
+
 import mesh.primitives.HalfEdge;
+import mesh.primitives.Triangle;
 
 public abstract class CollisionDetector {
 	
@@ -28,10 +34,6 @@ public abstract class CollisionDetector {
 			simplex.add(newPoint);
 		}
 		return true;
-	}
-	
-	public static boolean intersects(Vec3 point, CollisionMesh mesh){
-		return false;
 	}
 	
 	public static boolean intersects(Ray ray, CollisionMesh mesh){
@@ -65,9 +67,9 @@ public abstract class CollisionDetector {
 	public static boolean intersects(Vec3 point, CollisionMesh mesh){
 		if(mesh instanceof ConvexHull2D){
 			return intersects(point, (ConvexHull2D)mesh);
-		}/*else if(mesh instanceof ConvexHull3D){
+		}else if(mesh instanceof ConvexHull3D){
 			return intersects(point, (ConvexHull3D)mesh);
-		}else if(mesh instanceof CollisionPlane){
+		}/*else if(mesh instanceof CollisionPlane){
 			return intersects(point, (CollisionPlane)mesh);
 		}else if(mesh instanceof AABB){
 			return intersects(point, (AABB)mesh);
@@ -89,7 +91,51 @@ public abstract class CollisionDetector {
 	}
 	
 	public static boolean intersects(Vec3 point, ConvexHull2D hull){
+		//first construct an initial triangle that may contain the point, 
+		//the triangle is composed of vertices from the hull and is known to be within the hull
+		Vec3 a, b, c,//points that make up the triangle
+		ab, bc, ca;//edges for the current triangle
+		//the first point is farthest in the direction from the mesh center to the point
+		Vec3 relaPoint = VecUtil.subtract(point, hull.getPos());//point relative to the hull center
+		a = hull.support(relaPoint);
 		
+		Vec3 relativeA = VecUtil.subtract(a, hull.getPos());
+		//the next point is found by searching in the normal direction of the edge from the center to a in the direction of the point
+		//first get the direction vector
+		Vec3 direction = VecUtil.cross(relativeA, relaPoint, relativeA);
+		//check if the direction we found is the zero vector then this means the point lies on the edge from the center to a
+		if(direction.isZero()){
+			//if it does then check if the point lies within the center and a
+			return relaPoint.length() <= relativeA.length();
+		}
+		b = hull.support(direction);
+		
+		//the last point is from the edge in the direction of the point
+		relaPoint = VecUtil.subtract(point, a);//point relative to a
+		ab = VecUtil.subtract(b, a);
+		direction = VecUtil.cross(ab, relaPoint, ab);
+		
+		//check if the direction we found is the zero vector then this means the point lies on the edge from the a to b
+		if(direction.isZero()){
+			//if it does then check if the point lies within the a and b
+			return relaPoint.length() <= ab.length();
+		}
+		c = hull.support(direction);
+		
+		bc = VecUtil.subtract(c, b);
+		ca = VecUtil.subtract(a, c);
+		
+		//to determine if the point lies within the triangle we can simply test if the dot product between the point
+		//relative to a triangle point and the edge normal pointing in towards the triangle center is greater than or equal to 0 
+		//if the dot product is the same for each edge then the point is contained in the triangle and therefore inside the hull
+		
+		return VecUtil.dot(relaPoint, VecUtil.cross(ab, bc, ab)) > 0 &&						//check for edge ab
+				VecUtil.dot(VecUtil.subtract(point, b), VecUtil.cross(bc, ca, bc)) > 0 &&	//check for edge bc
+				VecUtil.dot(VecUtil.subtract(point, c), VecUtil.cross(ca, ab, ca)) > 0;		//check for edge ca
+	}
+	
+	public static boolean intersects(Vec3 point, ConvexHull3D hull){
+		return false;
 	}
 	
 	public static boolean intersects(Ray ray, ConvexHull2D hull){
@@ -107,16 +153,25 @@ public abstract class CollisionDetector {
 				//the algorithm is based on the idea that to get the intersection point of the ray and edge you need (P(t)-Vi)·ni = 0
 				//so we need to find t, which can be found using this formula t = ((Vi-P0)·ni)/((P1-P0)·ni), where ni is the edge normal
 				
+				//first we need to transform the ray to be in the hulls model space, this will reduce the need to transform the hull
+				//vertices into world space each iteration below. 
+				
+				Mat4 reverseTrans = hull.getTransform().getMatrix().invert();
+				Vec3 p0 = (Vec3)reverseTrans.multVec(new Vec4(ray.getPos(), 1)).swizzle("xyz");
+				Vec3 p1 = (Vec3)reverseTrans.multVec(new Vec4(ray.getPoint(1), 1)).swizzle("xyz");
+				//get new ray direction
+				Vec3 rayDir = VecUtil.subtract(p1,p0);
+				
 				float tE = 0.0f;//maximum t for entering the hull from the ray pos
-				float tL = ray.getLength();//minimum value the ray can leave the hull from
+				float tL = 1.0f;//minimum value the ray can leave the hull from
 				HalfEdge curEdge = hull.baseEdge;//tracks the current edge
 				do{
-					Vec3 vi = hull.getTransform().transform(hull.mesh.getVertex(curEdge.sourceVert).getPos());
-					Vec3 viPlus1 = hull.getTransform().transform(hull.mesh.getVertex(curEdge.next.sourceVert).getPos());
+					Vec3 vi = hull.mesh.getVertex(curEdge.sourceVert).getPos();
+					Vec3 viPlus1 = hull.mesh.getVertex(curEdge.next.sourceVert).getPos();
 					Vec3 hullEdge = VecUtil.subtract(viPlus1, vi);
-					Vec3 edgeNormal = hullEdge.cross(planeNormal).normalize();//calculate the outward normal of the edge
-			        float n = VecUtil.subtract(vi, ray.getPos()).dot(edgeNormal);//(Vi-P0)·ni
-			        float d = ray.getDirection().dot(edgeNormal);//(P1-P0)·ni
+					Vec3 edgeNormal = hullEdge.cross(hull.planeNormal).normalize();//calculate the outward normal of the edge
+			        float n = VecUtil.subtract(vi, p0).dot(edgeNormal);//(Vi-P0)·ni
+			        float d = rayDir.dot(edgeNormal);//(P1-P0)·ni
 			        //test if the ray is parallel to the edge
 			        if (d == 0){
 			        	//if it is we need to test if the ray is outside the hull at this point
@@ -148,7 +203,7 @@ public abstract class CollisionDetector {
 				}
 				while(!curEdge.equals(hull.baseEdge));
 				
-			    return tE <= ray.getLength() && tL >= 0.0f;
+			    return tE <= 1.0f && tL >= 0.0f;
 			}else{
 				//otherwise we know the ray cannot intersect the convex hull
 				return false;
@@ -168,61 +223,64 @@ public abstract class CollisionDetector {
 			Vec3 point = VecUtil.add(ray.getPos(), VecUtil.scale(ray.getDirection(), depth));
 			//then determine if this point is contained inside the convex hull
 			
-			//first construct an initial triangle that may contain the point, 
-			//the triangle is composed of vertices from the hull and is known to be within the hull
-			Vec3 a, b, c,//points that make up the triangle
-			ab, bc, ca;//edges for the current triangle
-			//the first point is farthest in the direction from the mesh center to the point
-			Vec3 relaPoint = VecUtil.subtract(point, hull.getPos());//point relative to the hull center
-			a = hull.support(relaPoint);
-			
-			Vec3 relativeA = VecUtil.subtract(a, hull.getPos());
-			//the next point is found by searching in the normal direction of the edge from the center to a in the direction of the point
-			//first get the direction vector
-			Vec3 direction = VecUtil.cross(relativeA, relaPoint, relativeA);
-			//check if the direction we found is the zero vector then this means the point lies on the edge from the center to a
-			if(direction.isZero()){
-				//if it does then check if the point lies within the center and a
-				return relaPoint.length() <= relativeA.length();
-			}
-			b = hull.support(direction);
-			
-			//the last point is from the edge in the direction of the point
-			relaPoint = VecUtil.subtract(point, a);//point relative to a
-			ab = VecUtil.subtract(b, a);
-			direction = VecUtil.cross(ab, relaPoint, ab);
-			
-			//check if the direction we found is the zero vector then this means the point lies on the edge from the a to b
-			if(direction.isZero()){
-				//if it does then check if the point lies within the a and b
-				return relaPoint.length() <= ab.length();
-			}
-			c = hull.support(direction);
-			
-			//there is a possibility that the first triangle we make is the best triangle that can be made
-			//if this is the case then that means that whether this triangle contains the ray or not decides
-			//the entirety of the algorithm, and an iterative approach is unnecessary, this will be the assumption
-			//for the remaining code, if it proves faulty then it will be adjusted
-			
-			bc = VecUtil.subtract(c, b);
-			ca = VecUtil.subtract(a, c);
-			
-			//to determine if the point lies within the triangle we can simply test if the dot product between the point
-			//relative to a triangle point and the edge normal pointing in towards the triangle center is greater than or equal to 0 
-			//if the dot product is the same for each edge then the point is contained in the triangle and therefore inside the hull
-			
-			//note using >= was meant to check cases where the point lies on the edge of the triangle
-			//how ever this might be handled in the previous search for the triangle, to be tested
-			return VecUtil.dot(relaPoint, VecUtil.cross(ab, bc, ab)) > 0 &&						//check for edge ab
-					VecUtil.dot(VecUtil.subtract(point, b), VecUtil.cross(bc, ca, bc)) > 0 &&	//check for edge bc
-					VecUtil.dot(VecUtil.subtract(point, c), VecUtil.cross(ca, ab, ca)) > 0;		//check for edge ca
+			return intersects(point, hull);
 		}
 
 		
 	}
 	
 	public static boolean intersects(Ray ray, ConvexHull3D hull){
-		return false;
+		//check if the ray is actually a point
+		if(ray.getLength() == 0){
+			return intersects(ray.getPos(), hull);
+		}
+		Set<Triangle> faces = hull.normals.keySet();
+		//first we need to transform the ray to be in the hulls model space, this will reduce the need to transform the hull
+		//vertices into world space each iteration below. 
+		
+		Mat4 reverseTrans = hull.getTransform().getMatrix().invert();
+		Vec3 p0 = (Vec3)reverseTrans.multVec(new Vec4(ray.getPos(), 1)).swizzle("xyz");
+		Vec3 p1 = (Vec3)reverseTrans.multVec(new Vec4(ray.getPoint(1), 1)).swizzle("xyz");
+		//get new ray direction
+		Vec3 rayDir = VecUtil.subtract(p1,p0);
+		
+		float tE = 0.0f;//maximum t for entering the hull from the ray pos
+		float tL = 1.0f;//minimum value the ray can leave the hull from
+		for(Triangle curFace : faces){
+			Vec3 vi = hull.mesh.getVertex(curFace.he1.sourceVert).getPos();
+			Vec3 faceNormal = hull.normals.get(curFace);//get the face normal
+	        float n = VecUtil.subtract(vi, p0).dot(faceNormal);//(Vi-P0)·ni
+	        float d = rayDir.dot(faceNormal);//(P1-P0)·ni
+	        //test if the ray is parallel to the edge
+	        if (d == 0){
+	        	//if it is we need to test if the ray is outside the hull at this point
+	        	//this will determine if we should even continue to search for intersection points
+	            if (n < 0){
+	                 return false;
+	            }
+	        }
+
+	        //get the depth the ray intersects the hull on this edge
+	        float t = n/d;//the case for when d would be 0 is handled above
+	        //determine whether the ray is entering the edge or leaving the edge
+	        if (d < 0){//entering the edge case
+	            tE = Math.max(tE, t);
+	            //check if the depth that the ray enters the hull is greater than the depth the ray leaves the hull
+	            if (tE > tL){
+	            	//if the entry depth is greater than the exit depth then the ray is not intersecting
+	                return false;
+	            }
+	        }else{//leaving the edge
+	            tL = Math.min(tL, t);
+	        	//check if the depth that the ray leaves the hull is less than the depth the ray enters the hull
+	            if (tL < tE){
+	            	//if the exit depth is less than the entry depth then the ray is not intersecting
+	                return false;
+	            }
+	        }
+		}
+		
+	    return tE <= 1.0f && tL >= 0.0f;
 	}
 	
 	public static boolean intersects(Ray ray, CollisionPlane plane){
