@@ -1,11 +1,11 @@
 package core.gizmo;
 
 import glMath.Transform;
-import glMath.vectors.Vec3;
 import mesh.Arrow;
+import physics.collision.Ray;
 import shaders.ShaderProgram;
-import core.Camera;
-import core.SpatialAsset;
+import windowing.Window;
+import core.Entity;
 
 public class ScaleGizmo extends TransformGizmo {
 	private Arrow xaxis, yaxis, zaxis;
@@ -26,7 +26,7 @@ public class ScaleGizmo extends TransformGizmo {
 	}
 	
 	@Override
-	public void bind(SpatialAsset target){
+	public void bind(Entity target){
 		super.bind(target);
 		//get the targets orientation and position
 		Transform trans = new Transform(target.getTransform());
@@ -38,15 +38,18 @@ public class ScaleGizmo extends TransformGizmo {
 	}
 	
 	@Override
-	public void update() {
-		// TODO Auto-generated method stub
-
+	public boolean isSelected(Ray clickRay){
+		
 	}
-
+	
 	@Override
-	public void select(Camera view, float screenX, float screenY) {
-		// TODO Auto-generated method stub
-
+	public void mouseMove(Window window, double xpos, double ypos) {
+		//first check to make sure there is a target to modify
+		if(this.target != null){
+			//check to see if there is an active modifier, this will happen when the mouse is released
+			if(activeModifier != null){
+				//determine what activeModifier is being used at this moment
+			}
+		}//if there isn't anything to modify then do nothing
 	}
-
 }

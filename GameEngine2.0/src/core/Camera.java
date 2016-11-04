@@ -207,7 +207,7 @@ public class Camera {
 	 * Creates a Ray projected from the given normalized screen coordinates
 	 * 
 	 * @param x Screen space x in normalized coordinates
-	 * @param y Screen space y in normalized coordinates translated to account for inverted screen position
+	 * @param y Screen space y in normalized coordinates
 	 * 
 	 * @return Ray projected in world coordinates
 	 */
@@ -226,7 +226,7 @@ public class Camera {
 		Vec3 planeWidth = VecUtil.scale(right, nearHeight*aspect);
 		//get the center point of the near plane, then take the fraction of the width and height from the mouse coordinates to get
 		//the points on the near plane that intersect the mouse coordinates
-		Vec3 direction = VecUtil.add(VecUtil.scale(forward, -zNear), VecUtil.scale(planeWidth, -2*x+1), VecUtil.scale(planeHeight, -2*y+1));
+		Vec3 direction = VecUtil.add(VecUtil.scale(forward, -zNear), VecUtil.scale(planeWidth, -2*x+1), VecUtil.scale(planeHeight, 2*y-1));
 		//multiplications applied to x and y values translate the final direction ray into fullscreen coordinates instead of the quarter screen
 		//used in calculations
 		return new Ray(zFar, eye, direction);

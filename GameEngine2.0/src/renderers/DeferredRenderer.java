@@ -30,6 +30,7 @@ public class DeferredRenderer {
 	private ShaderProgram geoPass, stencilPass, lightPass, finalPass;
 	private Camera main;
 	public static final Plane quad = new Plane(2);
+	//TODO update this class and its various classes to be more robust, upon doing so return to other classes that use a render function and update them to better utilize the changes made here, such as in the gizmo classes
 	
 	public DeferredRenderer(int width, int height, Camera cam){
 		main = cam;

@@ -1,7 +1,7 @@
 package events.window;
 import windowing.Window;
 
-public interface WindowEvent {
+public interface WindowListener {
 
 	/**
 	 * Function callback for when the window gets resized

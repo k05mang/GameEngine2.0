@@ -12,6 +12,7 @@ import java.util.Set;
 
 import mesh.primitives.HalfEdge;
 import mesh.primitives.Triangle;
+import core.Entity;
 
 public abstract class CollisionDetector {
 	
@@ -34,6 +35,14 @@ public abstract class CollisionDetector {
 			simplex.add(newPoint);
 		}
 		return true;
+	}
+	
+	public static boolean intersects(Ray ray, Entity obj){
+		return intersects(ray, obj.getCollider());
+	}
+	
+	public static boolean intersects(Vec3 point, Entity obj){
+		return intersects(point, obj.getCollider());
 	}
 	
 	public static boolean intersects(Ray ray, CollisionMesh mesh){

@@ -2,7 +2,7 @@ package events.mouse;
 import events.keyboard.ModKey;
 import windowing.Window;
 
-public interface MouseEvent {
+public interface MouseListener {
 	/**
 	 * Function callback when a mouse button is pressed
 	 * 

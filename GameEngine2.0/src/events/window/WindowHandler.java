@@ -1,16 +1,16 @@
 package events.window;
 
-import java.nio.IntBuffer;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
 
+import java.util.ArrayList;
+
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.glfw.GLFWWindowFocusCallback;
 import org.lwjgl.glfw.GLFWWindowIconifyCallback;
 import org.lwjgl.glfw.GLFWWindowPosCallback;
 import org.lwjgl.glfw.GLFWWindowRefreshCallback;
 import org.lwjgl.glfw.GLFWWindowSizeCallback;
-import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
-import static org.lwjgl.glfw.GLFW.glfwGetWindowSize;
 
 import windowing.Window;
 
@@ -25,15 +25,15 @@ public class WindowHandler{
 	public final FramebufferSizeHandler framebuffer;
 	
 	private Window window;
-	private WindowEvent eventHandle;
+	private ArrayList<WindowListener> windowListeners;
 	
 	/**
-	 * Creates a handler for window events using the given WindowEvent object to call function callbacks
-	 * when window events are fired
+	 * Constructs a WindowHandler responsible for handling input events related to the window of the {@code curWindow}
+	 * window context.
 	 * 
-	 * @param handler WindowEvent object to call functions when certain events fire
+	 * @param curWindow Current context to pass window change events to the listeners
 	 */
-	public WindowHandler(WindowEvent handler, Window window){
+	public WindowHandler(Window window){
 		iconify = new IconifyHandler();
 		resize = new ResizeHandler();
 		refresh = new RefreshHandler();
@@ -42,8 +42,28 @@ public class WindowHandler{
 		pos = new PosHandler();
 		framebuffer = new FramebufferSizeHandler();
 		
-		eventHandle = handler;
+		windowListeners = new ArrayList<WindowListener>();
 		this.window = window;
+	}
+
+	/**
+	 * Adds a WindowListener object to this window handler. The listener will receive any events fired by the 
+	 * window related to the window.
+	 * 
+	 * @param listener WindowListener object to attach to this handler
+	 */
+	public void addListener(WindowListener listener){
+		windowListeners.add(listener);
+	}
+
+	/**
+	 * Removes a WindowListener from this window handler. The listener will be completely removed from this handler.
+	 * The listener will no longer receive events fired by the window context this handler is associated with.
+	 * 
+	 * @param listener WindowListener to remove from this handler
+	 */
+	public void removeListener(WindowListener listener){
+		windowListeners.remove(listener);
 	}
 	
 	/**
@@ -57,10 +77,13 @@ public class WindowHandler{
 		
 		@Override
 		public void invoke(long windowHandle, int iconified) {
-			if(iconified == GL_TRUE){
-				eventHandle.windowIconify(window);
-			}else{
-				eventHandle.windowRestore(window);
+			//iterate over all the active listeners
+			for(WindowListener listener : windowListeners){
+				if(iconified == GL_TRUE){
+					listener.windowIconify(window);
+				}else{
+					listener.windowRestore(window);
+				}
 			}
 		}
 		
@@ -79,7 +102,10 @@ public class WindowHandler{
 		public void invoke(long windowHandle, int width, int height) {
 			window.width = width;
 			window.height = height;
-			eventHandle.windowResize(window, width, height);
+			//iterate over all the active listeners
+			for(WindowListener listener : windowListeners){
+				listener.windowResize(window, width, height);
+			}
 		}
 		
 	}
@@ -95,7 +121,10 @@ public class WindowHandler{
 		
 		@Override
 		public void invoke(long windowHandle) {
-			eventHandle.windowRefresh(window);
+			//iterate over all the active listeners
+			for(WindowListener listener : windowListeners){
+				listener.windowRefresh(window);
+			}
 		}
 		
 	}
@@ -111,7 +140,10 @@ public class WindowHandler{
 		
 		@Override
 		public void invoke(long windowHandle, int focused) {
-			eventHandle.windowFocus(window, (focused == GL_TRUE ? true : false));
+			//iterate over all the active listeners
+			for(WindowListener listener : windowListeners){
+				listener.windowFocus(window, (focused == GL_TRUE ? true : false));
+			}
 		}
 		
 	}
@@ -127,7 +159,10 @@ public class WindowHandler{
 		
 		@Override
 		public void invoke(long windowHandle) {
-			eventHandle.windowClose(window);
+			//iterate over all the active listeners
+			for(WindowListener listener : windowListeners){
+				listener.windowClose(window);
+			}
 		}
 		
 	}
@@ -145,7 +180,10 @@ public class WindowHandler{
 		public void invoke(long windowHandle, int xpos, int ypos) {
 			window.xpos = xpos;
 			window.ypos = ypos;
-			eventHandle.windowPosChange(window, xpos, ypos);
+			//iterate over all the active listeners
+			for(WindowListener listener : windowListeners){
+				listener.windowPosChange(window, xpos, ypos);
+			}
 		}
 		
 	}
@@ -163,7 +201,10 @@ public class WindowHandler{
 		public void invoke(long windowHandle, int width, int height) {
 			window.fbWidth = width;
 			window.fbHeight = height;
-			eventHandle.frameBufferResize(window,  width,  height);
+			//iterate over all the active listeners
+			for(WindowListener listener : windowListeners){
+				listener.frameBufferResize(window,  width,  height);
+			}
 		}
 		
 	}

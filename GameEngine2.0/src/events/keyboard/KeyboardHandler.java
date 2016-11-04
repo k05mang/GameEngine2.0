@@ -1,9 +1,11 @@
 package events.keyboard;
 
+import java.util.ArrayList;
+
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWCharModsCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFW;
 
 import windowing.Window;
 
@@ -12,32 +14,71 @@ GLFWKeyCallback.SAM,
 GLFWCharCallback.SAM,
 GLFWCharModsCallback.SAM{
 	
-	private KeyEvent keyboard;
+	private ArrayList<KeyListener> keyListeners;
 	private Window window;
 	
-	public KeyboardHandler(KeyEvent eventHandle, Window curWindow){
+	/**
+	 * Constructs a KeyboardHandler responsible for handling input events related to the keyboard of the {@code curWindow}
+	 * window context.
+	 * 
+	 * @param curWindow Current context to pass keyboard input events to the listeners
+	 */
+	public KeyboardHandler(Window curWindow){
 		window = curWindow;
-		keyboard = eventHandle;
+		keyListeners = new ArrayList<KeyListener>();
+	}
+	
+	/**
+	 * Adds a KeyListener object to this keyboard handler. The listener will receive any events fired by the 
+	 * window related to the keyboard.
+	 * 
+	 * @param listener KeyListener object to attach to this handler
+	 */
+	public void addListener(KeyListener listener){
+		keyListeners.add(listener);
+	}
+	
+	/**
+	 * Removes a KeyListener from this keyboard handler. The listener will be completely removed from this handler.
+	 * The listener will no longer receive events fired by the window context this handler is associated with.
+	 * 
+	 * @param listener KeyListener to remove from this handler
+	 */
+	public void removeListener(KeyListener listener){
+		keyListeners.remove(listener);
 	}
 	
 	@Override
 	public void invoke(long windowHandle, int codepoint, int mods) {
-		keyboard.charInputMods(window, codepoint, ModKey.getMods(mods));
+		//iterate over all the active listeners
+		for(KeyListener listener : keyListeners){
+			//this invoke method handles character input modifiers
+			listener.charInputMods(window, Character.toChars(codepoint)[0], ModKey.getMods(mods));
+		}
 	}
 
 	@Override
 	public void invoke(long windowHandle, int codepoint) {
-		keyboard.charInput(window, codepoint);
+		//iterate over all the active listeners
+		for(KeyListener listener : keyListeners){
+			//this invoke handles character input
+			listener.charInput(window, Character.toChars(codepoint)[0]);
+		}
 	}
 
 	@Override
 	public void invoke(long windowHandle, int key, int scancode, int action, int mods) {
-		if(action == GLFW.GLFW_PRESS){
-			keyboard.keyPress(window, Key.getKey(key), false, ModKey.getMods(mods));
-		}else if(action == GLFW.GLFW_REPEAT){
-			keyboard.keyPress(window, Key.getKey(key), true, ModKey.getMods(mods));
-		}else{
-			keyboard.keyRelease(window, Key.getKey(key), ModKey.getMods(mods));
+		//iterate over all the active listeners
+		for(KeyListener listener : keyListeners){
+			//this invoke handles key presses and releases, using the action value we can determine
+			//which function to call in the listener
+			if(action == GLFW.GLFW_PRESS){
+				listener.keyPress(window, Key.getKey(key), false, ModKey.getMods(mods));
+			}else if(action == GLFW.GLFW_REPEAT){
+				listener.keyPress(window, Key.getKey(key), true, ModKey.getMods(mods));
+			}else{
+				listener.keyRelease(window, Key.getKey(key), ModKey.getMods(mods));
+			}
 		}
 	}
 

@@ -21,7 +21,6 @@ import core.SceneManager;
  */
 public class Arrow{
 	
-//	private Transform shaftTrans, tipTrans;
 	private float shaftLength, tipLength;
 	private final float origLength, origTipLength;
 	private Vec3 direction, position, color;

@@ -11,11 +11,11 @@ import org.lwjgl.opengl.GL;
 
 import core.Scene;
 import events.*;
-import events.keyboard.KeyEvent;
+import events.keyboard.KeyListener;
 import events.keyboard.KeyboardHandler;
-import events.mouse.MouseEvent;
+import events.mouse.MouseListener;
 import events.mouse.MouseHandler;
-import events.window.WindowEvent;
+import events.window.WindowListener;
 import events.window.WindowHandler;
 
 /**
@@ -51,9 +51,6 @@ public class Window {
 	
 	public Window(int width, int height){
 		window = -1L;
-		keyboard = null;
-		mouse = null;
-		windowHandler = null;
 		this.width = width;
 		this.height = height;
 		xpos = ypos = fbWidth = fbHeight = 0;
@@ -113,6 +110,48 @@ public class Window {
         
         //create OpenGL context
         GL.createCapabilities();
+        
+        //create the event handlers
+  		//----------------------Event handler for keyboard events----------------------
+  		keyboard = new KeyboardHandler(this);//create the handler for calling the right methods on the events
+  		//cache the callbacks to prevent garbage collection
+  		key = GLFWKeyCallback.create(keyboard);
+  		charCall = GLFWCharCallback.create(keyboard);
+  		charMods = GLFWCharModsCallback.create(keyboard);
+  		//bind the callbacks to the window
+  		glfwSetCharCallback(window, charCall);
+  		glfwSetCharModsCallback(window, charMods);
+  		glfwSetKeyCallback(window, key);
+  		//----------------------Event handler for mouse events----------------------
+  		mouse = new MouseHandler(this);//create the handler for calling the right methods on the events
+  		//cache the callbacks to prevent garbage collection
+  		mButton = GLFWMouseButtonCallback.create(mouse);
+  		cPos = GLFWCursorPosCallback.create(mouse);
+  		cEnter = GLFWCursorEnterCallback.create(mouse);
+  		scroll = GLFWScrollCallback.create(mouse.scroll);
+  		//bind the callbacks to the window
+  		glfwSetMouseButtonCallback(window, mButton);
+  		glfwSetCursorPosCallback(window, cPos);
+  		glfwSetCursorEnterCallback(window, cEnter);
+  		glfwSetScrollCallback(window, scroll);
+  		//----------------------Event handler for window events----------------------
+  		windowHandler = new WindowHandler(this);//create the handler for calling the right methods on the events
+  		//cache the callbacks to prevent garbage collection
+  		close = GLFWWindowCloseCallback.create(windowHandler.close);
+  		icon = GLFWWindowIconifyCallback.create(windowHandler.iconify);
+  		refresh = GLFWWindowRefreshCallback.create(windowHandler.refresh);
+  		wPos = GLFWWindowPosCallback.create(windowHandler.pos);
+  		wSize = GLFWWindowSizeCallback.create(windowHandler.resize);
+  		focus = GLFWWindowFocusCallback.create(windowHandler.focus);
+  		fbSize = GLFWFramebufferSizeCallback.create(windowHandler.framebuffer);
+  		//bind the callbacks to the window
+  		glfwSetWindowCloseCallback(window, close);
+  		glfwSetWindowIconifyCallback(window, icon);
+  		glfwSetWindowRefreshCallback(window, refresh);
+  		glfwSetWindowPosCallback(window, wPos);
+  		glfwSetWindowSizeCallback(window, wSize);
+  		glfwSetWindowFocusCallback(window, focus);
+  		glfwSetFramebufferSizeCallback(window, fbSize);
 	}
 	
 	/**
@@ -149,64 +188,57 @@ public class Window {
 	}
 	
 	/**
-	 * Sets the keyboard input callback, for this window, to the given event handling class
+	 * Adds a keyboard input callback, for this window, to the given event handling class
 	 * 
 	 * @param callback Event handling class that implements the functions called when certain events fire from the window keyboard input
 	 */
-	public void setKeyboardCallback(KeyEvent callback){
-		keyboard = new KeyboardHandler(callback, this);//create the handler for calling the right methods on the events
-		//cache the callbacks to prevent garbage collection
-		key = GLFWKeyCallback.create(keyboard);
-		charCall = GLFWCharCallback.create(keyboard);
-		charMods = GLFWCharModsCallback.create(keyboard);
-		//bind the callbacks to the window
-		glfwSetCharCallback(window, charCall);
-		glfwSetCharModsCallback(window, charMods);
-		glfwSetKeyCallback(window, key);
+	public void addKeyboardListener(KeyListener callback){
+		keyboard.addListener(callback);
 	}
 	
 	/**
-	 * Sets the mouse input callback, for this window, to the given event handling class
+	 * Removes the given KeyListener from the this Windows keyboard event handler.
+	 * 
+	 * @param callback Callback to remove
+	 */
+	public void removeKeyboardListener(KeyListener callback){
+		keyboard.removeListener(callback);
+	}
+	
+	/**
+	 * Adds a mouse input callback, for this window, to the given event handling class
 	 * 
 	 * @param callback Event handling class that implements the functions called when certain events fire from the window mouse input
 	 */
-	public void setMouseCallback(MouseEvent callback){
-		mouse = new MouseHandler(callback, this);//create the handler for calling the right methods on the events
-		//cache the callbacks to prevent garbage collection
-		mButton = GLFWMouseButtonCallback.create(mouse);
-		cPos = GLFWCursorPosCallback.create(mouse);
-		cEnter = GLFWCursorEnterCallback.create(mouse);
-		scroll = GLFWScrollCallback.create(mouse.scroll);
-		//bind the callbacks to the window
-		glfwSetMouseButtonCallback(window, mButton);
-		glfwSetCursorPosCallback(window, cPos);
-		glfwSetCursorEnterCallback(window, cEnter);
-		glfwSetScrollCallback(window, scroll);
+	public void addMouseListener(MouseListener callback){
+		mouse.addListener(callback);
 	}
 
 	/**
-	 * Sets the window event callback, for this window, to the given event handling class
+	 * Removes the given MouseListener from the this Windows mouse event handler.
+	 * 
+	 * @param callback Callback to remove
+	 */
+	public void removeMouseListener(MouseListener callback){
+		mouse.removeListener(callback);
+	}
+
+	/**
+	 * Adds a window event callback, for this window, to the given event handling class
 	 * 
 	 * @param callback Event handling class that implements the functions called when certain events fire from the window
 	 */
-	public void setWindowCallback(WindowEvent callback){
-		windowHandler = new WindowHandler(callback, this);//create the handler for calling the right methods on the events
-		//cache the callbacks to prevent garbage collection
-		close = GLFWWindowCloseCallback.create(windowHandler.close);
-		icon = GLFWWindowIconifyCallback.create(windowHandler.iconify);
-		refresh = GLFWWindowRefreshCallback.create(windowHandler.refresh);
-		wPos = GLFWWindowPosCallback.create(windowHandler.pos);
-		wSize = GLFWWindowSizeCallback.create(windowHandler.resize);
-		focus = GLFWWindowFocusCallback.create(windowHandler.focus);
-		fbSize = GLFWFramebufferSizeCallback.create(windowHandler.framebuffer);
-		//bind the callbacks to the window
-		glfwSetWindowCloseCallback(window, close);
-		glfwSetWindowIconifyCallback(window, icon);
-		glfwSetWindowRefreshCallback(window, refresh);
-		glfwSetWindowPosCallback(window, wPos);
-		glfwSetWindowSizeCallback(window, wSize);
-		glfwSetWindowFocusCallback(window, focus);
-		glfwSetFramebufferSizeCallback(window, fbSize);
+	public void addWindowListener(WindowListener callback){
+		windowHandler.addListener(callback);
+	}
+
+	/**
+	 * Removes the given WindowListener from the this Windows window event handler.
+	 * 
+	 * @param callback Callback to remove
+	 */
+	public void removeWindowListener(WindowListener callback){
+		windowHandler.removeListener(callback);
 	}
 	
 	/**

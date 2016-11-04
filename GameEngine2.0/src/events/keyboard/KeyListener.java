@@ -1,7 +1,7 @@
 package events.keyboard;
 import windowing.Window;
 
-public interface KeyEvent {
+public interface KeyListener {
 	/**
 	 * Function callback for when a key is pressed or being repeated
 	 * 
@@ -26,17 +26,17 @@ public interface KeyEvent {
 	 * instead of the key code constant
 	 * 
 	 * @param window Window that called this callback function
-	 * @param keyUnicode Key pressed as a unicode value with modifiers applied
+	 * @param key Key pressed as a unicode character value with modifiers applied
 	 */
-	public void charInput(Window window, int keyUnicode);
+	public void charInput(Window window, char key);
 	
 	/**
 	 * Function callback for key inputs where the keyCodes are the unicode representation of the key
 	 * instead of the key code constant, this function also includes the modifiers
 	 * 
 	 * @param window Window that called this callback function
-	 * @param keyUnicode Key pressed as a unicode value with modifiers applied
+	 * @param key Key pressed as a unicode character value with modifiers applied
 	 * @param mods Array containing the mod keys that were pressed
 	 */
-	public void charInputMods(Window window, int keyUnicode, ModKey[] mods);
+	public void charInputMods(Window window, char key, ModKey[] mods);
 }
