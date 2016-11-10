@@ -80,9 +80,9 @@ public class WindowHandler{
 			//iterate over all the active listeners
 			for(WindowListener listener : windowListeners){
 				if(iconified == GL_TRUE){
-					listener.windowIconify(window);
+					listener.onWindowIconify(window);
 				}else{
-					listener.windowRestore(window);
+					listener.onWindowRestore(window);
 				}
 			}
 		}
@@ -104,7 +104,7 @@ public class WindowHandler{
 			window.height = height;
 			//iterate over all the active listeners
 			for(WindowListener listener : windowListeners){
-				listener.windowResize(window, width, height);
+				listener.onWindowResize(window, width, height);
 			}
 		}
 		
@@ -123,7 +123,7 @@ public class WindowHandler{
 		public void invoke(long windowHandle) {
 			//iterate over all the active listeners
 			for(WindowListener listener : windowListeners){
-				listener.windowRefresh(window);
+				listener.onWindowRefresh(window);
 			}
 		}
 		
@@ -142,7 +142,7 @@ public class WindowHandler{
 		public void invoke(long windowHandle, int focused) {
 			//iterate over all the active listeners
 			for(WindowListener listener : windowListeners){
-				listener.windowFocus(window, (focused == GL_TRUE ? true : false));
+				listener.onWindowFocus(window, (focused == GL_TRUE ? true : false));
 			}
 		}
 		
@@ -161,7 +161,7 @@ public class WindowHandler{
 		public void invoke(long windowHandle) {
 			//iterate over all the active listeners
 			for(WindowListener listener : windowListeners){
-				listener.windowClose(window);
+				listener.onWindowClose(window);
 			}
 		}
 		
@@ -182,7 +182,7 @@ public class WindowHandler{
 			window.ypos = ypos;
 			//iterate over all the active listeners
 			for(WindowListener listener : windowListeners){
-				listener.windowPosChange(window, xpos, ypos);
+				listener.onWindowPosChange(window, xpos, ypos);
 			}
 		}
 		
@@ -203,7 +203,7 @@ public class WindowHandler{
 			window.fbHeight = height;
 			//iterate over all the active listeners
 			for(WindowListener listener : windowListeners){
-				listener.frameBufferResize(window,  width,  height);
+				listener.onFrameBufferResize(window,  width,  height);
 			}
 		}
 		

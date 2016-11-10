@@ -50,7 +50,6 @@ public class PointLight extends Light {
 
 	@Override
 	public Mesh getVolume(){
-		volume.setTransform(transforms);
 		return volume;
 	}
 	

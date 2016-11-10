@@ -173,7 +173,7 @@ public final class Plane extends Mesh{
 	 * @return Length of the plane along the z axis
 	 */
 	public float getLength(){
-		return transforms.getScalars().z*length;
+		return length;
 	}
 	
 	/**
@@ -182,6 +182,6 @@ public final class Plane extends Mesh{
 	 * @return Width of the plane along the x axis
 	 */
 	public float getWidth(){
-		return transforms.getScalars().x*width;
+		return width;
 	}
 }

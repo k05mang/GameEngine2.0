@@ -200,7 +200,7 @@ public final class Cylinder extends Mesh{
 	 * @return Radius of this cylinder
 	 */
 	public float getRadius(){
-		return Math.max(transforms.getScalars().x, transforms.getScalars().z)*radius;
+		return radius;
 	}
 	
 	/**
@@ -209,6 +209,6 @@ public final class Cylinder extends Mesh{
 	 * @return Length of this cylinder
 	 */
 	public float getLength(){
-		return transforms.getScalars().y*length;
+		return length;
 	}
 }

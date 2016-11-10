@@ -53,7 +53,7 @@ GLFWCharModsCallback.SAM{
 		//iterate over all the active listeners
 		for(KeyListener listener : keyListeners){
 			//this invoke method handles character input modifiers
-			listener.charInputMods(window, Character.toChars(codepoint)[0], ModKey.getMods(mods));
+			listener.onCharInputMods(window, Character.toChars(codepoint)[0], ModKey.getMods(mods));
 		}
 	}
 
@@ -62,7 +62,7 @@ GLFWCharModsCallback.SAM{
 		//iterate over all the active listeners
 		for(KeyListener listener : keyListeners){
 			//this invoke handles character input
-			listener.charInput(window, Character.toChars(codepoint)[0]);
+			listener.onCharInput(window, Character.toChars(codepoint)[0]);
 		}
 	}
 
@@ -73,11 +73,11 @@ GLFWCharModsCallback.SAM{
 			//this invoke handles key presses and releases, using the action value we can determine
 			//which function to call in the listener
 			if(action == GLFW.GLFW_PRESS){
-				listener.keyPress(window, Key.getKey(key), false, ModKey.getMods(mods));
+				listener.onKeyPress(window, Key.getKey(key), false, ModKey.getMods(mods));
 			}else if(action == GLFW.GLFW_REPEAT){
-				listener.keyPress(window, Key.getKey(key), true, ModKey.getMods(mods));
+				listener.onKeyPress(window, Key.getKey(key), true, ModKey.getMods(mods));
 			}else{
-				listener.keyRelease(window, Key.getKey(key), ModKey.getMods(mods));
+				listener.onKeyRelease(window, Key.getKey(key), ModKey.getMods(mods));
 			}
 		}
 	}

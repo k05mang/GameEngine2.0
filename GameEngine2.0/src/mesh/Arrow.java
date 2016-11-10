@@ -7,6 +7,8 @@ import glMath.vectors.Vec3;
 import mesh.primitives.geometry.Cone;
 import mesh.primitives.geometry.Cube;
 import mesh.primitives.geometry.Cylinder;
+import physics.collision.CollisionDetector;
+import physics.collision.CollisionMesh;
 import physics.collision.Ray;
 import shaders.ShaderProgram;
 import core.Entity;
@@ -154,8 +156,8 @@ public class Arrow{
 		origTipLength = useCube ? 2 : 2.5f;
 		tipLength = origTipLength;
 		//subtract tip length from the length of the shaft so that the arrow will span the entire length
-		shaftLength = length-origTipLength;
-		origLength = length-origTipLength;
+		origLength = Math.max(length, 3)-origTipLength;
+		shaftLength = origLength;
 		
 		color = new Vec3(r, g, b);
 		position = new Vec3(posx, posy, posz);
@@ -174,9 +176,9 @@ public class Arrow{
 		shaftTrans.translate(halfLength*direction.x, halfLength*direction.y, halfLength*direction.z);
 		//translate the tip
 		tipTrans.translate(
-				(shaftLength+tipLength)*direction.x, 
-				(shaftLength+tipLength)*direction.y, 
-				(shaftLength+tipLength)*direction.z);
+				(shaftLength+tipLength/2)*direction.x, 
+				(shaftLength+tipLength/2)*direction.y, 
+				(shaftLength+tipLength/2)*direction.z);
 		
 		//translate both to the position
 		shaftTrans.translate(position);
@@ -208,26 +210,27 @@ public class Arrow{
 	 * @param trans Transform to modify this Arrow with
 	 */
 	public void transform(Transform trans){
-		Transform shaftTrans = new Transform().transform(trans);
-		Transform tipTrans = new Transform().transform(trans);
+		Transform shaftTrans = new Transform(shaft.getTransform()).transform(trans);
+		Transform tipTrans = new Transform(tip.getTransform()).transform(trans);
 		//translate
 		position.add(trans.getTranslation());
 
 		//scale
-		float newLength = trans.getScalars().y*shaftLength;
-		float newTipLength = trans.getScalars().y*tipLength;
+		//these are the differences between the old lengths and the new
+		float newLength = (trans.getScalars().y-1)*shaftLength;
+		float newTipLength = (trans.getScalars().y-1)*tipLength;
 		//translate the meshes to maintain the position
-		shaftTrans.translate((newLength-shaftLength)/2*direction.x, (newLength-shaftLength)/2*direction.y, (newLength-shaftLength)/2*direction.z);
+		shaftTrans.translate(newLength/2*direction.x, newLength/2*direction.y, newLength/2*direction.z);
 		tipTrans.translate(
-				(newLength-shaftLength+newTipLength-tipLength)*direction.x, 
-				(newLength-shaftLength+newTipLength-tipLength)*direction.y, 
-				(newLength-shaftLength+newTipLength-tipLength)*direction.z
+				(newLength+newTipLength/2)*direction.x, 
+				(newLength+newTipLength/2)*direction.y, 
+				(newLength+newTipLength/2)*direction.z
 				);
-		shaftLength = newLength;
-		tipLength = newTipLength;
+		//get the entire new length
+		shaftLength = newLength+shaftLength;
+		tipLength = newTipLength+tipLength;
 		
 		//rotate
-		//translate the models 
 		Quaternion rotation = trans.getOrientation();
 		//compute the center points of the shaft and tip relative to the origin
 		Vec3 shaftOrigin = VecUtil.subtract(shaftTrans.getTranslation(), position);
@@ -240,8 +243,7 @@ public class Arrow{
 		//translate the tip using the same process as the shaft
 		tipTrans.translate(VecUtil.subtract(tipPoint, tipOrigin));
 		//store the new direction of the vector
-		direction.set(shaftPoint);
-		direction.normalize();
+		direction.set(shaftPoint).normalize();
 		
 		shaft.setTransform(shaftTrans);
 		tip.setTransform(tipTrans);
@@ -359,5 +361,18 @@ public class Arrow{
 	 */
 	public Vec3 getColor(){
 		return color;
+	}
+	
+	public boolean colliding(CollisionMesh mesh){
+		return CollisionDetector.intersects(mesh, shaft) || CollisionDetector.intersects(mesh, tip);
+	}
+	
+	public boolean colliding(Ray ray){
+		return CollisionDetector.intersects(ray, shaft) || CollisionDetector.intersects(ray, tip);
+	}
+	
+	public boolean colliding(Arrow arrow){
+		return CollisionDetector.intersects(arrow.shaft, shaft) || CollisionDetector.intersects(arrow.tip, tip) ||
+				CollisionDetector.intersects(arrow.tip, shaft) || CollisionDetector.intersects(arrow.shaft, tip);
 	}
 }

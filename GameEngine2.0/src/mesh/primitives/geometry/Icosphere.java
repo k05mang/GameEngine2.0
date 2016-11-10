@@ -321,6 +321,6 @@ public final class Icosphere extends Mesh {
 	 * @return Radius of this icosphere
 	 */
 	public float getRadius(){
-		return Math.max(transforms.getScalars().x, Math.max(transforms.getScalars().y, transforms.getScalars().z))*radius;
+		return radius;
 	}
 }

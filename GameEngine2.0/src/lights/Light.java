@@ -1,7 +1,6 @@
 package lights;
 
 import glMath.Quaternion;
-import glMath.Transform;
 import glMath.vectors.Vec3;
 import mesh.Mesh;
 import shaders.ShaderProgram;
@@ -14,46 +13,6 @@ public abstract class Light extends SpatialAsset{
 	protected static final int VOLUME_FINENESS = 10;
 	//rotation for the next point on the volume
 	protected static final Quaternion volumeRot = Quaternion.fromAxisAngle(0, 1, 0, 360/VOLUME_FINENESS);
-
-	/**
-	 * Constructs a light with the given {@code position}, or direction in the case of a point light,
-	 * {@code color}, {@code intensity}, and linear attenuation
-	 * 
-	 * @param position Position of the light or direction in the case of directional lights
-	 * @param color Color of the light
-	 * @param intensity Intensity of the light
-	 */
-	public Light(Vec3 position, Vec3 color, float intensity){
-		this(position.x, position.y, position.z, color.x, color.y, color.z, intensity);
-	}
-	
-	/**
-	 * Constructs a light with the given {@code position}, or direction in the case of a point light,
-	 * {@code color}, {@code intensity}, and linear attenuation
-	 * 
-	 * @param xpos X component for the position or direction
-	 * @param ypos Y component for the position or direction
-	 * @param zpos Z component for the position or direction
-	 * @param color Color of the light
-	 * @param intensity Intensity of the light
-	 */
-	public Light(float xpos, float ypos, float zpos, Vec3 color, float intensity){
-		this(xpos, ypos, zpos, color.x, color.y, color.z, intensity);
-	}
-	
-	/**
-	 * Constructs a light with the given {@code position}, or direction in the case of a point light,
-	 * {@code color}, {@code intensity}, and linear attenuation
-	 * 
-	 * @param position Position or direction of the light
-	 * @param r Red component of the color of the light
-	 * @param g Green component of the color of the light
-	 * @param b Blue component of the color of the light
-	 * @param intensity Intensity of the light
-	 */
-	public Light(Vec3 position, float r, float g, float b, float intensity){
-		this(position.x, position.y, position.z, r, g, b, intensity);
-	}
 	
 	/**
 	 * Constructs a light with the given {@code position}, or direction in the case of a point light,

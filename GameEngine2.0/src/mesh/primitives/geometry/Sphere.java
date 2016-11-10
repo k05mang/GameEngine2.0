@@ -297,6 +297,6 @@ public final class Sphere extends Mesh{
 	 * @return Radius of this sphere
 	 */
 	public float getRadius(){
-		return Math.max(transforms.getScalars().x, Math.max(transforms.getScalars().y, transforms.getScalars().z))*radius;
+		return radius;
 	}
 }

@@ -12,7 +12,7 @@ import core.Resource;
 import core.SceneManager;
 import core.SpatialAsset;
 
-public abstract class Mesh extends SpatialAsset implements Resource{
+public abstract class Mesh implements Resource{
 	protected Geometry geometry;
 	protected VertexArray vao;
 	protected ArrayList<BufferObject> vbos;
@@ -24,7 +24,6 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 	 * Constructs a Mesh with a VertexArray, Mesh, Transform, and array of BufferObjects and IndexBuffers
 	 */
 	public Mesh(){
-		super();
 		vao = new VertexArray();
 		geometry = new Geometry();
 		vbos = new ArrayList<BufferObject>();
@@ -44,21 +43,11 @@ public abstract class Mesh extends SpatialAsset implements Resource{
 	 * @param copy Mesh to copy from
 	 */
 	public Mesh(Mesh copy){
-		super(copy);
 		vao = copy.vao;
 		vbos = copy.vbos;
 		ibos = copy.ibos;
 		geometry = copy.geometry;//new Geometry(copy.geometry);
 		material = new String(copy.material);
-	}
-	
-	/**
-	 * Gets the matrix representation of this renderable's Transform class
-	 * 
-	 * @return Matrix of this renderable's Transformations
-	 */
-	public Mat4 getModelView(){
-		return transforms.getMatrix();
 	}
 	
 	/**

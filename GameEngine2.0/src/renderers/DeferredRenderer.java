@@ -1,13 +1,11 @@
 package renderers;
 
 import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
 import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL11.glDisable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import lights.Light;
 import mesh.Material;
@@ -17,12 +15,9 @@ import shaders.Shader;
 import shaders.ShaderProgram;
 import shaders.ShaderStage;
 import core.Camera;
-import core.Resource;
+import core.Entity;
 import core.SceneManager;
 import framebuffer.Gbuffer;
-import glMath.Transform;
-import glMath.VecUtil;
-import glMath.vectors.Vec3;
 
 public class DeferredRenderer {
 
@@ -128,7 +123,7 @@ public class DeferredRenderer {
 		finalPass.setUniform("gamma", 1);
 	}
 	
-	public void render(ArrayList<Mesh> meshes, ArrayList<Light> lights){
+	public void render(Collection<Entity> meshes, ArrayList<Light> lights){
 		gbuffer.geoPass();//ready the gbuffer for the geometry pass
 		geoPass.setUniform("view", main.getLookAt());
 		stencilPass.setUniform("view", main.getLookAt());
@@ -137,11 +132,11 @@ public class DeferredRenderer {
 		
 		geoPass.bind();
 		//render geometry
-		for(Mesh mesh : meshes){
-			geoPass.setUniform("model", mesh.getModelView());
-			Material mat = (Material) SceneManager.materials.get(mesh.getMaterial());
+		for(Entity mesh : meshes){
+			geoPass.setUniform("model", mesh.getTransform().getMatrix());
+			Material mat = (Material) SceneManager.materials.get(mesh.getMesh().getMaterial());
 			mat.bind(geoPass);
-			mesh.render();
+			mesh.getMesh().render();
 		}
 		geoPass.unbind();
 		
@@ -152,7 +147,7 @@ public class DeferredRenderer {
 			stencilPass.bind();
 			gbuffer.stencilPass();
 			//render the light volume for stenciling
-			stencilPass.setUniform("model", mesh.getModelView());
+			stencilPass.setUniform("model", light.getTransform().getMatrix());
 			mesh.render();
 			stencilPass.unbind();
 			

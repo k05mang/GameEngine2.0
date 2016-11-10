@@ -10,7 +10,7 @@ public interface WindowListener {
 	 * @param width Width of the new window size
 	 * @param height Height of the new window size
 	 */
-	public void windowResize(Window window, int width, int height);
+	public void onWindowResize(Window window, int width, int height);
 	
 	/**
 	 * Function callback for when the windows framebuffer gets resized
@@ -19,35 +19,35 @@ public interface WindowListener {
 	 * @param width Width of the new Framebuffer size
 	 * @param height Height of the new Framebuffer size
 	 */
-	public void frameBufferResize(Window window, int width, int height);
+	public void onFrameBufferResize(Window window, int width, int height);
 	
 	/**
 	 * Function callback for when a request to close the window has been made
 	 * 
 	 * @param window Window that called this callback function
 	 */
-	public void windowClose(Window window);
+	public void onWindowClose(Window window);
 	
 	/**
 	 * Function callback for when the window needs to be refreshed after another window has blocked it
 	 * 
 	 * @param window Window that called this callback function
 	 */
-	public void windowRefresh(Window window);
+	public void onWindowRefresh(Window window);
 	
 	/**
 	 * Function callback for when the window is iconified
 	 * 
 	 * @param window Window that called this callback function
 	 */
-	public void windowIconify(Window window);
+	public void onWindowIconify(Window window);
 	
 	/**
 	 * Function callback for when the window is restored from an iconified state
 	 * 
 	 * @param window Window that called this callback function
 	 */
-	public void windowRestore(Window window);
+	public void onWindowRestore(Window window);
 	
 	/**
 	 * Function callback for when the window is focused or defocused
@@ -55,7 +55,14 @@ public interface WindowListener {
 	 * @param window Window that called this callback function
 	 * @param isFocused Indicates whether the window is being focused or defocused
 	 */
-	public void windowFocus(Window window, boolean isFocused);
+	public void onWindowFocus(Window window, boolean isFocused);
 	
-	public void windowPosChange(Window window, int xpos, int ypos);
+	/**
+	 * Function callback for when the windows position changes, and the window is moved
+	 * 
+	 * @param window Window that called this callback function
+	 * @param xpos X position that the window was moved to
+	 * @param ypos Y position that the window was moved to
+	 */
+	public void onWindowPosChange(Window window, int xpos, int ypos);
 }

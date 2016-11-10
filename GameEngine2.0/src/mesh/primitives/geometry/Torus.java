@@ -247,7 +247,7 @@ public final class Torus extends Mesh {
 	 * @return Radius of the torus from the middle to the middle of the tube
 	 */
 	public float getRadius() {
-		return Math.max(transforms.getScalars().x, transforms.getScalars().z)*radius;
+		return radius;
 	}
 
 	/**
@@ -256,6 +256,6 @@ public final class Torus extends Mesh {
 	 * @return Radius of the tube of the torus
 	 */
 	public float getTubeRadius() {
-		return Math.max(transforms.getScalars().x, Math.max(transforms.getScalars().y, transforms.getScalars().z))*tubeRadius;
+		return tubeRadius;
 	}
 }

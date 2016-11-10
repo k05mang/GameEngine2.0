@@ -66,7 +66,8 @@ public class ConvexHull2D extends ConvexHull {
 
 	public ConvexHull2D(ConvexHull2D copy) {
 		super(copy);
-		this.baseEdge = copy.baseEdge;
+		baseEdge = copy.baseEdge;
+		planeNormal = copy.planeNormal;
 	}
 	
 	@Override

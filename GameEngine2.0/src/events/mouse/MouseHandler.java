@@ -58,7 +58,7 @@ GLFWCursorEnterCallback.SAM{
 	public void invoke(long windowHandle, int entered) {
 		//iterate over all the active listeners
 		for(MouseListener listener : mouseListeners){
-			listener.mouseEnter(window, entered == GL_TRUE);
+			listener.onMouseEnter(window, entered == GL_TRUE);
 		}
 	}
 
@@ -68,7 +68,7 @@ GLFWCursorEnterCallback.SAM{
 		window.cursorY = ypos;
 		//iterate over all the active listeners
 		for(MouseListener listener : mouseListeners){
-			listener.mouseMove(window, xpos, ypos);
+			listener.onMouseMove(window, xpos, ypos);
 		}
 	}
 
@@ -77,11 +77,11 @@ GLFWCursorEnterCallback.SAM{
 		//iterate over all the active listeners
 		for(MouseListener listener : mouseListeners){
 			if(action == GLFW.GLFW_PRESS){
-				listener.mousePress(window, MouseButton.getButton(button), false, ModKey.getMods(mods));
+				listener.onMousePress(window, MouseButton.getButton(button), false, ModKey.getMods(mods));
 			}else if(action == GLFW.GLFW_REPEAT){
-				listener.mousePress(window,  MouseButton.getButton(button), true, ModKey.getMods(mods));
+				listener.onMousePress(window,  MouseButton.getButton(button), true, ModKey.getMods(mods));
 			}else{
-				listener.mouseRelease(window,  MouseButton.getButton(button), ModKey.getMods(mods));
+				listener.onMouseRelease(window,  MouseButton.getButton(button), ModKey.getMods(mods));
 			}
 		}
 	}
@@ -93,7 +93,7 @@ GLFWCursorEnterCallback.SAM{
 		public void invoke(long windowHandle, double xoffset, double yoffset) {
 			//iterate over all the active listeners
 			for(MouseListener listener : mouseListeners){
-				listener.mouseScroll(window, xoffset, yoffset);
+				listener.onMouseScroll(window, xoffset, yoffset);
 			}
 		}
 		

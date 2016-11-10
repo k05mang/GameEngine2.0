@@ -382,6 +382,12 @@ public final class Cube extends Mesh {
 		this(scale, scale, scale, defaultMode);
 	}
 	
+	/**
+	 * Constructs a cuboid with the given scale defining the different dimensions for the cuboid. The resulting cuboid will be a cube
+	 * with width = height = depth = scale.
+	 * 
+	 * @param scale Dimension for the width, height, and depth of the cuboid
+	 */
 	public Cube(float scale){
 		this(scale, SOLID_MODE);
 	}
@@ -402,7 +408,7 @@ public final class Cube extends Mesh {
 	 * @return Width of the cuboid
 	 */
 	public float getWidth(){
-		return transforms.getScalars().x*halfDimensions.x*2;
+		return halfDimensions.x*2;
 	}
 
 	/**
@@ -411,7 +417,7 @@ public final class Cube extends Mesh {
 	 * @return Height of the cuboid
 	 */
 	public float getHeight(){
-		return transforms.getScalars().y*halfDimensions.y*2;
+		return halfDimensions.y*2;
 	}
 
 	/**
@@ -420,6 +426,6 @@ public final class Cube extends Mesh {
 	 * @return Depth of the cuboid
 	 */
 	public float getDepth(){
-		return transforms.getScalars().z*halfDimensions.z*2;
+		return halfDimensions.z*2;
 	}
 }

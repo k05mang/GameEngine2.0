@@ -18,6 +18,18 @@ public abstract class CollisionDetector {
 	
 	protected static final float MAX_THRESHOLD = .001f;
 	
+	public static boolean intersects(CollisionMesh objA, Entity objB){
+		return intersects(objA, objB.getCollider());
+	}
+	
+	public static boolean intersects(Entity objA, CollisionMesh objB){
+		return intersects(objA.getCollider(), objB);
+	}
+	
+	public static boolean intersects(Entity objA, Entity objB){
+		return intersects(objA.getCollider(), objB.getCollider());
+	}
+	
 	public static boolean intersects(CollisionMesh objA, CollisionMesh objB){
 		Vec3 direction = new Vec3(1,1,1);
 		Simplex simplex = new Simplex(
@@ -37,6 +49,14 @@ public abstract class CollisionDetector {
 		return true;
 	}
 	
+	public static boolean intersects(Entity obj, Ray ray){
+		return intersects(ray, obj.getCollider());
+	}
+	
+	public static boolean intersects(Entity obj, Vec3 point){
+		return intersects(point, obj.getCollider());
+	}
+	
 	public static boolean intersects(Ray ray, Entity obj){
 		return intersects(ray, obj.getCollider());
 	}
@@ -44,7 +64,7 @@ public abstract class CollisionDetector {
 	public static boolean intersects(Vec3 point, Entity obj){
 		return intersects(point, obj.getCollider());
 	}
-	
+
 	public static boolean intersects(Ray ray, CollisionMesh mesh){
 		if(ray.getPos().equals(ray.getPoint(1))){//test if the ray is actually a point
 			return intersects(ray.getPos(), mesh);
@@ -73,6 +93,10 @@ public abstract class CollisionDetector {
 		return false;
 	}
 	
+	public static boolean intersects(CollisionMesh mesh, Ray ray){
+		return intersects(ray, mesh);
+	}
+	
 	public static boolean intersects(Vec3 point, CollisionMesh mesh){
 		if(mesh instanceof ConvexHull2D){
 			return intersects(point, (ConvexHull2D)mesh);
@@ -99,7 +123,15 @@ public abstract class CollisionDetector {
 		return false;
 	}
 	
-	public static boolean intersects(Vec3 point, ConvexHull2D hull){
+	public static boolean intersects(CollisionMesh mesh, Vec3 point){
+		return intersects(point, mesh);
+	}
+	
+	private static boolean intersects(Vec3 point, ConvexHull2D hull){
+		//check for null input
+		if(point == null || hull == null){
+			return false;
+		}
 		//first construct an initial triangle that may contain the point, 
 		//the triangle is composed of vertices from the hull and is known to be within the hull
 		Vec3 a, b, c,//points that make up the triangle
@@ -143,11 +175,19 @@ public abstract class CollisionDetector {
 				VecUtil.dot(VecUtil.subtract(point, c), VecUtil.cross(ca, ab, ca)) > 0;		//check for edge ca
 	}
 	
-	public static boolean intersects(Vec3 point, ConvexHull3D hull){
+	private static boolean intersects(Vec3 point, ConvexHull3D hull){
+		//check for null input
+		if(point == null || hull == null){
+			return false;
+		}
 		return false;
 	}
 	
-	public static boolean intersects(Ray ray, ConvexHull2D hull){
+	private static boolean intersects(Ray ray, ConvexHull2D hull){
+		//check for null input
+		if(ray == null || hull == null){
+			return false;
+		}
 		Vec3 planeNormal = hull.getPlaneNormal();//this guarantees a plane normal for the hull that represents the current state of the hull
 		//post transformations
 		
@@ -238,7 +278,11 @@ public abstract class CollisionDetector {
 		
 	}
 	
-	public static boolean intersects(Ray ray, ConvexHull3D hull){
+	private static boolean intersects(Ray ray, ConvexHull3D hull){
+		//check for null input
+		if(ray == null || hull == null){
+			return false;
+		}
 		//check if the ray is actually a point
 		if(ray.getLength() == 0){
 			return intersects(ray.getPos(), hull);
@@ -292,7 +336,7 @@ public abstract class CollisionDetector {
 	    return tE <= 1.0f && tL >= 0.0f;
 	}
 	
-	public static boolean intersects(Ray ray, CollisionPlane plane){
+	private static boolean intersects(Ray ray, CollisionPlane plane){
 		Vec2 planeHalfDim = plane.getHalfDimensions();
 		//compute the point intersection for the 3 planes defined by the normals above
 			//x face of the bounding box
@@ -319,7 +363,7 @@ public abstract class CollisionDetector {
 		return false;
 	}
 	
-	public static boolean intersects(Ray ray, AABB bbox){
+	private static boolean intersects(Ray ray, AABB bbox){
 		//check if the ray was emitted from the box center which means the ray collides with the box
 		if(ray.getPos().equals(bbox.getPos())){
 			return true;

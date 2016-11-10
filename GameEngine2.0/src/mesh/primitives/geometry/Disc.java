@@ -146,6 +146,6 @@ public final class Disc extends Mesh {
 	 * @return Radius of the disc
 	 */
 	public float getRadius(){
-		return Math.max(transforms.getScalars().x, transforms.getScalars().z)*radius;
+		return radius;
 	}
 }

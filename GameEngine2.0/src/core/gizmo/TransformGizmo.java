@@ -7,17 +7,19 @@ import shaders.ShaderProgram;
 import windowing.Window;
 import core.Entity;
 import core.SceneManager;
+import core.SpatialAsset;
 import events.keyboard.ModKey;
 import events.mouse.MouseButton;
 import events.mouse.MouseListener;
+import glMath.Transform;
 import glMath.vectors.Vec3;
 
 public abstract class TransformGizmo implements MouseListener{
 
 	protected static Entity center;
 	protected static Vec3 centerColor = new Vec3(1,1,0);
-	protected static Entity target;
-	protected Object activeModifier;//points to the object that is modifying values for the target, i.e. the sphere center
+	protected static SpatialAsset target;
+	protected char activeModifier;//points to a character that represents what modifier is active for the object, 'c' will mean the center point and 0 null
 	
 	/**
 	 * Constructs a TranformGizmo, the gizmo is a 3D representation of the cardinal transformations of an object.
@@ -57,7 +59,7 @@ public abstract class TransformGizmo implements MouseListener{
 	 * 
 	 * @param target Target entity to connect with this gizmo
 	 */
-	public void bind(Entity target){
+	public void bind(SpatialAsset target){
 		TransformGizmo.target = target;
 		center.getTransform().setTranslation(target.getPos());
 	}
@@ -70,6 +72,24 @@ public abstract class TransformGizmo implements MouseListener{
 	}
 	
 	/**
+	 * Determines whether this transformation gizmo is currently bound to an object
+	 * 
+	 * @return True if bound to an object, false otherwise
+	 */
+	public boolean isBound(){
+		return target != null;
+	}
+	
+	/**
+	 * Uniformly sets the scales of the transformation gizmo to the given scalar {@code factor}
+	 * 
+	 * @param factor Floating point number that represents the factor to scale the gizmo
+	 */
+	public void setScale(float factor){
+		center.transform(new Transform().scale(factor));
+	}
+	
+	/**
 	 * Checks if the given Ray {@code clickRay} is colliding with this gizmo.
 	 * 
 	 * @param clickRay Ray to test this gizmo against
@@ -78,7 +98,7 @@ public abstract class TransformGizmo implements MouseListener{
 	 */
 	public boolean isSelected(Ray clickRay){//this version will check if the sphere was intersected
 		if(CollisionDetector.intersects(clickRay, center)){
-			activeModifier = center;
+			activeModifier = 'c';
 			return true;
 		}else{
 			return false;
@@ -86,10 +106,25 @@ public abstract class TransformGizmo implements MouseListener{
 	}
 
 	@Override
-	public abstract void mouseMove(Window window, double xpos, double ypos);
+	public abstract void onMouseMove(Window window, double xpos, double ypos);
 	
 	@Override
-	public void mouseRelease(Window window, MouseButton button, ModKey[] mods){
-		activeModifier = null;
+	public final void onMouseRelease(Window window, MouseButton button, ModKey[] mods){
+		activeModifier = 0;
+	}
+	
+	@Override
+	public final void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
+		
+	}
+	
+	@Override
+	public final void onMouseEnter(Window window, boolean enter){
+		
+	}
+	
+	@Override
+	public final void onMouseScroll(Window window, double xoffset, double yoffset){
+		
 	}
 }

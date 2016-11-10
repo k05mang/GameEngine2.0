@@ -99,6 +99,7 @@ public class ConvexHull3D extends ConvexHull {
 	public ConvexHull3D(ConvexHull3D copy){
 		super(copy);
 		baseTri = copy.baseTri;
+		normals = copy.normals;
 	}
 	
 	@Override

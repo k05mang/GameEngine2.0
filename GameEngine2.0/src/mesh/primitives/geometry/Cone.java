@@ -160,7 +160,7 @@ public final class Cone extends Mesh {
 	 * @return Radius of the base of this cone
 	 */
 	public float getRadius(){
-		return Math.max(transforms.getScalars().x, transforms.getScalars().z)*radius;
+		return radius;
 	}
 	
 	/**
@@ -169,6 +169,6 @@ public final class Cone extends Mesh {
 	 * @return Length of this cone
 	 */
 	public float getLength(){
-		return transforms.getScalars().y*length;
+		return length;
 	}
 }

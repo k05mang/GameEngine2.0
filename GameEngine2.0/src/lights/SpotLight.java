@@ -137,7 +137,6 @@ public class SpotLight extends Light {
 
 	@Override
 	public Mesh getVolume(){
-		volume.setTransform(transforms);
 		return volume;
 	}
 	

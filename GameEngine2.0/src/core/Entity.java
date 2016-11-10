@@ -49,9 +49,6 @@ public class Entity extends SpatialAsset{
 			}else{
 				this.collider = null;
 			}
-			//establish a uniform transformation between all the objects and the Entity, with the mesh as the base transformation
-			this.transforms.set(this.mesh.getTransform());
-			this.collider.setTransform(this.mesh.getTransform());
 		}
 	}
 	
@@ -65,12 +62,8 @@ public class Entity extends SpatialAsset{
 	public Entity(Mesh mesh, CollisionMesh collider){
 		super();
 		this.mesh = mesh;
-		if(mesh != null){
-			this.transforms.set(this.mesh.getTransform());
-		}
 		if(collider != null){
 			this.collider = collider.copy();
-			this.collider.setTransform(this.transforms);
 		}
 	}
 	
@@ -81,13 +74,6 @@ public class Entity extends SpatialAsset{
 	 */
 	public void set(Mesh mesh){
 		this.mesh = mesh;
-		//set this Entities transformations to the new mesh if the new mesh exists
-		if(mesh != null){
-			this.transforms.set(this.mesh.getTransform());
-			if(collider != null){
-				this.collider.setTransform(this.transforms);
-			}
-		}
 	}
 	
 	/**
@@ -98,7 +84,6 @@ public class Entity extends SpatialAsset{
 	public void set(CollisionMesh collider){
 		if(collider != null){
 			this.collider = collider.copy();//copy the collision mesh
-			this.collider.setTransform(this.transforms);//align its transformations with this Entity
 		}else{
 			this.collider = null;
 		}
@@ -120,10 +105,6 @@ public class Entity extends SpatialAsset{
 	 */
 	public boolean genHull(){
 		collider = ConvexHull.get(mesh);
-		//if the collision mesh was successfully generated then proceed to transform it to match the Entity
-		if(collider != null){
-			collider.setTransform(this.transforms);
-		}
 		return collider != null;
 	}
 	
@@ -134,9 +115,7 @@ public class Entity extends SpatialAsset{
 	 * @return CollisionMesh or null if none was set to this Entity
 	 */
 	public CollisionMesh getCollider(){
-		if(collider != null){
-			collider.setTransform(transforms);
-		}
+		collider.setTransform(transforms);
 		return collider;
 	}
 	
@@ -147,7 +126,6 @@ public class Entity extends SpatialAsset{
 	 * @return The renderable Mesh object assigned to this Entity
 	 */
 	public Mesh getMesh(){
-		mesh.setTransform(transforms);
 		return mesh;
 	}
 }
