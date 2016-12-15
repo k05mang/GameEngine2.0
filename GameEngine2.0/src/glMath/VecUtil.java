@@ -6,10 +6,6 @@ import glMath.vectors.Vec4;
 import glMath.vectors.Vector;
 
 public abstract class VecUtil {
-	public static final Vec3 
-	xAxis = new Vec3(1,0,0),
-	yAxis = new Vec3(0,1,0),
-	zAxis = new Vec3(0,0,1);
 	/**
 	 * Computes the dot product of two vectors of the same type
 	 * 

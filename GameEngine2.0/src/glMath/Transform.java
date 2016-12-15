@@ -9,6 +9,10 @@ import glMath.vectors.Vec4;
 public class Transform {
 	private Quaternion orientation;
 	private Vec3 position, scale;
+	public static final Vec3 
+	xAxis = new Vec3(1,0,0),
+	yAxis = new Vec3(0,1,0),
+	zAxis = new Vec3(0,0,1);
 	
 	/**
 	 * Constructs a transform object with set to the identity

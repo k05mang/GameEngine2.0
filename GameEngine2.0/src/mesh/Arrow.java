@@ -167,10 +167,10 @@ public class Arrow{
 		float xzScale = useCube ? tipLength : 1;
 		Transform tipTrans = new Transform().scale(xzScale, tipLength, xzScale);
 		//first orient the meshes
-		Vec3 axis = VecUtil.yAxis.cross(direction);
-		float angle = (float)(Math.acos(VecUtil.yAxis.dot(direction))*180/Math.PI);
-		shaftTrans.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
-		tipTrans.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
+		Vec3 axis = Transform.yAxis.cross(direction);
+		float angle = (float)(Math.acos(Transform.yAxis.dot(direction))*180/Math.PI);
+		shaftTrans.rotate(angle == 180 ? Transform.xAxis : axis, angle);
+		tipTrans.rotate(angle == 180 ? Transform.xAxis : axis, angle);
 		//translate the cylinder
 		float halfLength = shaftLength/2;
 		shaftTrans.translate(halfLength*direction.x, halfLength*direction.y, halfLength*direction.z);
@@ -210,8 +210,8 @@ public class Arrow{
 	 * @param trans Transform to modify this Arrow with
 	 */
 	public void transform(Transform trans){
-		Transform shaftTrans = new Transform(shaft.getTransform()).transform(trans);
-		Transform tipTrans = new Transform(tip.getTransform()).transform(trans);
+		Transform shaftTrans = new Transform().transform(trans);
+		Transform tipTrans = new Transform().transform(trans);
 		//translate
 		position.add(trans.getTranslation());
 
@@ -245,8 +245,8 @@ public class Arrow{
 		//store the new direction of the vector
 		direction.set(shaftPoint).normalize();
 		
-		shaft.setTransform(shaftTrans);
-		tip.setTransform(tipTrans);
+		shaft.transform(shaftTrans);
+		tip.transform(tipTrans);
 	}
 	
 	/**
@@ -320,8 +320,9 @@ public class Arrow{
 	 * @param z Z value to set this Arrows position to
 	 */
 	public void setPos(float x, float y, float z){
-		shaft.getTransform().translate(x-position.x, y-position.y, z-position.z);
-		tip.getTransform().translate(x-position.x, y-position.y, z-position.z);
+		Transform trans = new Transform().translate(x-position.x, y-position.y, z-position.z);
+		shaft.transform(trans);
+		tip.transform(trans);
 		position.set(x, y, z);
 	}
 	

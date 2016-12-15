@@ -221,17 +221,17 @@ public class Mat2 implements Matrix {
 	@Override
 	public void setValueAt(int index, float value){
 		//decide what vector to read from
-		switch(index/4){
+		switch(index/2){
 			case 0:
 				//decide what value from that vector to get
-				switch(index%4){
+				switch(index%2){
 					case 0:
 						matrix[0].x = value;
 					case 1:
 						matrix[0].y = value;
 				}
 			case 1:
-				switch(index%4){
+				switch(index%2){
 					case 0:
 						matrix[1].x = value;
 					case 1:

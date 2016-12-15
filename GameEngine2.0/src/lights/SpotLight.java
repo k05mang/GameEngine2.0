@@ -106,7 +106,7 @@ public class SpotLight extends Light {
 		direction = new Vec3(dirx, diry, dirz).normalize();
 		Vec3 axis = centerVec.cross(direction);
 		float angle = (float)(Math.acos(centerVec.dot(direction))*180/Math.PI);
-		transforms.rotate(angle == 180 ? VecUtil.xAxis : axis, angle);
+		transforms.rotate(angle == 180 ? Transform.xAxis : axis, angle);
 		transforms.scale(this.radius, this.length, this.radius);
 	}
 	

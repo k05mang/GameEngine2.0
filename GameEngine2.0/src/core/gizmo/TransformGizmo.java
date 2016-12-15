@@ -5,6 +5,7 @@ import physics.collision.CollisionDetector;
 import physics.collision.Ray;
 import shaders.ShaderProgram;
 import windowing.Window;
+import core.Camera;
 import core.Entity;
 import core.SceneManager;
 import core.SpatialAsset;
@@ -19,13 +20,14 @@ public abstract class TransformGizmo implements MouseListener{
 	protected static Entity center;
 	protected static Vec3 centerColor = new Vec3(1,1,0);
 	protected static SpatialAsset target;
+	protected static Camera view;
 	protected char activeModifier;//points to a character that represents what modifier is active for the object, 'c' will mean the center point and 0 null
 	
 	/**
 	 * Constructs a TranformGizmo, the gizmo is a 3D representation of the cardinal transformations of an object.
 	 * This constructor sets up the gizmo sphere center, which acts as a transformation without any restriction.
 	 */
-	public TransformGizmo(){
+	public TransformGizmo(Camera view){
 		//add the center sphere to the list of meshes if it exists
 		if(SceneManager.meshes.get("gizmo_center") == null){
 			SceneManager.meshes.put("gizmo_center", new Sphere(1.5f, 20));
@@ -35,6 +37,8 @@ public abstract class TransformGizmo implements MouseListener{
 		if(center == null){
 			center = new Entity(SceneManager.meshes.get("gizmo_center"), true);//have it auto generate a convex hull
 		}
+		
+		TransformGizmo.view = view;
 	}
 	
 	/**
@@ -88,22 +92,6 @@ public abstract class TransformGizmo implements MouseListener{
 	public void setScale(float factor){
 		center.transform(new Transform().scale(factor));
 	}
-	
-	/**
-	 * Checks if the given Ray {@code clickRay} is colliding with this gizmo.
-	 * 
-	 * @param clickRay Ray to test this gizmo against
-	 * 
-	 * return True if the ray is colliding with any part of the gizmo, false otherwise
-	 */
-	public boolean isSelected(Ray clickRay){//this version will check if the sphere was intersected
-		if(CollisionDetector.intersects(clickRay, center)){
-			activeModifier = 'c';
-			return true;
-		}else{
-			return false;
-		}
-	}
 
 	@Override
 	public abstract void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY);
@@ -114,7 +102,7 @@ public abstract class TransformGizmo implements MouseListener{
 	}
 	
 	@Override
-	public final void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
+	public void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
 		
 	}
 	

@@ -1,17 +1,21 @@
 package core.gizmo;
 
+import events.keyboard.ModKey;
+import events.mouse.MouseButton;
 import glMath.Transform;
 import mesh.Arrow;
+import physics.collision.CollisionDetector;
 import physics.collision.Ray;
 import shaders.ShaderProgram;
 import windowing.Window;
+import core.Camera;
 import core.SpatialAsset;
 
 public class ScaleGizmo extends TransformGizmo {
 	private Arrow xaxis, yaxis, zaxis;
 	
-	public ScaleGizmo(){
-		super();
+	public ScaleGizmo(Camera view){
+		super(view);
 		xaxis = new Arrow(10, 0,0,0, 1,0,0, 1,0,0, true);
 		yaxis = new Arrow(10, 0,0,0, 0,1,0, 0,1,0, true);
 		zaxis = new Arrow(10, 0,0,0, 0,0,1, 0,0,1, true);
@@ -61,29 +65,6 @@ public class ScaleGizmo extends TransformGizmo {
 	}
 	
 	@Override
-	public boolean isSelected(Ray clickRay){
-		//first check if the center sphere was selected
-		if(super.isSelected(clickRay)){
-			return true;
-		}else{
-			//if not then check the scalar modifiers individually
-			if(xaxis.colliding(clickRay)){
-				activeModifier = 'x';
-				return true;
-			}else if(yaxis.colliding(clickRay)){
-				activeModifier = 'y';
-				return true;
-			}else if(zaxis.colliding(clickRay)){
-				activeModifier = 'z';
-				return true;
-			}else{
-				activeModifier = 0;
-			}
-		}
-		return false;
-	}
-	
-	@Override
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
 		if(this.target != null){
@@ -99,5 +80,23 @@ public class ScaleGizmo extends TransformGizmo {
 					break;
 			}
 		}//if there isn't anything to modify then do nothing
+	}
+	
+	@Override
+	public void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
+		//first create the ray to test collision with
+		Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
+		//perform each collision check, starting with the center sphere
+		if(CollisionDetector.intersects(clickRay, center)){
+			activeModifier = 'c';
+		}else if(xaxis.colliding(clickRay)){
+			activeModifier = 'x';
+		}else if(yaxis.colliding(clickRay)){
+			activeModifier = 'y';
+		}else if(zaxis.colliding(clickRay)){
+			activeModifier = 'z';
+		}else{
+			activeModifier = 0;
+		}
 	}
 }

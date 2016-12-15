@@ -2,6 +2,7 @@ package core;
 import static glMath.VecUtil.dot;
 import glMath.MatrixUtil;
 import glMath.Quaternion;
+import glMath.Transform;
 import glMath.VecUtil;
 import glMath.matrices.Mat4;
 import glMath.vectors.Vec3;
@@ -10,33 +11,34 @@ import physics.collision.Ray;
 
 public class Camera {
 	
-	private float theta, phi, fovy, aspect, zNear, zFar;
+	private float theta, phi, fovy, aspect, zNear, zFar, width, height;
 	private Vec3 eye, forward, right, up;
 	private Mat4 projection;
-	
 
 	/**
-	 * Creates a camera with the given vector eye position, and a theta horizontal rotation
-	 * and a phi vertical rotation, additionally this creates and stores a perspective projection
-	 * matrix formed using the given fovy, aspect, zNear, and zFar.
+	 * Creates a camera with the given vector {@code eye} position, a {@code theta} horizontal rotation
+	 * and a {@code phi} vertical rotation, additionally this creates and stores a perspective projection
+	 * matrix formed using the given {@code fovy}, aspect = {@code width/height}, {@code zNear}, and {@code zFar}.
 	 * 
 	 * @param eye Vector that will be used for this cameras starting position
 	 * @param theta the camera's horizontal rotation (in degrees)
 	 * @param phi the camera's vertical rotation (in degrees)
 	 * @param fovy Field of View angle for the y direction 
-	 * @param aspect Aspect ratio of the area being rendered to
+	 * @param width Width of the rendering window
+	 * @param height Height of the rendering window
 	 * @param zNear The nearest z value to the view before being clipped
 	 * @param zFar The farthest z value from the view before being clipped
 	 */
 	public Camera( Vec3 eye, float theta , float phi,
-			float fovy, float aspect, float zNear, float zFar) {
-		this(eye.x, eye.y, eye.z, theta, phi, fovy, aspect, zNear, zFar);
+			float fovy, float width, float height, 
+			float zNear, float zFar) {
+		this(eye.x, eye.y, eye.z, theta, phi, fovy, width, height, zNear, zFar);
 	}
 	
 	/**
-	 * Creates a camera with the given x, y, z eye position, and a theta horizontal rotation
-	 * and a phi vertical rotation. Additionally this creates and stores a perspective projection
-	 * matrix formed using the given fovy, aspect, zNear, and zFar.
+	 * Creates a camera with the given {@code x, y, z} eye position, a {@code theta} horizontal rotation
+	 * and a {@code phi} vertical rotation, additionally this creates and stores a perspective projection
+	 * matrix formed using the given {@code fovy}, aspect = {@code width/height}, {@code zNear}, and {@code zFar}.
 	 * 
 	 * @param x the x component of the camera's location
 	 * @param y the y component of the camera's location
@@ -44,17 +46,22 @@ public class Camera {
 	 * @param theta the camera's horizontal rotation (in degrees)
 	 * @param phi the camera's vertical rotation (in degrees)
 	 * @param fovy Field of View angle for the y direction 
-	 * @param aspect Aspect ratio of the area being rendered to
+	 * @param width Width of the rendering window
+	 * @param height Height of the rendering window
 	 * @param zNear The nearest z value to the view before being clipped
 	 * @param zFar The farthest z value from the view before being clipped
 	 */
 	public Camera( float x, float y, float z,
 			float theta , float phi,
-			float fovy, float aspect, float zNear, float zFar) {
+			float fovy, 
+			float width, float height, 
+			float zNear, float zFar) {
 		this.theta = theta;
 		this.phi = phi;
 		this.fovy = fovy;
-		this.aspect = aspect;
+		this.width = width;
+		this.height = height;
+		this.aspect = width/height;
 		this.zNear = zNear;
 		this.zFar = zFar;
 		
@@ -124,8 +131,8 @@ public class Camera {
 	public Mat4 getLookAt() {
 		Quaternion rot = new Quaternion(phi,theta,0);
 		
-		forward = rot.multVec(VecUtil.zAxis);
-		up = rot.multVec(VecUtil.yAxis);
+		forward = rot.multVec(Transform.zAxis);
+		up = rot.multVec(Transform.yAxis);
 		right = up.cross(forward);
 		
 		return  new Mat4(
@@ -182,7 +189,7 @@ public class Camera {
 	public void move(float amt){
 		Quaternion rot = new Quaternion(0,theta,0);
 		
-		Vec3 dir = rot.multVec(VecUtil.zAxis);
+		Vec3 dir = rot.multVec(Transform.zAxis);
 		
 		eye.add(dir.scale(amt));
 	}
@@ -206,8 +213,8 @@ public class Camera {
 	/**
 	 * Creates a Ray projected from the given normalized screen coordinates
 	 * 
-	 * @param x Screen space x in normalized coordinates
-	 * @param y Screen space y in normalized coordinates
+	 * @param x Screen space x
+	 * @param y Screen space y
 	 * 
 	 * @return Ray projected in world coordinates
 	 */
@@ -225,8 +232,8 @@ public class Camera {
 		//scaling with the aspect ratio to get the width of the near plane
 		Vec3 planeWidth = VecUtil.scale(right, nearHeight*aspect);
 		//get the center point of the near plane, then take the fraction of the width and height from the mouse coordinates to get
-		//the points on the near plane that intersect the mouse coordinates
-		Vec3 direction = VecUtil.add(VecUtil.scale(forward, -zNear), VecUtil.scale(planeWidth, -2*x+1), VecUtil.scale(planeHeight, 2*y-1));
+		//the points on the near plane that intersect the mouse coordinates, additionally x and y must be normalized
+		Vec3 direction = VecUtil.add(VecUtil.scale(forward, -zNear), VecUtil.scale(planeWidth, -2*(x/width)+1), VecUtil.scale(planeHeight, 2*(y/height)-1));
 		//multiplications applied to x and y values translate the final direction ray into fullscreen coordinates instead of the quarter screen
 		//used in calculations
 		return new Ray(zFar, eye, direction);

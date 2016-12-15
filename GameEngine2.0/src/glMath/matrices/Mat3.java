@@ -309,10 +309,10 @@ public class Mat3 implements Matrix {
 	@Override
 	public void setValueAt(int index, float value){
 		//decide what vector to read from
-		switch(index/4){
+		switch(index/3){
 			case 0:
 				//decide what value from that vector to get
-				switch(index%4){
+				switch(index%3){
 					case 0:
 						matrix[0].x = value;
 					case 1:
@@ -321,7 +321,7 @@ public class Mat3 implements Matrix {
 						matrix[0].z = value;
 				}
 			case 1:
-				switch(index%4){
+				switch(index%3){
 					case 0:
 						matrix[1].x = value;
 					case 1:
@@ -330,7 +330,7 @@ public class Mat3 implements Matrix {
 						matrix[1].z = value;
 				}
 			case 2:
-				switch(index%4){
+				switch(index%3){
 					case 0:
 						matrix[2].x = value;
 					case 1:
