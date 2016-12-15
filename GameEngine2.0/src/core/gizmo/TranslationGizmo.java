@@ -66,7 +66,7 @@ public class TranslationGizmo extends TransformGizmo{
 	}
 	
 	@Override
-	public void onMouseMove(Window window, double xpos, double ypos) {
+	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
 		if(this.target != null){
 			//check which modifier is active

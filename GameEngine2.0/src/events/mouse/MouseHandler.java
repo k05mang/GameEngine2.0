@@ -10,8 +10,8 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 
-import windowing.Window;
 import events.keyboard.ModKey;
+import windowing.Window;
 
 public class MouseHandler implements 
 GLFWMouseButtonCallback.SAM,
@@ -64,11 +64,15 @@ GLFWCursorEnterCallback.SAM{
 
 	@Override
 	public void invoke(long windowHandle, double xpos, double ypos) {
+		//set the previous cursor positions using the old values of the cursor
+		window.prevX = window.cursorX;
+		window.prevY = window.cursorY;
+		//update the cursor values with the new position values from the function
 		window.cursorX = xpos;
 		window.cursorY = ypos;
 		//iterate over all the active listeners
 		for(MouseListener listener : mouseListeners){
-			listener.onMouseMove(window, xpos, ypos);
+			listener.onMouseMove(window, xpos, ypos, window.prevX, window.prevY);
 		}
 	}
 

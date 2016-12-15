@@ -45,6 +45,8 @@ public interface MouseListener {
 	 * @param window Window that called this callback function
 	 * @param xpos New x position of the mouse cursor
 	 * @param ypos New y position of the mouse cursor, y values increase as the mouse moves down the screen
+	 * @param prevX Previous x position of the mouse cursor
+	 * @param prevY Previous y position of the mouse cursor
 	 */
-	public void onMouseMove(Window window, double xpos, double ypos);
+	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY);
 }

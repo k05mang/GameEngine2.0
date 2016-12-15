@@ -106,7 +106,7 @@ public abstract class TransformGizmo implements MouseListener{
 	}
 
 	@Override
-	public abstract void onMouseMove(Window window, double xpos, double ypos);
+	public abstract void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY);
 	
 	@Override
 	public final void onMouseRelease(Window window, MouseButton button, ModKey[] mods){

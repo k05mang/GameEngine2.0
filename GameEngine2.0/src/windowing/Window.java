@@ -10,13 +10,12 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
 import core.Scene;
-import events.*;
 import events.keyboard.KeyListener;
 import events.keyboard.KeyboardHandler;
-import events.mouse.MouseListener;
 import events.mouse.MouseHandler;
-import events.window.WindowListener;
+import events.mouse.MouseListener;
 import events.window.WindowHandler;
+import events.window.WindowListener;
 
 /**
  * TODO expand to multi monitor support
@@ -29,7 +28,7 @@ public class Window {
 	private MouseHandler mouse;
 	private WindowHandler windowHandler;
 	public int width, height, xpos, ypos, fbWidth, fbHeight;
-	public double cursorX, cursorY;
+	public double cursorX, cursorY, prevX, prevY;
 	private HashMap<WindowHint, Integer> windowHints;
 	//keyboard callabcks
 	private GLFWKeyCallback key;
@@ -54,7 +53,7 @@ public class Window {
 		this.width = width;
 		this.height = height;
 		xpos = ypos = fbWidth = fbHeight = 0;
-		cursorX = cursorY = 0.0;
+		cursorX = cursorY = prevX = prevY = 0.0;
 		windowHints = new HashMap<WindowHint, Integer>();
 	}
 	
@@ -270,7 +269,7 @@ public class Window {
 	}
 	
 	/**
-	 * Sets a hint, for this window to be created with, to the given value
+	 * Sets a hint for this window to be created with the given value
 	 * 
 	 * @param hint Hint enum indicating what parameter to set
 	 * @param value Value to set the given hint to
@@ -280,7 +279,7 @@ public class Window {
 	}
 
 	/**
-	 * Sets a hint, for this window to be created with, to the given value
+	 * Sets a hint for this window to be created with the given value
 	 * 
 	 * @param hint Hint enum indicating what parameter to set
 	 * @param value Value to set the given hint to
@@ -290,7 +289,7 @@ public class Window {
 	}
 
 	/**
-	 * Sets a hint, for this window to be created with, to the given value
+	 * Sets a hint for this window to be created with the given value
 	 * 
 	 * @param hint Hint enum indicating what parameter to set
 	 * @param value Value to set the given hint to
@@ -510,5 +509,23 @@ public class Window {
 	 */
 	public double getCursorY(){
 		return cursorY;
+	}
+	
+	/**
+	 * Gets the previous x position of the cursor
+	 * 
+	 * @return Double precision x position of the previous cursor value
+	 */
+	public double getPrevCursorX(){
+		return prevX;
+	}
+
+	/**
+	 * Gets the previous y position of the cursor
+	 * 
+	 * @return Double precision y position of the previous cursor value
+	 */
+	public double getPrevCursorY(){
+		return prevY;
 	}
 }
