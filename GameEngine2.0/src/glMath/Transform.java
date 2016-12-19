@@ -188,9 +188,28 @@ public class Transform {
 		//scale the vector
 		result.set(result.x*scale.x, result.y*scale.y, result.z*scale.z);
 		//rotate the vector
-		result.set(orientation.multVec(result));
+		result = orientation.multVec(result);
 		//translate the vector
 		result.add(position);
+		return result;
+	}
+	
+	/**
+	 * Transforms the {@code target} vector by the inverse transformation of this transform object.
+	 * The resulting vector is the local space vector of this transform object.
+	 * 
+	 * @param target Vector to transform by the inverse transformation
+	 * 
+	 * @return A new vector representing the target vector post inverse transformation
+	 */
+	public Vec3 inverseTransform(Vec3 target){
+		Vec3 result = new Vec3(target);
+		//translate by the negative translation of this transform
+		result.subtract(position);
+		//rotate it by the conjugate orientation
+		result = orientation.conjugate().multVec(result);
+		//then scale, each value needs to be 1/scalar
+		result.set(result.x/scale.x, result.y/scale.y, result.z/scale.z);
 		return result;
 	}
 	

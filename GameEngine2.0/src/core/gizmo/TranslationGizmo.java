@@ -38,15 +38,21 @@ public class TranslationGizmo extends TransformGizmo{
 		xaxis.setPos(target.getPos());
 		yaxis.setPos(target.getPos());
 		zaxis.setPos(target.getPos());
+		//scale the gizmo for better interaction relative to the camera
+		float scale = VecUtil.subtract(view.getEye(), target.getPos()).length()/200f;
+		//set the scale of the arrows to match this factor
+		xaxis.setScale(scale);
+		yaxis.setScale(scale);
+		zaxis.setScale(scale);
 	}
 	
-	@Override
-	public void setScale(float factor){
-		super.setScale(factor);
-		xaxis.setScale(factor);
-		yaxis.setScale(factor);
-		zaxis.setScale(factor);
-	}
+//	@Override
+//	public void setScale(float factor){
+//		super.setScale(factor);
+//		xaxis.setScale(factor);
+//		yaxis.setScale(factor);
+//		zaxis.setScale(factor);
+//	}
 	
 	@Override
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
@@ -59,13 +65,13 @@ public class TranslationGizmo extends TransformGizmo{
 					planeNormal = view.getForwardVec();
 					break;
 				case 'x'://when the x axis is selected
-					planeNormal = Transform.xAxis;
+					planeNormal = Transform.zAxis;
 					break;
 				case 'y'://when the y axis is selected
-					planeNormal = Transform.yAxis;
+					planeNormal = Transform.zAxis;
 					break;
 				case 'z'://when the z axis is selected
-					planeNormal = Transform.zAxis;
+					planeNormal = Transform.yAxis;
 					break;
 			}
 			if(planeNormal != null){
@@ -87,24 +93,18 @@ public class TranslationGizmo extends TransformGizmo{
 				switch(activeModifier){
 					case 'x'://when the x axis is selected
 						prevPoint.y = 0;
-						prevPoint.z = 0;
 						movePoint.y = 0;
-						movePoint.z = 0;
 						break;
 					case 'y'://when the y axis is selected
 						prevPoint.x = 0;
-						prevPoint.z = 0;
 						movePoint.x = 0;
-						movePoint.z = 0;
 						break;
 					case 'z'://when the z axis is selected
 						prevPoint.x = 0;
-						prevPoint.y = 0;
 						movePoint.x = 0;
-						movePoint.y = 0;
 						break;
 				}
-				//then subtract the two movements to get the resulting translation
+				//then subtract the two click positions to get the resulting translation
 				//apply the translation to the appropriate objects
 				Transform trans = new Transform().translate(movePoint.subtract(prevPoint));
 				target.transform(trans);

@@ -54,13 +54,13 @@ public class RotationGizmo extends TransformGizmo {
 		zWheel.getTransform().setTranslation(target.getPos());
 	}
 	
-	@Override
-	public void setScale(float factor){
-		super.setScale(factor);
-		xWheel.getTransform().setScale(factor);
-		yWheel.getTransform().setScale(factor);
-		zWheel.getTransform().setScale(factor);
-	}
+//	@Override
+//	public void setScale(float factor){
+//		super.setScale(factor);
+//		xWheel.getTransform().setScale(factor);
+//		yWheel.getTransform().setScale(factor);
+//		zWheel.getTransform().setScale(factor);
+//	}
 	
 	@Override
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {

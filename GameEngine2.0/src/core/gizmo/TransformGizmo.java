@@ -13,6 +13,7 @@ import events.keyboard.ModKey;
 import events.mouse.MouseButton;
 import events.mouse.MouseListener;
 import glMath.Transform;
+import glMath.VecUtil;
 import glMath.vectors.Vec3;
 
 public abstract class TransformGizmo implements MouseListener{
@@ -65,7 +66,13 @@ public abstract class TransformGizmo implements MouseListener{
 	 */
 	public void bind(SpatialAsset target){
 		TransformGizmo.target = target;
+		//center the gizmo at the target object
 		center.getTransform().setTranslation(target.getPos());
+		//scale the gizmo for better interaction relative to the camera
+		float scale = view.getEye().length()/200;
+		//set the scale of the center to match this factor
+		Vec3 scalars = center.getTransform().getScalars();
+		center.transform(new Transform().scale(scale/scalars.x));
 	}
 	
 	/**
@@ -85,13 +92,23 @@ public abstract class TransformGizmo implements MouseListener{
 	}
 	
 	/**
+	 * Sets the Camera the transform gizmos will use in calculations
+	 * 
+	 * @param view Camera to set as the new view in calculating various transforms
+	 */
+	public void setCamera(Camera view){
+		TransformGizmo.view = view;
+	}
+	
+	/**
 	 * Uniformly sets the scales of the transformation gizmo to the given scalar {@code factor}
 	 * 
 	 * @param factor Floating point number that represents the factor to scale the gizmo
 	 */
-	public void setScale(float factor){
-		center.transform(new Transform().scale(factor));
-	}
+//	public void setScale(float factor){
+//		Vec3 scalars = center.getTransform().getScalars();
+//		center.transform(new Transform().scale(factor/scalars.x));
+//	}
 
 	@Override
 	public abstract void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY);

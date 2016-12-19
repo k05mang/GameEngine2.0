@@ -3,6 +3,8 @@ package core.gizmo;
 import events.keyboard.ModKey;
 import events.mouse.MouseButton;
 import glMath.Transform;
+import glMath.VecUtil;
+import glMath.vectors.Vec3;
 import mesh.Arrow;
 import physics.collision.CollisionDetector;
 import physics.collision.Ray;
@@ -32,11 +34,11 @@ public class ScaleGizmo extends TransformGizmo {
 	@Override
 	public void bind(SpatialAsset target){
 		//see if we have a pre-existing target we are bound to
-		if(target != null){
+		if(TransformGizmo.target != null){
 			//if we do then we must first undo the transforms applied to the gizmo from that object
 			Transform trans = new Transform();
 			//first undo the rotations applied to the gizmo
-			trans.setOrientation(target.getTransform().getOrientation().conjugate());
+			trans.setOrientation(TransformGizmo.target.getTransform().getOrientation().conjugate());
 			//apply changes
 			xaxis.transform(trans);
 			yaxis.transform(trans);
@@ -54,30 +56,75 @@ public class ScaleGizmo extends TransformGizmo {
 		xaxis.transform(trans);
 		yaxis.transform(trans);
 		zaxis.transform(trans);
+		//scale the gizmo for better interaction relative to the camera
+		float scale = VecUtil.subtract(view.getEye(), target.getPos()).length()/200f;
+		//set the scale of the arrows to match this factor
+		xaxis.setScale(scale);
+		yaxis.setScale(scale);
+		zaxis.setScale(scale);
 	}
 	
-	@Override
-	public void setScale(float factor){
-		super.setScale(factor);
-		xaxis.setScale(factor);
-		yaxis.setScale(factor);
-		zaxis.setScale(factor);
-	}
+//	@Override
+//	public void setScale(float factor){
+//		super.setScale(factor);
+//		xaxis.setScale(factor);
+//		yaxis.setScale(factor);
+//		zaxis.setScale(factor);
+//	}
 	
 	@Override
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
 		if(this.target != null){
+			Vec3 planeNormal = null;
 			//check which modifier is active
 			switch(activeModifier){
 				case 'c'://when the center sphere is selected
+					planeNormal = view.getForwardVec();
 					break;
 				case 'x'://when the x axis is selected
+					planeNormal = Transform.zAxis;
 					break;
 				case 'y'://when the y axis is selected
+					planeNormal = Transform.zAxis;
 					break;
 				case 'z'://when the z axis is selected
+					planeNormal = Transform.yAxis;
 					break;
+			}
+			if(planeNormal != null){
+				//get the Ray from the previous movement
+				Ray preMoveRay = view.genRay((float)prevX, (float)prevY);
+				//get the Ray for the current movement
+				Ray moveRay = view.genRay((float)xpos, (float)ypos);
+				//compute the depth along the line for the point on the line that intersects the plane perpendicular to the camera
+				//d = ((p0-L0)·n)/(L·n), where n is the plane normal(camera forward), L0 ray pos, L ray direction, p0 point on the plane
+				//project both rays onto the plane
+				float d = VecUtil.subtract(target.getPos(), preMoveRay.getPos()).dot(planeNormal)
+						/preMoveRay.getDirection().dot(planeNormal);
+				Vec3 prevPoint = preMoveRay.getDirection().scale(d);
+				//repeat for the move ray
+				d = VecUtil.subtract(target.getPos(), moveRay.getPos()).dot(planeNormal)
+						/moveRay.getDirection().dot(planeNormal);
+				Vec3 curPoint = moveRay.getDirection().scale(d);
+				Transform trans = new Transform();
+				float scale = VecUtil.subtract(view.getEye(), target.getPos()).length()/200f;
+				switch(activeModifier){
+					case 'c':
+						//get the difference in lengths from the current point to the previous point relative to the targets center
+						trans.scale(1+curPoint.subtract(target.getPos()).length()-prevPoint.subtract(target.getPos()).length());
+						break;
+					case 'x'://when the x axis is selected
+						trans.scale(1+curPoint.subtract(prevPoint).x, 1, 1);
+						break;
+					case 'y'://when the y axis is selected
+						trans.scale(1, 1-curPoint.subtract(prevPoint).y, 1);
+						break;
+					case 'z'://when the z axis is selected
+						trans.scale(1, 1, 1+curPoint.subtract(prevPoint).z);
+						break;
+				}
+				target.transform(trans);
 			}
 		}//if there isn't anything to modify then do nothing
 	}

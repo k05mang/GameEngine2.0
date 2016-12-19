@@ -153,11 +153,9 @@ public class Arrow{
 		useCube = cubeTip;
 		tip = new Entity(useCube ? SceneManager.meshes.get("arrow_cube") : SceneManager.meshes.get("arrow_cone"), true);
 		
-		origTipLength = useCube ? 2 : 2.5f;
-		tipLength = origTipLength;
+		tipLength = origTipLength = useCube ? 2 : 2.5f;
 		//subtract tip length from the length of the shaft so that the arrow will span the entire length
-		origLength = Math.max(length, 3)-origTipLength;
-		shaftLength = origLength;
+		shaftLength = origLength = Math.max(length, 3)-origTipLength;
 		
 		color = new Vec3(r, g, b);
 		position = new Vec3(posx, posy, posz);
@@ -210,10 +208,8 @@ public class Arrow{
 	 * @param trans Transform to modify this Arrow with
 	 */
 	public void transform(Transform trans){
-		Transform shaftTrans = new Transform().transform(trans);
-		Transform tipTrans = new Transform().transform(trans);
-		//translate
-		position.add(trans.getTranslation());
+		Transform shaftTrans = new Transform(trans);
+		Transform tipTrans = new Transform(trans);
 
 		//scale
 		//these are the differences between the old lengths and the new
@@ -233,8 +229,8 @@ public class Arrow{
 		//rotate
 		Quaternion rotation = trans.getOrientation();
 		//compute the center points of the shaft and tip relative to the origin
-		Vec3 shaftOrigin = VecUtil.subtract(shaftTrans.getTranslation(), position);
-		Vec3 tipOrigin = VecUtil.subtract(tipTrans.getTranslation(), position);
+		Vec3 shaftOrigin = VecUtil.subtract(shaft.getPos(), position);
+		Vec3 tipOrigin = VecUtil.subtract(tip.getPos(), position);
 		//compute the center points after rotating them
 		Vec3 shaftPoint = rotation.multVec(shaftOrigin);
 		Vec3 tipPoint = rotation.multVec(tipOrigin);
@@ -243,7 +239,10 @@ public class Arrow{
 		//translate the tip using the same process as the shaft
 		tipTrans.translate(VecUtil.subtract(tipPoint, tipOrigin));
 		//store the new direction of the vector
-		direction.set(shaftPoint).normalize();
+		direction = rotation.multVec(direction);
+		
+		//translate
+		position.add(trans.getTranslation());
 		
 		shaft.transform(shaftTrans);
 		tip.transform(tipTrans);
@@ -282,25 +281,7 @@ public class Arrow{
 	 * @param scale Scale to set this Arrow to
 	 */
 	public void setScale(float scale){
-		float newLength = scale*origLength;
-		float newTipLength = scale*origTipLength;
-		//translate the meshes to maintain the position
-		Transform shaftTrans = new Transform().translate((newLength-shaftLength)/2*direction.x, (newLength-shaftLength)/2*direction.y, (newLength-shaftLength)/2*direction.z);
-		Transform tipTrans = new Transform().translate(
-				(newLength-shaftLength+newTipLength-tipLength)*direction.x, 
-				(newLength-shaftLength+newTipLength-tipLength)*direction.y, 
-				(newLength-shaftLength+newTipLength-tipLength)*direction.z
-				);
-		shaftTrans.setScale(.5f, origLength, .5f);
-		float xzScale = useCube ? origTipLength : 1;
-		tipTrans.setScale(xzScale, origTipLength, xzScale);
-		shaftTrans.scale(scale);
-		tipTrans.scale(scale);
-		shaftLength = newLength;
-		tipLength = newTipLength;
-
-		shaft.setTransform(shaftTrans);
-		tip.setTransform(tipTrans);
+		transform(new Transform().scale(scale/(shaftLength/origLength)));
 	}
 	
 	/**
