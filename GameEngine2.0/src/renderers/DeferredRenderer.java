@@ -128,7 +128,7 @@ public class DeferredRenderer {
 		geoPass.setUniform("view", main.getLookAt());
 		stencilPass.setUniform("view", main.getLookAt());
 		lightPass.setUniform("view", main.getLookAt());
-		lightPass.setUniform("eye", main.getEye());
+		lightPass.setUniform("eye", main.getPos());
 		
 		geoPass.bind();
 		//render geometry

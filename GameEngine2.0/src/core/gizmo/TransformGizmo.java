@@ -69,7 +69,6 @@ public abstract class TransformGizmo implements MouseListener{
 		//center the gizmo at the target object
 		center.getTransform().setTranslation(target.getPos());
 		//scale the gizmo for better interaction relative to the camera
-		float scale = view.getEye().length()/200;
 		//set the scale of the center to match this factor
 		Vec3 scalars = center.getTransform().getScalars();
 		center.transform(new Transform().scale(scale/scalars.x));

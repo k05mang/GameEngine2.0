@@ -39,7 +39,7 @@ public class TranslationGizmo extends TransformGizmo{
 		yaxis.setPos(target.getPos());
 		zaxis.setPos(target.getPos());
 		//scale the gizmo for better interaction relative to the camera
-		float scale = VecUtil.subtract(view.getEye(), target.getPos()).length()/200f;
+		float scale = VecUtil.subtract(view.getPos(), target.getPos()).length()/200f;
 		//set the scale of the arrows to match this factor
 		xaxis.setScale(scale);
 		yaxis.setScale(scale);
@@ -57,7 +57,7 @@ public class TranslationGizmo extends TransformGizmo{
 	@Override
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
-		if(this.target != null){
+		if(TransformGizmo.target != null){
 			Vec3 planeNormal = null;
 			//check which modifier is active
 			switch(activeModifier){
@@ -88,25 +88,28 @@ public class TranslationGizmo extends TransformGizmo{
 				//repeat for the move ray
 				d = VecUtil.subtract(target.getPos(), moveRay.getPos()).dot(planeNormal)
 						/moveRay.getDirection().dot(planeNormal);
-				Vec3 movePoint = moveRay.getDirection().scale(d);
+				Vec3 curPoint = moveRay.getDirection().scale(d);
+				//move the points to be relative to where they were emitted
+				prevPoint.add(preMoveRay.getPos());
+				curPoint.add(moveRay.getPos());
 				//adjust values based on whether we are restricting to a line
 				switch(activeModifier){
 					case 'x'://when the x axis is selected
 						prevPoint.y = 0;
-						movePoint.y = 0;
+						curPoint.y = 0;
 						break;
 					case 'y'://when the y axis is selected
 						prevPoint.x = 0;
-						movePoint.x = 0;
+						curPoint.x = 0;
 						break;
 					case 'z'://when the z axis is selected
 						prevPoint.x = 0;
-						movePoint.x = 0;
+						curPoint.x = 0;
 						break;
 				}
 				//then subtract the two click positions to get the resulting translation
 				//apply the translation to the appropriate objects
-				Transform trans = new Transform().translate(movePoint.subtract(prevPoint));
+				Transform trans = new Transform().translate(curPoint.subtract(prevPoint));
 				target.transform(trans);
 				center.transform(trans);
 				xaxis.transform(trans);
@@ -118,19 +121,21 @@ public class TranslationGizmo extends TransformGizmo{
 	
 	@Override
 	public void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
-		//first create the ray to test collision with
-		Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
-		//perform each collision check, starting with the center sphere
-		if(CollisionDetector.intersects(clickRay, center)){
-			activeModifier = 'c';
-		}else if(xaxis.colliding(clickRay)){
-			activeModifier = 'x';
-		}else if(yaxis.colliding(clickRay)){
-			activeModifier = 'y';
-		}else if(zaxis.colliding(clickRay)){
-			activeModifier = 'z';
-		}else{
-			activeModifier = 0;
+		if(button == MouseButton.LEFT){
+			//first create the ray to test collision with
+			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
+			//perform each collision check, starting with the center sphere
+			if(CollisionDetector.intersects(clickRay, center)){
+				activeModifier = 'c';
+			}else if(xaxis.colliding(clickRay)){
+				activeModifier = 'x';
+			}else if(yaxis.colliding(clickRay)){
+				activeModifier = 'y';
+			}else if(zaxis.colliding(clickRay)){
+				activeModifier = 'z';
+			}else{
+				activeModifier = 0;
+			}
 		}
 	}
 }

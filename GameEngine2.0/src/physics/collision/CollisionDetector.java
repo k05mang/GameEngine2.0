@@ -205,9 +205,9 @@ public abstract class CollisionDetector {
 				//first we need to transform the ray to be in the hulls model space, this will reduce the need to transform the hull
 				//vertices into world space each iteration below. 
 				
-				Mat4 reverseTrans = hull.getTransform().getMatrix().invert();
-				Vec3 p0 = (Vec3)reverseTrans.multVec(new Vec4(ray.getPos(), 1)).swizzle("xyz");
-				Vec3 p1 = (Vec3)reverseTrans.multVec(new Vec4(ray.getPoint(1), 1)).swizzle("xyz");
+				Transform hullTrans = hull.getTransform();
+				Vec3 p0 = hullTrans.inverseTransform(ray.getPos());
+				Vec3 p1 = hullTrans.inverseTransform(ray.getPoint(1));
 				//get new ray direction
 				Vec3 rayDir = VecUtil.subtract(p1,p0);
 				

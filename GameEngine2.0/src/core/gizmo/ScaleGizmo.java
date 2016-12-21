@@ -57,7 +57,7 @@ public class ScaleGizmo extends TransformGizmo {
 		yaxis.transform(trans);
 		zaxis.transform(trans);
 		//scale the gizmo for better interaction relative to the camera
-		float scale = VecUtil.subtract(view.getEye(), target.getPos()).length()/200f;
+		float scale = VecUtil.subtract(view.getPos(), target.getPos()).length()/200f;
 		//set the scale of the arrows to match this factor
 		xaxis.setScale(scale);
 		yaxis.setScale(scale);
@@ -75,7 +75,7 @@ public class ScaleGizmo extends TransformGizmo {
 	@Override
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
-		if(this.target != null){
+		if(TransformGizmo.target != null){
 			Vec3 planeNormal = null;
 			//check which modifier is active
 			switch(activeModifier){
@@ -107,21 +107,26 @@ public class ScaleGizmo extends TransformGizmo {
 				d = VecUtil.subtract(target.getPos(), moveRay.getPos()).dot(planeNormal)
 						/moveRay.getDirection().dot(planeNormal);
 				Vec3 curPoint = moveRay.getDirection().scale(d);
+				//move the points to be relative to where they were emitted
+				prevPoint.add(preMoveRay.getPos());
+				curPoint.add(moveRay.getPos());
+				
 				Transform trans = new Transform();
-				float scale = VecUtil.subtract(view.getEye(), target.getPos()).length()/200f;
+				//scalar factor used to offset the amount of applied scaling when the camera is panned far out
+				float scale = VecUtil.subtract(view.getPos(), target.getPos()).length();
 				switch(activeModifier){
 					case 'c':
 						//get the difference in lengths from the current point to the previous point relative to the targets center
-						trans.scale(1+curPoint.subtract(target.getPos()).length()-prevPoint.subtract(target.getPos()).length());
+						trans.scale(1+(curPoint.subtract(target.getPos()).length()-prevPoint.subtract(target.getPos()).length())/scale);
 						break;
 					case 'x'://when the x axis is selected
-						trans.scale(1+curPoint.subtract(prevPoint).x, 1, 1);
+						trans.scale(1+curPoint.subtract(prevPoint).x/scale, 1, 1);
 						break;
 					case 'y'://when the y axis is selected
-						trans.scale(1, 1-curPoint.subtract(prevPoint).y, 1);
+						trans.scale(1, 1-curPoint.subtract(prevPoint).y/scale, 1);
 						break;
 					case 'z'://when the z axis is selected
-						trans.scale(1, 1, 1+curPoint.subtract(prevPoint).z);
+						trans.scale(1, 1, 1+curPoint.subtract(prevPoint).z/scale);
 						break;
 				}
 				target.transform(trans);
@@ -131,19 +136,21 @@ public class ScaleGizmo extends TransformGizmo {
 	
 	@Override
 	public void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
-		//first create the ray to test collision with
-		Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
-		//perform each collision check, starting with the center sphere
-		if(CollisionDetector.intersects(clickRay, center)){
-			activeModifier = 'c';
-		}else if(xaxis.colliding(clickRay)){
-			activeModifier = 'x';
-		}else if(yaxis.colliding(clickRay)){
-			activeModifier = 'y';
-		}else if(zaxis.colliding(clickRay)){
-			activeModifier = 'z';
-		}else{
-			activeModifier = 0;
+		if(button == MouseButton.LEFT){
+			//first create the ray to test collision with
+			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
+			//perform each collision check, starting with the center sphere
+			if(CollisionDetector.intersects(clickRay, center)){
+				activeModifier = 'c';
+			}else if(xaxis.colliding(clickRay)){
+				activeModifier = 'x';
+			}else if(yaxis.colliding(clickRay)){
+				activeModifier = 'y';
+			}else if(zaxis.colliding(clickRay)){
+				activeModifier = 'z';
+			}else{
+				activeModifier = 0;
+			}
 		}
 	}
 }

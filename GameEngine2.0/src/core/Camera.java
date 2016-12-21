@@ -12,7 +12,7 @@ import physics.collision.Ray;
 public class Camera {
 	
 	private float theta, phi, fovy, aspect, zNear, zFar, width, height;
-	private Vec3 eye, forward, right, up;
+	private Vec3 position, forward, right, up;
 	private Mat4 projection;
 
 	/**
@@ -65,7 +65,7 @@ public class Camera {
 		this.zNear = zNear;
 		this.zFar = zFar;
 		
-		eye = new Vec3(x, y, z);
+		position = new Vec3(x, y, z);
 		forward = new Vec3(0,0,-1);
 		right = new Vec3(1,0,0);
 		up = new Vec3(0,1,0);
@@ -139,7 +139,7 @@ public class Camera {
 				new Vec4(right.x, up.x, forward.x, 0),
 				new Vec4(right.y, up.y, forward.y, 0),
 				new Vec4(right.z, up.z, forward.z, 0),
-				new Vec4(-dot(right,eye),-dot(up,eye),-dot(forward,eye),1.0f)
+				new Vec4(-dot(right,position),-dot(up,position),-dot(forward,position),1.0f)
 				);
 	}
 	
@@ -170,15 +170,15 @@ public class Camera {
 	}
 	
 	public void moveTo(float locX, float locY, float locZ){
-		eye.set(locX, locY, locZ);
+		position.set(locX, locY, locZ);
 	}
 	
 	public void moveTo(Vec3 position){
-		eye.set(position);
+		position.set(position);
 	}
 	
 	public void strafe(float amt){
-		eye.add(right.x*amt, right.y*amt, right.z*amt);
+		position.add(right.x*amt, right.y*amt, right.z*amt);
 	}
 	
 	/**
@@ -191,19 +191,19 @@ public class Camera {
 		
 		Vec3 dir = rot.multVec(Transform.zAxis);
 		
-		eye.add(dir.scale(amt));
+		position.add(dir.scale(amt));
 	}
 	
 	public void moveUpDown(float amt){
-		eye.set(1, eye.y+amt);
+		position.set(1, position.y+amt);
 	}
 	
 	public void fly(float amt){
-		eye.add(forward.x*amt, forward.y*amt, forward.z*amt);
+		position.add(forward.x*amt, forward.y*amt, forward.z*amt);
 	}
 	
-	public Vec3 getEye(){
-		return eye;
+	public Vec3 getPos(){
+		return position;
 	}
 	
 	public Vec3 getForwardVec(){
@@ -236,6 +236,6 @@ public class Camera {
 		Vec3 direction = VecUtil.add(VecUtil.scale(forward, -zNear), VecUtil.scale(planeWidth, -2*(x/width)+1), VecUtil.scale(planeHeight, 2*(y/height)-1));
 		//multiplications applied to x and y values translate the final direction ray into fullscreen coordinates instead of the quarter screen
 		//used in calculations
-		return new Ray(zFar, eye, direction);
+		return new Ray(zFar, position, direction);
 	}
 }
