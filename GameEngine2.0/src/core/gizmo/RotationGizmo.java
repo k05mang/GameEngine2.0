@@ -114,14 +114,12 @@ public class RotationGizmo extends TransformGizmo {
 				//and the plane normal as the axis
 				curPoint.subtract(target.getPos()).normalize();
 				prevPoint.subtract(target.getPos()).normalize();
-				float angle = (float)(Math.acos(curPoint.dot(prevPoint))*180/Math.PI);
+				//min/max used to cap the result which should never exceed 1 or -1 but can in instances result in 1.000001 due to floating point error
+				float angle = (float)(Math.acos(Math.max(Math.min(curPoint.dot(prevPoint), 1), -1))*180/Math.PI);
 				//now we need to determine if the motion was clockwise or counter clockwise, this is so the angle can be made
 				//positive or negative depending on the motion
 				angle *= prevPoint.cross(curPoint).normalize().dot(planeNormal);//the dot product of the points cross product will either be
 				//1, if aligned with the plane normal or -1 if opposite
-//				System.out.println(angle);
-//				System.out.println(prevPoint.cross(curPoint).normalize());
-//				System.out.println(prevPoint.cross(curPoint).normalize().dot(planeNormal));
 				Transform trans = new Transform().rotate(planeNormal, angle);
 				target.transform(trans);
 			}

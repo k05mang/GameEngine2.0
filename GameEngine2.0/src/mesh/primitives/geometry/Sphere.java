@@ -187,7 +187,7 @@ public final class Sphere extends Mesh{
 					
 				}else if(curStack > 0 && curStack < maxStack){
 					curIndex = maxSlice+(curStack-1)*(maxSlice+1)+curSlice;//current index
-					nextStackIndex = maxSlice+(curStack)*(maxSlice+1)+curSlice;//same slice next stack
+					nextStackIndex = maxSlice+curStack*(maxSlice+1)+curSlice;//same slice next stack
 					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
 					geometry.add(vert);
 					if(curSlice < maxSlice && curStack < maxStack-1){
