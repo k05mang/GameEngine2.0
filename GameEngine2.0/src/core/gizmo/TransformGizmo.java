@@ -22,7 +22,16 @@ public abstract class TransformGizmo implements MouseListener{
 	protected static Vec3 centerColor = new Vec3(1,1,0);
 	protected static SpatialAsset target;
 	protected static Camera view;
-	protected char activeModifier;//points to a character that represents what modifier is active for the object, 'c' will mean the center point and 0 null
+	protected static char activeController;//represents what controlling axis should be used in modifying the object
+	protected static TransformType modifier = TransformType.TRANSLATE;
+	protected static final float viewScale = 100f;
+	
+	protected static final char 
+	NO_CONTROLLER = 0,
+	CENTER = 'c',
+	X_AXIS = 'x',
+	Y_AXIS = 'y',
+	Z_AXIS = 'z';
 	
 	/**
 	 * Constructs a TranformGizmo, the gizmo is a 3D representation of the cardinal transformations of an object.
@@ -55,6 +64,13 @@ public abstract class TransformGizmo implements MouseListener{
 			program.setUniform("model", center.getTransform().getMatrix());
 			program.setUniform("color", centerColor);
 			SceneManager.meshes.get("gizmo_center").render();
+			//center the gizmo at the target object
+			center.getTransform().setTranslation(target.getPos());
+			//scale the gizmo for better interaction relative to the camera
+			float scale = VecUtil.subtract(view.getPos(), target.getPos()).length()/viewScale;///(view.getHeight()/view.getAspect()/5);
+			//set the scale of the center to match this factor
+			Vec3 scalars = center.getTransform().getScalars();
+			center.transform(new Transform().scale(scale/scalars.x));
 		}
 	}
 	
@@ -66,13 +82,6 @@ public abstract class TransformGizmo implements MouseListener{
 	 */
 	public void bind(SpatialAsset target){
 		TransformGizmo.target = target;
-		//center the gizmo at the target object
-		center.getTransform().setTranslation(target.getPos());
-		//scale the gizmo for better interaction relative to the camera
-		float scale = VecUtil.subtract(view.getPos(), target.getPos()).length()/200f;
-		//set the scale of the center to match this factor
-		Vec3 scalars = center.getTransform().getScalars();
-		center.transform(new Transform().scale(scale/scalars.x));
 	}
 	
 	/**
@@ -99,23 +108,17 @@ public abstract class TransformGizmo implements MouseListener{
 	public void setCamera(Camera view){
 		TransformGizmo.view = view;
 	}
-	
-	/**
-	 * Uniformly sets the scales of the transformation gizmo to the given scalar {@code factor}
-	 * 
-	 * @param factor Floating point number that represents the factor to scale the gizmo
-	 */
-//	public void setScale(float factor){
-//		Vec3 scalars = center.getTransform().getScalars();
-//		center.transform(new Transform().scale(factor/scalars.x));
-//	}
+
+	public void setModifier(TransformType type){
+		this.modifier = type;
+	}
 
 	@Override
 	public abstract void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY);
 	
 	@Override
 	public final void onMouseRelease(Window window, MouseButton button, ModKey[] mods){
-		activeModifier = 0;
+		activeController = NO_CONTROLLER;
 	}
 	
 	@Override

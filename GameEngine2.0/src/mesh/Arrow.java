@@ -345,6 +345,15 @@ public class Arrow{
 		return color;
 	}
 	
+	/**
+	 * Gets the current direction the arrow is pointing in
+	 * 
+	 * @return Vector representing the direction vector the arrow is pointing in
+	 */
+	public Vec3 getDirection(){
+		return direction;
+	}
+	
 	public boolean colliding(CollisionMesh mesh){
 		return CollisionDetector.intersects(mesh, shaft) || CollisionDetector.intersects(mesh, tip);
 	}

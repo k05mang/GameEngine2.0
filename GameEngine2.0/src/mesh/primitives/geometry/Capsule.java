@@ -51,8 +51,9 @@ public class Capsule extends Mesh {
 				float x = (float)( this.radius*cos(theta)*sin(phi) );
 				//since y is the up axis have it use the conventional z calculation
 				//add/subtract the half length value depending on what hemisphere we are on
-				float y = (float)( this.radius*cos(phi)+(trueCurStack < capStack ? halfLength:-halfLength) );
+				float y = (float)( this.radius*cos(phi)+(trueCurStack < capStack ? halfLength : -halfLength) );
 				float z = (float)( this.radius*sin(theta)*sin(phi) );
+				float normY = y+(trueCurStack < capStack ? -halfLength : halfLength);
 				
 				int curIndex = 0;//current index
 				int nextStackIndex = 0;//same slice next stack
@@ -60,7 +61,7 @@ public class Capsule extends Mesh {
 				if(curStack == 0 && curSegment < maxSegment){//sphere top cap
 					float uvOffset = .5f/maxSegment;
 					nextStackIndex = maxSegment+curSegment;//same slice next stack
-					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u-uvOffset, 1-v);
+					Vertex vert = new Vertex(x,y,z, x,normY,z, 1-u-uvOffset, 1-v);
 					geometry.add(vert);
 					
 					Triangle top = new Triangle(
@@ -81,7 +82,7 @@ public class Capsule extends Mesh {
 					float uvOffset = .5f/maxSegment;
 					curIndex = maxSegment+(trueCurStack-2)*(maxSegment+1)+curSegment;//current index
 					nextStackIndex = maxSegment+(trueCurStack-1)*(maxSegment+1)+curSegment;//same slice next stack
-					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u-uvOffset, 1-v);
+					Vertex vert = new Vertex(x,y,z, x,normY,z, 1-u-uvOffset, 1-v);
 					geometry.add(vert);
 					
 					Triangle bottom = new Triangle(
@@ -101,7 +102,7 @@ public class Capsule extends Mesh {
 				}else if(curStack > 0 && curStack < maxStack){//sphere mid section
 					curIndex = maxSegment+(trueCurStack-1)*(maxSegment+1)+curSegment;//current index
 					nextStackIndex = maxSegment+trueCurStack*(maxSegment+1)+curSegment;//same slice next stack
-					Vertex vert = new Vertex(x,y,z, x,y,z, 1-u, 1-v);
+					Vertex vert = new Vertex(x,y,z, x,normY,z, 1-u, 1-v);
 					geometry.add(vert);
 					if(curSegment < maxSegment && curStack < maxStack-1){
 						Triangle left = new Triangle(

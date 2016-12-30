@@ -1,5 +1,6 @@
 package core.gizmo;
 
+import static core.gizmo.TransformType.SCALE;
 import physics.collision.CollisionDetector;
 import physics.collision.Ray;
 import mesh.primitives.geometry.Torus;
@@ -11,14 +12,16 @@ import core.SceneManager;
 import core.SpatialAsset;
 import events.keyboard.ModKey;
 import events.mouse.MouseButton;
+import glMath.Quaternion;
 import glMath.Transform;
 import glMath.VecUtil;
 import glMath.vectors.Vec3;
+import static core.gizmo.TransformType.ROTATE;
 
 public class RotationGizmo extends TransformGizmo {
 
 	private static final float WHEEL_RADIUS = 10f;
-	private float wheelRadius;
+//	private float wheelRadius;
 	private Entity xyWheel, yzWheel, xzWheel;
 	
 	public RotationGizmo(Camera view){
@@ -26,7 +29,7 @@ public class RotationGizmo extends TransformGizmo {
 		if(SceneManager.meshes.get("rot_wheel") == null){
 			SceneManager.meshes.put("rot_wheel", new Torus(WHEEL_RADIUS, .5f, 40));
 		}
-		wheelRadius = WHEEL_RADIUS;
+//		wheelRadius = WHEEL_RADIUS;
 		//currently the collision meshes for the wheels are pure hulls and not decomposed for the torus wheels
 		xyWheel = new Entity(SceneManager.meshes.get("rot_wheel"), true);
 		xyWheel.getTransform().rotate(1,0,0,90);
@@ -38,6 +41,17 @@ public class RotationGizmo extends TransformGizmo {
 	@Override
 	public void render(ShaderProgram program){
 		super.render(program);
+		//set scale position for rendering
+		xyWheel.getTransform().setTranslation(target.getPos());
+		yzWheel.getTransform().setTranslation(target.getPos());
+		xzWheel.getTransform().setTranslation(target.getPos());
+		//scale the gizmo for better interaction relative to the camera
+		float scale = VecUtil.subtract(view.getPos(), target.getPos()).length()/viewScale;///(view.getHeight()/view.getAspect()/5);
+		//set the scale of the wheels to match this factor
+		xyWheel.getTransform().setScale(scale);
+		yzWheel.getTransform().setScale(scale);
+		xzWheel.getTransform().setScale(scale);
+		
 		program.setUniform("model", xyWheel.getTransform().getMatrix());
 		program.setUniform("color", 1,0,0);
 		SceneManager.meshes.get("rot_wheel").render();
@@ -50,44 +64,22 @@ public class RotationGizmo extends TransformGizmo {
 	}
 	
 	@Override
-	public void bind(SpatialAsset target){
-		super.bind(target);
-		xyWheel.getTransform().setTranslation(target.getPos());
-		yzWheel.getTransform().setTranslation(target.getPos());
-		xzWheel.getTransform().setTranslation(target.getPos());
-		//scale the gizmo for better interaction relative to the camera
-		float scale = VecUtil.subtract(view.getPos(), target.getPos()).length()/200f;
-		//set the scale of the wheels to match this factor
-		xyWheel.getTransform().setScale(scale);
-		yzWheel.getTransform().setScale(scale);
-		xzWheel.getTransform().setScale(scale);
-	}
-	
-//	@Override
-//	public void setScale(float factor){
-//		super.setScale(factor);
-//		xWheel.getTransform().setScale(factor);
-//		yWheel.getTransform().setScale(factor);
-//		zWheel.getTransform().setScale(factor);
-//	}
-	
-	@Override
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
-		if(TransformGizmo.target != null){
+		if(TransformGizmo.target != null && modifier == ROTATE){
 			Vec3 planeNormal = null;
 			//check which modifier is active
-			switch(activeModifier){
-				case 'c'://when the center sphere is selected
+			switch(activeController){
+				case CENTER://when the center sphere is selected
 					planeNormal = view.getForwardVec();
 					break;
-				case 'x'://when the xy wheel is selected
+				case X_AXIS://when the xy wheel is selected
 					planeNormal = Transform.zAxis;
 					break;
-				case 'y'://when the yz wheel is selected
+				case Y_AXIS://when the yz wheel is selected
 					planeNormal = Transform.xAxis;
 					break;
-				case 'z'://when the xz wheel is selected
+				case Z_AXIS://when the xz wheel is selected
 					planeNormal = Transform.yAxis;
 					break;
 			}
@@ -115,12 +107,12 @@ public class RotationGizmo extends TransformGizmo {
 				curPoint.subtract(target.getPos()).normalize();
 				prevPoint.subtract(target.getPos()).normalize();
 				//min/max used to cap the result which should never exceed 1 or -1 but can in instances result in 1.000001 due to floating point error
-				float angle = (float)(Math.acos(Math.max(Math.min(curPoint.dot(prevPoint), 1), -1))*180/Math.PI);
-				//now we need to determine if the motion was clockwise or counter clockwise, this is so the angle can be made
-				//positive or negative depending on the motion
-				angle *= prevPoint.cross(curPoint).normalize().dot(planeNormal);//the dot product of the points cross product will either be
+//				float angle = (float)(Math.acos(Math.max(Math.min(curPoint.dot(prevPoint), 1), -1))*180/Math.PI);
+//				//now we need to determine if the motion was clockwise or counter clockwise, this is so the angle can be made
+//				//positive or negative depending on the motion
+//				angle *= prevPoint.cross(curPoint).normalize().dot(planeNormal);//the dot product of the points cross product will either be
 				//1, if aligned with the plane normal or -1 if opposite
-				Transform trans = new Transform().rotate(planeNormal, angle);
+				Transform trans = new Transform().rotate(Quaternion.interpolate(prevPoint, curPoint));
 				target.transform(trans);
 			}
 		}//if there isn't anything to modify then do nothing
@@ -128,20 +120,20 @@ public class RotationGizmo extends TransformGizmo {
 	
 	@Override
 	public void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
-		if(button == MouseButton.LEFT){
+		if(button == MouseButton.LEFT && modifier == ROTATE){
 			//first create the ray to test collision with
 			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
 			//perform each collision check, starting with the center sphere
 			if(CollisionDetector.intersects(clickRay, center)){
-				activeModifier = 'c';
+				activeController = CENTER;
 			}else if(CollisionDetector.intersects(clickRay, xyWheel)){
-				activeModifier = 'x';
+				activeController = X_AXIS;
 			}else if(CollisionDetector.intersects(clickRay, yzWheel)){
-				activeModifier = 'y';
+				activeController = Y_AXIS;
 			}else if(CollisionDetector.intersects(clickRay, xzWheel)){
-				activeModifier = 'z';
+				activeController = Z_AXIS;
 			}else{
-				activeModifier = 0;
+				activeController = NO_CONTROLLER;
 			}
 		}
 	}

@@ -210,6 +210,48 @@ public class Camera {
 		return forward;
 	}
 	
+	public float getWidth(){
+		return width;
+	}
+	
+	public float getHeight(){
+		return height;
+	}
+	
+	public float getAspect(){
+		return aspect;
+	}
+	
+	public float getFov(){
+		return fovy;
+	}
+	
+	public float getZNear(){
+		return zNear;
+	}
+	
+	public float getZFar(){
+		return zFar;
+	}
+	
+	/**
+	 * Gets the angle, in degrees, between where the camera is currently looking vertically relative to the xz-plane
+	 * 
+	 * @return Angle in degrees of the vertical rotation relative to the xz-plane
+	 */
+	public float getVertAngle(){
+		return phi;
+	}
+
+	/**
+	 * Gets the angle, in degrees, between where the camera is currently looking horizontally relative to the negative z axis
+	 * 
+	 * @return Angle in degrees of the horizontal rotation relative to the negative z axis
+	 */
+	public float getHorizAngle(){
+		return theta;
+	}
+	
 	/**
 	 * Creates a Ray projected from the given normalized screen coordinates
 	 * 

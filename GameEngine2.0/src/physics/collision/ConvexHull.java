@@ -13,11 +13,11 @@ import mesh.primitives.Triangle;
 public abstract class ConvexHull extends CollisionMesh {
 	protected Geometry mesh;
 	
-	public ConvexHull(Geometry mesh) {
+	protected ConvexHull(Geometry mesh) {
 		this.mesh = mesh;
 	}
 
-	public ConvexHull(ConvexHull copy) {
+	protected ConvexHull(ConvexHull copy) {
 		super(copy);
 		mesh = copy.mesh;
 	}

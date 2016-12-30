@@ -12,7 +12,7 @@ public class SpotLight extends Light {
 
 	private float radius, length, cutoff;
 	private Vec3 direction;
-	private static final Vec3 centerVec = new Vec3(0,-1,0);
+	private static final Vec3 centerVec = new Vec3(0,-1,0);//original vector direction of the light
 	public final static Cone volume = new Cone(1, 1, VOLUME_FINENESS, false);
 	
 	public SpotLight(Vec3 position, 
@@ -104,9 +104,7 @@ public class SpotLight extends Light {
 		cutoff = centerVec.dot(maxVec);
 		
 		direction = new Vec3(dirx, diry, dirz).normalize();
-		Vec3 axis = centerVec.cross(direction);
-		float angle = (float)(Math.acos(centerVec.dot(direction))*180/Math.PI);
-		transforms.rotate(angle == 180 ? Transform.xAxis : axis, angle);
+		transforms.rotate(Quaternion.interpolate(centerVec, direction));
 		transforms.scale(this.radius, this.length, this.radius);
 	}
 	

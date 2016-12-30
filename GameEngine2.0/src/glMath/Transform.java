@@ -40,7 +40,8 @@ public class Transform {
 	 * @param x Amount to scale along the x axis
 	 * @param y Amount to scale along the y axis
 	 * @param z Amount to scale along the z axis
-	 * @return This transform object
+	 * 
+	 * @return This transform post operation
 	 */
 	public Transform scale(float x, float y, float z){
 		scale.set(scale.x*x, scale.y*y, scale.z*z);
@@ -51,7 +52,8 @@ public class Transform {
 	 *  Scales this transform's matrix by the given vector
 	 *  
 	 * @param scalars Vector containing scalars for this transform to apply
-	 * @return This transform object
+	 * 
+	 * @return This transform post operation
 	 */
 	public Transform scale(Vec3 scalars){
 		scale.set(scale.x*scalars.x, scale.y*scalars.y, scale.z*scalars.z);
@@ -63,6 +65,7 @@ public class Transform {
 	 * be scaled uniformly.
 	 * 
 	 * @param scalar Scalar for the transform
+	 * 
 	 * @return This transform post operation
 	 */
 	public Transform scale(float scalar){
@@ -74,6 +77,7 @@ public class Transform {
 	 * Scales this Transform by the scale of the given Transform
 	 * 
 	 * @param trans Transform whose scale to use as the scaling
+	 * 
 	 * @return This Transform post operation
 	 */
 	public Transform scale(Transform trans){
@@ -87,7 +91,8 @@ public class Transform {
 	 * @param x Amount to translate along the x axis
 	 * @param y Amount to translate along the y axis
 	 * @param z Amount to translate along the z axis
-	 * @return This transform object
+	 * 
+	 * @return This transform post operation
 	 */
 	public Transform translate(float x, float y, float z){
 		position.add(x, y, z);
@@ -98,7 +103,8 @@ public class Transform {
 	 * Translates this transform by the given vector
 	 * 
 	 * @param vector Vector to translate this transform on
-	 * @return This transform object
+	 * 
+	 * @return This transform post operation
 	 */
 	public Transform translate(Vec3 vector){
 		position.add(vector);
@@ -109,6 +115,7 @@ public class Transform {
 	 * Translates this Transform by the given Transforms translation
 	 * 
 	 * @param trans Transform whose translation to use in translating this Transform
+	 * 
 	 * @return This Transform post operation
 	 */
 	public Transform translate(Transform trans){
@@ -123,11 +130,11 @@ public class Transform {
 	 * @param y Y component of the axis to rotate around
 	 * @param z Z component of the axis to rotate around
 	 * @param theta Amount to rotate around the given axis
-	 * @return This transform object
+	 * 
+	 * @return This transform post operation
 	 */
 	public Transform rotate(float x, float y, float z, float theta){
-		orientation.set(Quaternion.fromAxisAngle(x, y, z, theta).mult(orientation));
-		return this;
+		return rotate(Quaternion.fromAxisAngle(x, y, z, theta));
 	} 
 	
 	/**
@@ -135,21 +142,33 @@ public class Transform {
 	 * 
 	 * @param axis Vector representing the axis to rotate around
 	 * @param theta Amount to rotate around the given axis
-	 * @return This transform object
+	 * 
+	 * @return This transform post operation
 	 */
 	public Transform rotate(Vec3 axis, float theta){
-		orientation.set(Quaternion.fromAxisAngle(axis, theta).mult(orientation));
-		return this;
+		return rotate(Quaternion.fromAxisAngle(axis, theta));
 	}
 	
 	/**
 	 * Rotates this Transform by the given Transforms rotation
 	 * 
 	 * @param trans Transform whose rotation will be used to rotate this Transform
+	 * 
 	 * @return This Transform post operation
 	 */
 	public Transform rotate(Transform trans){
-		orientation.set(Quaternion.multiply(trans.orientation, orientation));
+		return rotate(trans.orientation);
+	}
+	
+	/**
+	 * Rotates this Transform by the given Quaternion rotation
+	 * 
+	 * @param rotation Quaternion containing the rotation to be applied to this Transform
+	 * 
+	 * @return This Transform post operation
+	 */
+	public Transform rotate(Quaternion rotation){
+		orientation.set(Quaternion.multiply(rotation, orientation));
 		return this;
 	}
 	
@@ -165,6 +184,7 @@ public class Transform {
 	 * Transforms this by the given transform
 	 * 
 	 * @param value Transform to use in the modification of this object
+	 * 
 	 * @return This object after transformation
 	 */
 	public Transform transform(Transform value){
@@ -192,6 +212,24 @@ public class Transform {
 		//translate the vector
 		result.add(position);
 		return result;
+	}
+	
+	/**
+	 * Transforms the {@code target} Transform by the inverse transformation of this transform object.
+	 * The resulting Transform is transformed in place and is modified by this function.
+	 * 
+	 * @param target Transform to transform by the inverse transformation
+	 * 
+	 * @return The target Transform post inverse transformation
+	 */
+	public Transform inverseTransform(Transform target){
+		//translate by the negative translation of this transform
+		target.translate(-position.x, -position.y, -position.z);
+		//rotate it by the conjugate orientation
+		target.rotate(orientation.conjugate());
+		//then scale, each value needs to be 1/scalar
+		target.scale(1/scale.x, 1/scale.y, 1/scale.z);
+		return target;
 	}
 	
 	/**

@@ -321,6 +321,7 @@ public class Quaternion {
 			return null;
 		}
 	}
+	
 	 /**
 	  * Generates a quatenrion given an axis of rotation and a rotation angle
 	  * 
@@ -348,5 +349,33 @@ public class Quaternion {
 		nAxis.scale(sinAngle);
 		
 		return new Quaternion(new Vec4(nAxis, (float)Math.cos((angle*Math.PI/180)/2.0f)));
+	}
+	
+	public static Quaternion interpolate(Vec3 start, Vec3 end){
+		//First make normalized copies of the input vectors
+		Vec3 startNorm = new Vec3(start).normalize();
+		Vec3 endNorm = new Vec3(end).normalize();
+		
+		Vec3 axis = startNorm.cross(endNorm);//get the axis of rotation
+		//due to floating point errors dot product can produce -/+1.000001 resulting in NaN results from acos
+		//thus the max/min are needed
+		float angle = (float)(Math.acos(Math.min(1, Math.max(-1, startNorm.dot(endNorm))))*180/Math.PI);//get the angle of rotation
+		//check if the axis is the zero vector
+		if(axis.isZero()){
+			//if it is then that means the rotation is either 180 degrees or 0 degrees
+			//startNorm by generating a new axis using one of the cardinal axis
+			//we first need to determine which axis to use since the inputs could be one of the cardinal axis
+			if(startNorm.equals(Transform.xAxis) || endNorm.equals(Transform.xAxis) ||
+					startNorm.equals(Transform.yAxis) || endNorm.equals(Transform.yAxis)){
+				//for the x or y axis we can just use the z axis as the rotation axis
+				return Quaternion.fromAxisAngle(Transform.zAxis, angle);
+			}else{
+				//otherwise we will cross the startNorm with the y axis to get a rotation axis, this works for when the inputs are the z axis
+				return Quaternion.fromAxisAngle(startNorm.cross(Transform.yAxis), angle);
+			}
+		}else{
+			//if not then the Quaternion generation can proceed as normal
+			return Quaternion.fromAxisAngle(axis, angle);
+		}
 	}
 }
