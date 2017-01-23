@@ -13,6 +13,7 @@ import physics.collision.Ray;
 import shaders.ShaderProgram;
 import core.Entity;
 import core.SceneManager;
+import core.SpatialAsset;
 
 /**
  * 
@@ -21,11 +22,11 @@ import core.SceneManager;
  * Class used to represent vectors in a 3 dimensional space, and additionally used to create interactive transformation elements.
  *
  */
-public class Arrow{
+public class Arrow extends SpatialAsset{
 	
 	private float shaftLength, tipLength;
 	private final float origLength, origTipLength;
-	private Vec3 direction, position, color;
+	private Vec3 direction, color;
 	private boolean useCube;
 	private Entity shaft, tip;
 
@@ -158,7 +159,6 @@ public class Arrow{
 		shaftLength = origLength = Math.max(length, 3)-origTipLength;
 		
 		color = new Vec3(r, g, b);
-		position = new Vec3(posx, posy, posz);
 		direction = new Vec3(dirx, diry, dirz).normalize();
 		//create the initial transforms for the shaft and tip
 		Transform shaftTrans = new Transform().scale(.5f, shaftLength, .5f);
@@ -179,8 +179,8 @@ public class Arrow{
 				(shaftLength+tipLength/2)*direction.z);
 		
 		//translate both to the position
-		shaftTrans.translate(position);
-		tipTrans.translate(position);
+		shaftTrans.translate(posx, posy, posz);
+		tipTrans.translate(posx, posy, posz);
 		
 		shaft.setTransform(shaftTrans);
 		tip.setTransform(tipTrans);
@@ -201,13 +201,9 @@ public class Arrow{
 		tip.getMesh().render();
 	}
 	
-	/**
-	 * Transforms the Arrow with the given Transform {@code trans}, all transformations are applied relative to the base
-	 * of the Arrow.
-	 * 
-	 * @param trans Transform to modify this Arrow with
-	 */
+	@Override
 	public void transform(Transform trans){
+		super.transform(trans);
 		Transform shaftTrans = new Transform(trans);
 		Transform tipTrans = new Transform(trans);
 
@@ -229,8 +225,8 @@ public class Arrow{
 		//rotate
 		Quaternion rotation = trans.getOrientation();
 		//compute the center points of the shaft and tip relative to the origin
-		Vec3 shaftOrigin = VecUtil.subtract(shaft.getPos(), position);
-		Vec3 tipOrigin = VecUtil.subtract(tip.getPos(), position);
+		Vec3 shaftOrigin = VecUtil.subtract(shaft.getPos(), getPos());
+		Vec3 tipOrigin = VecUtil.subtract(tip.getPos(), getPos());
 		//compute the center points after rotating them
 		Vec3 shaftPoint = rotation.multVec(shaftOrigin);
 		Vec3 tipPoint = rotation.multVec(tipOrigin);
@@ -240,9 +236,6 @@ public class Arrow{
 		tipTrans.translate(VecUtil.subtract(tipPoint, tipOrigin));
 		//store the new direction of the vector
 		direction = rotation.multVec(direction);
-		
-		//translate
-		position.add(trans.getTranslation());
 		
 		shaft.transform(shaftTrans);
 		tip.transform(tipTrans);
@@ -301,19 +294,7 @@ public class Arrow{
 	 * @param z Z value to set this Arrows position to
 	 */
 	public void setPos(float x, float y, float z){
-		Transform trans = new Transform().translate(x-position.x, y-position.y, z-position.z);
-		shaft.transform(trans);
-		tip.transform(trans);
-		position.set(x, y, z);
-	}
-	
-	/**
-	 * Gets the position this Arrow is emitted from
-	 * 
-	 * @return Position this Arrow is being emitted from
-	 */
-	public Vec3 getPos(){
-		return position;
+		transform(new Transform().translate(x-getPos().x, y-getPos().y, z-getPos().z));
 	}
 	
 	/**

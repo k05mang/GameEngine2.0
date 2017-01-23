@@ -15,9 +15,9 @@ public class MeshManager extends ResourceManager{
 	}
 	
 	public void transformMesh(String id, Transform transformation){
-		if(resources.get(id) != null){
-			((Mesh)resources.get(id)).transform(transformation);
-		}
+//		if(resources.get(id) != null){
+//			((Mesh)resources.get(id)).transform(transformation);
+//		}
 	}
 	
 	@Override

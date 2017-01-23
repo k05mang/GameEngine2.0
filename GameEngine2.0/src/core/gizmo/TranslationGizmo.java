@@ -11,7 +11,6 @@ import physics.collision.Ray;
 import shaders.ShaderProgram;
 import windowing.Window;
 import core.Camera;
-import core.SpatialAsset;
 import static core.gizmo.TransformType.TRANSLATE;
 
 public class TranslationGizmo extends TransformGizmo{
@@ -20,9 +19,9 @@ public class TranslationGizmo extends TransformGizmo{
 	
 	public TranslationGizmo(Camera view){
 		super(view);
-		xaxis = new Arrow(10, 0,0,0, 1,0,0, 1,0,0);
-		yaxis = new Arrow(10, 0,0,0, 0,1,0, 0,1,0);
-		zaxis = new Arrow(10, 0,0,0, 0,0,1, 0,0,1);
+		xaxis = new Arrow(controllerLength, 0,0,0, 1,0,0, 1,0,0);
+		yaxis = new Arrow(controllerLength, 0,0,0, 0,1,0, 0,1,0);
+		zaxis = new Arrow(controllerLength, 0,0,0, 0,0,1, 0,0,1);
 	}
 
 	@Override
@@ -70,15 +69,11 @@ public class TranslationGizmo extends TransformGizmo{
 				Ray preMoveRay = view.genRay((float)prevX, (float)prevY);
 				//get the Ray for the current movement
 				Ray moveRay = view.genRay((float)xpos, (float)ypos);
-				//compute the depth along the line for the point on the line that intersects the plane perpendicular to the camera
-				//d = ((p0-L0)·n)/(L·n), where n is the plane normal(camera forward), L0 ray pos, L ray direction, p0 point on the plane
 				//project both rays onto the plane
-				float d = VecUtil.subtract(target.getPos(), preMoveRay.getPos()).dot(planeNormal)
-						/preMoveRay.getDirection().dot(planeNormal);
+				float d = CollisionDetector.depth(preMoveRay, planeNormal, target.getPos());
 				Vec3 prevPoint = preMoveRay.getDirection().scale(d);
 				//repeat for the move ray
-				d = VecUtil.subtract(target.getPos(), moveRay.getPos()).dot(planeNormal)
-						/moveRay.getDirection().dot(planeNormal);
+				d = CollisionDetector.depth(moveRay, planeNormal, target.getPos());
 				Vec3 curPoint = moveRay.getDirection().scale(d);
 				//move the points to be relative to where they were emitted
 				prevPoint.add(preMoveRay.getPos());
@@ -112,7 +107,7 @@ public class TranslationGizmo extends TransformGizmo{
 	
 	@Override
 	public void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
-		if(button == MouseButton.LEFT && modifier == TRANSLATE){
+		if(button == MouseButton.LEFT && modifier == TRANSLATE && target != null){
 			//first create the ray to test collision with
 			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
 			//perform each collision check, starting with the center sphere

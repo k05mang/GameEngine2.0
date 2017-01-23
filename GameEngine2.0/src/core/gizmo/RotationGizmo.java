@@ -1,6 +1,5 @@
 package core.gizmo;
 
-import static core.gizmo.TransformType.SCALE;
 import physics.collision.CollisionDetector;
 import physics.collision.Ray;
 import mesh.primitives.geometry.Torus;
@@ -9,7 +8,6 @@ import windowing.Window;
 import core.Camera;
 import core.Entity;
 import core.SceneManager;
-import core.SpatialAsset;
 import events.keyboard.ModKey;
 import events.mouse.MouseButton;
 import glMath.Quaternion;
@@ -21,7 +19,6 @@ import static core.gizmo.TransformType.ROTATE;
 public class RotationGizmo extends TransformGizmo {
 
 	private static final float WHEEL_RADIUS = 10f;
-//	private float wheelRadius;
 	private Entity xyWheel, yzWheel, xzWheel;
 	
 	public RotationGizmo(Camera view){
@@ -88,15 +85,11 @@ public class RotationGizmo extends TransformGizmo {
 				Ray preMoveRay = view.genRay((float)prevX, (float)prevY);
 				//get the Ray for the current movement
 				Ray moveRay = view.genRay((float)xpos, (float)ypos);
-				//compute the depth along the line for the point on the line that intersects the plane perpendicular to the camera
-				//d = ((p0-L0)·n)/(L·n), where n is the plane normal(camera forward), L0 ray pos, L ray direction, p0 point on the plane
 				//project both rays onto the plane
-				float d = VecUtil.subtract(target.getPos(), preMoveRay.getPos()).dot(planeNormal)
-						/preMoveRay.getDirection().dot(planeNormal);
+				float d = CollisionDetector.depth(preMoveRay, planeNormal, target.getPos());
 				Vec3 prevPoint = preMoveRay.getDirection().scale(d);
 				//repeat for the move ray
-				d = VecUtil.subtract(target.getPos(), moveRay.getPos()).dot(planeNormal)
-						/moveRay.getDirection().dot(planeNormal);
+				d = CollisionDetector.depth(moveRay, planeNormal, target.getPos());
 				Vec3 curPoint = moveRay.getDirection().scale(d);
 				//move the points to be relative to where they were emitted
 				prevPoint.add(preMoveRay.getPos());
@@ -106,12 +99,7 @@ public class RotationGizmo extends TransformGizmo {
 				//and the plane normal as the axis
 				curPoint.subtract(target.getPos()).normalize();
 				prevPoint.subtract(target.getPos()).normalize();
-				//min/max used to cap the result which should never exceed 1 or -1 but can in instances result in 1.000001 due to floating point error
-//				float angle = (float)(Math.acos(Math.max(Math.min(curPoint.dot(prevPoint), 1), -1))*180/Math.PI);
-//				//now we need to determine if the motion was clockwise or counter clockwise, this is so the angle can be made
-//				//positive or negative depending on the motion
-//				angle *= prevPoint.cross(curPoint).normalize().dot(planeNormal);//the dot product of the points cross product will either be
-				//1, if aligned with the plane normal or -1 if opposite
+				//create a quaternion to rotate between the previous rotation end and the new rotation end
 				Transform trans = new Transform().rotate(Quaternion.interpolate(prevPoint, curPoint));
 				target.transform(trans);
 			}
@@ -120,7 +108,7 @@ public class RotationGizmo extends TransformGizmo {
 	
 	@Override
 	public void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
-		if(button == MouseButton.LEFT && modifier == ROTATE){
+		if(button == MouseButton.LEFT && modifier == ROTATE && target != null){
 			//first create the ray to test collision with
 			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
 			//perform each collision check, starting with the center sphere

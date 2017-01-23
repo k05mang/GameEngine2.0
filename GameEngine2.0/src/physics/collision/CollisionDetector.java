@@ -336,6 +336,22 @@ public abstract class CollisionDetector {
 	    return tE <= 1.0f && tL >= 0.0f;
 	}
 	
+	/**
+	 * Gets the depth that the {@code ray} intersects the plane represented by the {@code planeNormal, and planePoint}
+	 * 
+	 * @param ray Ray to calculate the intersection depth of with the plane
+	 * @param planeNormal Plane normal, this is used in calculating the plane
+	 * @param planePoint Point on the plane
+	 * 
+	 * @return Depth of intersection the {@code ray} has with the plane, given as a floating point value in world units
+	 */
+	public static float depth(Ray ray, Vec3 planeNormal, Vec3 planePoint){
+		//compute the depth along the line for the point on the line that intersects the plane
+		//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
+		return VecUtil.subtract(planePoint, ray.getPos()).dot(planeNormal)/
+				planeNormal.dot(ray.getDirection());
+	}
+	
 	private static boolean intersects(Ray ray, CollisionPlane plane){
 		Vec2 planeHalfDim = plane.getHalfDimensions();
 		//compute the point intersection for the 3 planes defined by the normals above
@@ -344,8 +360,7 @@ public abstract class CollisionDetector {
 				//first check if the ray could intersect the plane at all
 				if(lDotn <= 0){
 					//compute the depth along the line for the point on the line that intersects the plane
-					//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
-					float d = VecUtil.subtract(plane.getPos(), ray.getPos()).dot(plane.getNormal())/lDotn;
+					float d = depth(ray, plane.getNormal(), plane.getPos());
 					//check if the point computed along the line is within the range of the ray
 					if(ray.getLength() >= 0 && d > ray.getLength()){
 						return false;

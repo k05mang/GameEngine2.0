@@ -16,12 +16,13 @@ import core.Camera;
 
 public class ScaleGizmo extends TransformGizmo {
 	private Arrow xaxis, yaxis, zaxis;
+	private float origClickDist;//value to retain the original distance that the first click occurred, this distance will be the scale of 1.0
 	
 	public ScaleGizmo(Camera view){
 		super(view);
-		xaxis = new Arrow(10, 0,0,0, 1,0,0, 1,0,0, true);
-		yaxis = new Arrow(10, 0,0,0, 0,1,0, 0,1,0, true);
-		zaxis = new Arrow(10, 0,0,0, 0,0,1, 0,0,1, true);
+		xaxis = new Arrow(controllerLength, 0,0,0, 1,0,0, 1,0,0, true);
+		yaxis = new Arrow(controllerLength, 0,0,0, 0,1,0, 0,1,0, true);
+		zaxis = new Arrow(controllerLength, 0,0,0, 0,0,1, 0,0,1, true);
 	}
 
 	@Override
@@ -30,15 +31,8 @@ public class ScaleGizmo extends TransformGizmo {
 		//get the targets orientation
 		Transform trans = new Transform();
 		//undo the previous orientation
-		//first determine what to use when calculating the inverse rotation
-		//in some situations the x axis might have not changed but others have
-		Quaternion rotation = Quaternion.interpolate(xaxis.getDirection(), Transform.xAxis);
-		//if the angle of rotation for the quaternion is 0 then the x axis cannot be used in calculating the inverse rotation
-		if(rotation.getAngle() == 0){
-			//in which case use either of the other axis to test against since this means it was a rotation about the x axis
-			rotation = Quaternion.interpolate(zaxis.getDirection(), Transform.zAxis);
-		}
-		trans.rotate(rotation);
+		trans.rotate(xaxis.getTransform().getOrientation().conjugate());
+		//apply the target transform
 		trans.rotate(target.getTransform());
 		//transforms the axis controls to align with the object
 		xaxis.transform(trans);
@@ -64,45 +58,27 @@ public class ScaleGizmo extends TransformGizmo {
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
 		if(TransformGizmo.target != null && modifier == SCALE){
-			Vec3 planeNormal = view.getForwardVec();
-			//check which modifier is active
-//			switch(activeController){
-//				case CENTER://when the center sphere is selected
-//					planeNormal = view.getForwardVec();
-//					break;
-//				case X_AXIS://when the x axis is selected
-//					planeNormal = Transform.zAxis;
-//					break;
-//				case Y_AXIS://when the y axis is selected
-//					planeNormal = Transform.zAxis;
-//					break;
-//				case Z_AXIS://when the z axis is selected
-//					planeNormal = Transform.yAxis;
-//					break;
-//			}
 			if(activeController != NO_CONTROLLER){
 				//get the Ray from the previous movement
 				Ray preMoveRay = view.genRay((float)prevX, (float)prevY);
 				//get the Ray for the current movement
 				Ray moveRay = view.genRay((float)xpos, (float)ypos);
-				//compute the depth along the line for the point on the line that intersects the plane perpendicular to the camera
-				//d = ((p0-L0)·n)/(L·n), where n is the plane normal(camera forward), L0 ray pos, L ray direction, p0 point on the plane
 				//project both rays onto the plane
-				float d = VecUtil.subtract(target.getPos(), preMoveRay.getPos()).dot(planeNormal)
-						/preMoveRay.getDirection().dot(planeNormal);
+				float d = CollisionDetector.depth(preMoveRay, view.getForwardVec(), target.getPos());
 				Vec3 prevPoint = preMoveRay.getDirection().scale(d);
 				//repeat for the move ray
-				d = VecUtil.subtract(target.getPos(), moveRay.getPos()).dot(planeNormal)
-						/moveRay.getDirection().dot(planeNormal);
+				d = CollisionDetector.depth(moveRay, view.getForwardVec(), target.getPos());
 				Vec3 curPoint = moveRay.getDirection().scale(d);
 				//move the points to be relative to where they were emitted
 				prevPoint.add(preMoveRay.getPos());
 				curPoint.add(moveRay.getPos());
 				
 				Transform trans = new Transform();
-				//scalar factor used to offset the amount of applied scaling when the camera is panned far out
-				float scale = 1+(curPoint.subtract(target.getPos()).length()-prevPoint.subtract(target.getPos()).length())/
-						VecUtil.subtract(view.getPos(), target.getPos()).length();
+				//scale factor for the mouse movement
+				float scale = curPoint.subtract(target.getPos()).length()/origClickDist;
+				float previousScale = prevPoint.subtract(target.getPos()).length()/origClickDist;//used to undo previous scaling factor
+				scale /= previousScale;//scale*(1/previousScale) = scale/previousScale
+				
 				switch(activeController){
 					case CENTER:
 						//get the difference in lengths from the current point to the previous point relative to the targets center
@@ -125,9 +101,15 @@ public class ScaleGizmo extends TransformGizmo {
 	
 	@Override
 	public void onMousePress(Window window, MouseButton button, boolean isRepeat, ModKey[] mods){
-		if(button == MouseButton.LEFT && modifier == SCALE){
+		if(button == MouseButton.LEFT && modifier == SCALE && target != null){
 			//first create the ray to test collision with
 			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
+			//set the original distance for the first click
+			//first get the point where the click ray intersects the view plane
+			Vec3 clickPoint = VecUtil.scale(clickRay.getDirection(), CollisionDetector.depth(clickRay, view.getForwardVec(), target.getPos()));
+			clickPoint.add(clickRay.getPos());
+			//then get the distance of this point from the targets position
+			origClickDist = VecUtil.subtract(clickPoint, target.getPos()).length();
 			//perform each collision check, starting with the center sphere
 			if(CollisionDetector.intersects(clickRay, center)){
 				activeController = CENTER;

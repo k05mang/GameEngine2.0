@@ -351,6 +351,15 @@ public class Quaternion {
 		return new Quaternion(new Vec4(nAxis, (float)Math.cos((angle*Math.PI/180)/2.0f)));
 	}
 	
+	/**
+	 * Generates a quaternion that can be used to transform the {@code start} start to the 
+	 * vector {@code end} through a rotation around some axis
+	 * 
+	 * @param start Vector to start the rotation from
+	 * @param end Vector to end the rotation to
+	 * 
+	 * @return Quaternion rotation around some axis that can transform the {@code start} vector to the {@code end} vector
+	 */
 	public static Quaternion interpolate(Vec3 start, Vec3 end){
 		//First make normalized copies of the input vectors
 		Vec3 startNorm = new Vec3(start).normalize();
