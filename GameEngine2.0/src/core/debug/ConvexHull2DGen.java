@@ -30,7 +30,7 @@ public class ConvexHull2DGen extends Mesh {
 		ibos.add(new IndexBuffer(IndexType.INT));
 		
 		vao.addVertexBuffer("mesh", vbos.get(0));
-		vao.addIndexBuffer("lines", RenderMode.LINE_LOOP, ibos.get(0));
+		vao.genIBO("lines", RenderMode.LINE_LOOP, ibos.get(0));
 		
 		//add the vertices to the vbo and the indices to the ibo
 		int cur = 0;

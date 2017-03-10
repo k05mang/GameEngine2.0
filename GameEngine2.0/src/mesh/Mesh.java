@@ -15,10 +15,9 @@ import core.SpatialAsset;
 public abstract class Mesh implements Resource{
 	protected Geometry geometry;
 	protected VertexArray vao;
-	protected ArrayList<BufferObject> vbos;
-	protected ArrayList<IndexBuffer> ibos;
 	protected String material;
 	public static final String SOLID_MODE = "solid", EDGE_MODE = "edges";
+	protected static final String DEFAULT_VBO = "default";
 	
 	/**
 	 * Constructs a Mesh with a VertexArray, Mesh, Transform, and array of BufferObjects and IndexBuffers
@@ -26,8 +25,6 @@ public abstract class Mesh implements Resource{
 	public Mesh(){
 		vao = new VertexArray();
 		geometry = new Geometry();
-		vbos = new ArrayList<BufferObject>();
-		ibos = new ArrayList<IndexBuffer>();
 		material = "default";
 	}
 	
@@ -44,8 +41,6 @@ public abstract class Mesh implements Resource{
 	 */
 	public Mesh(Mesh copy){
 		vao = copy.vao;
-		vbos = copy.vbos;
-		ibos = copy.ibos;
 		geometry = copy.geometry;//new Geometry(copy.geometry);
 		material = new String(copy.material);
 	}
@@ -80,12 +75,6 @@ public abstract class Mesh implements Resource{
 	@Override
 	public void delete(){
 		vao.delete();
-		for(BufferObject buffer : vbos){
-			buffer.delete();
-		}
-		for(IndexBuffer buffer : ibos){
-			buffer.delete();
-		}
 	}
 	
 	/**

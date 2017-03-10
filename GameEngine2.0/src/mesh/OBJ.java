@@ -15,32 +15,26 @@ public class OBJ extends Mesh {
 		
 		geometry = new Geometry(mesh);
 		geometry.moveToGeoCenter();
-		//create vertex buffer
-		BufferObject vbo = new BufferObject(BufferType.ARRAY);
-		vbos.add(vbo);
-		vao.addVertexBuffer(SOLID_MODE, vbo);
-		
-		//construct index buffer
-		IndexBuffer ibo = new IndexBuffer(getIndexType(geometry.getNumVertices()-1));
-		ibos.add(ibo);
-		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, ibo);
-		
-		//add indices and vertices to the buffers
-		geometry.insertVertices(vbo);
-		geometry.insertIndices(ibo, RenderMode.TRIANGLES);
-
-		vbo.flush(BufferUsage.STATIC_DRAW);
-		ibo.flush(BufferUsage.STATIC_DRAW);
-		
-		vao.setIndexBuffer(SOLID_MODE);
-
+		//establish attributes
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
 		vao.addAttrib(AttribType.VEC3, false, 0);//normal
 		vao.addAttrib(AttribType.VEC2, false, 0);//uv
 		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
 		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
 		
-		vao.registerVBO(SOLID_MODE);
+		//create vertex buffer
+		vao.genVBO(SOLID_MODE);
+		//create index buffer
+		vao.genIBO(SOLID_MODE, RenderMode.TRIANGLES, getIndexType(geometry.getNumVertices()-1));
+		
+		//add indices and vertices to the buffers
+		geometry.insertVertices(vao.getVBO(SOLID_MODE));
+		geometry.insertIndices(vao.getIBO(SOLID_MODE), RenderMode.TRIANGLES);
+
+		vao.getVBO(SOLID_MODE).flush(BufferUsage.STATIC_DRAW);
+		vao.getIBO(SOLID_MODE).flush(BufferUsage.STATIC_DRAW);
+		
+		vao.setIndexBuffer(SOLID_MODE);
 
 		vao.setAttribVBO(0, SOLID_MODE);
 		vao.setAttribVBO(1, SOLID_MODE);

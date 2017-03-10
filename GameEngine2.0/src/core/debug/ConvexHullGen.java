@@ -86,11 +86,11 @@ public class ConvexHullGen extends Mesh {
 		vao.setAttribVBO(0, "mesh");
 		
 		//add index buffers
-		vao.addIndexBuffer("faces", RenderMode.TRIANGLES, ibos.get(0));
-		vao.addIndexBuffer("lines", RenderMode.LINES, ibos.get(1));
-		vao.addIndexBuffer("points", RenderMode.POINTS, ibos.get(2));
-		vao.addIndexBuffer("delete", RenderMode.TRIANGLES, ibos.get(3));
-		vao.addIndexBuffer("horizon", RenderMode.LINES, ibos.get(4));
+		vao.genIBO("faces", RenderMode.TRIANGLES, ibos.get(0));
+		vao.genIBO("lines", RenderMode.LINES, ibos.get(1));
+		vao.genIBO("points", RenderMode.POINTS, ibos.get(2));
+		vao.genIBO("delete", RenderMode.TRIANGLES, ibos.get(3));
+		vao.genIBO("horizon", RenderMode.LINES, ibos.get(4));
 		
 		vao.setIndexBuffer("faces");
 	}

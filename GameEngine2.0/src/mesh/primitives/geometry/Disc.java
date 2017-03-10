@@ -49,20 +49,28 @@ public final class Disc extends Mesh {
 		this.radius = Math.abs(radius);
 		
 		int maxSegment = Math.max(3, segments);
+		
+		//specify the attributes for the vertex array
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
+		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
+		
+		//get the datatype for the index buffers
 		IndexBuffer.IndexType dataType = getIndexType(maxSegment-1);
 
 		//create index buffers
-		IndexBuffer solidIbo = new IndexBuffer(dataType);
-		IndexBuffer edgeIbo = new IndexBuffer(dataType);
-		//add index buffers to mesh list
-		ibos.add(solidIbo);
-		ibos.add(edgeIbo);
-		//add index buffer to vertex array
-		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
-		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINE_LOOP, edgeIbo);
+		vao.genIBO(SOLID_MODE, RenderMode.TRIANGLES, dataType);
+		vao.genIBO(EDGE_MODE, RenderMode.LINE_LOOP, dataType);
 		
-		BufferObject vbo = new BufferObject(BufferType.ARRAY);
-		vbos.add(vbo);
+		//set some pointers to the index buffers
+		IndexBuffer solidIbo = vao.getIBO(SOLID_MODE);
+		IndexBuffer edgeIbo = vao.getIBO(EDGE_MODE);
+		
+		//create the vertex buffer
+		vao.genVBO(DEFAULT_VBO);
+		BufferObject vbo = vao.getVBO(DEFAULT_VBO);
 		
 		for(int segment = 0; segment < maxSegment; segment++){
 			double theta = 2*PI*(segment/(double)maxSegment);
@@ -96,7 +104,6 @@ public final class Disc extends Mesh {
 		}
 
 		vbo.flush(BufferUsage.STATIC_DRAW);
-		vao.addVertexBuffer("default", vbo);
 		
 		solidIbo.flush(BufferUsage.STATIC_DRAW);
 		edgeIbo.flush(BufferUsage.STATIC_DRAW);
@@ -106,22 +113,13 @@ public final class Disc extends Mesh {
 		}else{
 			vao.setIndexBuffer(SOLID_MODE);
 		}
-		//specify the attributes for the vertex array
-		vao.addAttrib(AttribType.VEC3, false, 0);//position
-		vao.addAttrib(AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(AttribType.VEC2, false, 0);//uv
-		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
-		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
-		
-		//register the vbo with the vao
-		vao.registerVBO("default");
 
 		//tell the vao what vbo to use for each attribute
-		vao.setAttribVBO(0, "default");
-		vao.setAttribVBO(1, "default");
-		vao.setAttribVBO(2, "default");
-		vao.setAttribVBO(3, "default");
-		vao.setAttribVBO(4, "default");
+		vao.setAttribVBO(0, DEFAULT_VBO);
+		vao.setAttribVBO(1, DEFAULT_VBO);
+		vao.setAttribVBO(2, DEFAULT_VBO);
+		vao.setAttribVBO(3, DEFAULT_VBO);
+		vao.setAttribVBO(4, DEFAULT_VBO);
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);

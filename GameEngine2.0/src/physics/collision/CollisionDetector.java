@@ -18,32 +18,70 @@ public abstract class CollisionDetector {
 	
 	protected static final float MAX_THRESHOLD = .001f;
 	
+	/**
+	 * Determines whether the given collision mesh {@code objA} and the collision mesh of Entity {@code objB}
+	 * are intersecting
+	 * 
+	 * @param objA Collision mesh to test intersection (collision)
+	 * @param objB Entity to test intersection (collision)
+	 * 
+	 * @return True if the two objects are colliding, false otherwise
+	 */
 	public static boolean intersects(CollisionMesh objA, Entity objB){
 		return intersects(objA, objB.getCollider());
 	}
 	
+	/**
+	 * Determines whether the collision mesh of Entity {@code objA} and the collision mesh {@code objB}
+	 * are intersecting
+	 * 
+	 * @param objA Entity to test intersection (collision)
+	 * @param objB Collision mesh to test intersection (collision)
+	 * 
+	 * @return True if the two objects are colliding, false otherwise
+	 */
 	public static boolean intersects(Entity objA, CollisionMesh objB){
 		return intersects(objA.getCollider(), objB);
 	}
-	
+
+	/**
+	 * Determines whether the collision mesh of Entity {@code objA} and the collision mesh of Entity {@code objB}
+	 * are intersecting
+	 * 
+	 * @param objA Entity to test intersection (collision)
+	 * @param objB Entity to test intersection (collision)
+	 * 
+	 * @return True if the two objects are colliding, false otherwise
+	 */
 	public static boolean intersects(Entity objA, Entity objB){
 		return intersects(objA.getCollider(), objB.getCollider());
 	}
-	
+
+	/**
+	 * Determines whether the collision mesh {@code objA} and the collision mesh {@code objB}
+	 * are intersecting
+	 * 
+	 * @param objA Collision mesh to test intersection (collision)
+	 * @param objB Collision mesh to test intersection (collision)
+	 * 
+	 * @return True if the two objects are colliding, false otherwise
+	 */
 	public static boolean intersects(CollisionMesh objA, CollisionMesh objB){
-		Vec3 direction = new Vec3(1,1,1);
+		Vec3 direction = new Vec3(1,1,1);//create a simple starting search direction
+		//construct a base simplex that is a line
 		Simplex simplex = new Simplex(
 				objB.support(direction.inverse()).subtract(objA.support(direction)), 
 				objB.support(direction).subtract(objA.support(direction.inverse()))
 				);
+		//keep searching until the simplex function terminates with an answer
 		while(!simplex.getDirection(direction)){
 			Vec3 newPoint = objB.support(direction).subtract(objA.support(direction.inverse()));
-//			direction.print();
-//			newPoint.print();
-			//
+			//this means that the new direction we would search in is in the opposite direction of where we
+			//just searched meaning the origin cannot be encapsulated
 			if(newPoint.dot(direction) < 0){
 				return false;
 			}
+			//add the new point to the simplex
 			simplex.add(newPoint);
 		}
 		return true;
@@ -261,8 +299,7 @@ public abstract class CollisionDetector {
 			//if it doesn't then calculate the intersection of the ray with the plane
 			
 			//compute the depth along the line for the point on the line that intersects the plane
-			//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
-			float depth = VecUtil.subtract(hull.getPos(), ray.getPos()).dot(planeNormal)/ray.getDirection().dot(planeNormal);
+			float depth = depth(ray, planeNormal, hull.getPos());
 			//check if the depth is negative, in this case the arrow is pointing away from the plane but could still mathematically intersect
 			//if the ray is considered an infinite line, additionally check for cases where the depth is longer than the rays length
 			if(depth < 0 || depth > ray.getLength()){
@@ -274,8 +311,6 @@ public abstract class CollisionDetector {
 			
 			return intersects(point, hull);
 		}
-
-		
 	}
 	
 	private static boolean intersects(Ray ray, ConvexHull3D hull){
@@ -334,22 +369,6 @@ public abstract class CollisionDetector {
 		}
 		
 	    return tE <= 1.0f && tL >= 0.0f;
-	}
-	
-	/**
-	 * Gets the depth that the {@code ray} intersects the plane represented by the {@code planeNormal, and planePoint}
-	 * 
-	 * @param ray Ray to calculate the intersection depth of with the plane
-	 * @param planeNormal Plane normal, this is used in calculating the plane
-	 * @param planePoint Point on the plane
-	 * 
-	 * @return Depth of intersection the {@code ray} has with the plane, given as a floating point value in world units
-	 */
-	public static float depth(Ray ray, Vec3 planeNormal, Vec3 planePoint){
-		//compute the depth along the line for the point on the line that intersects the plane
-		//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
-		return VecUtil.subtract(planePoint, ray.getPos()).dot(planeNormal)/
-				planeNormal.dot(ray.getDirection());
 	}
 	
 	private static boolean intersects(Ray ray, CollisionPlane plane){
@@ -437,6 +456,22 @@ public abstract class CollisionDetector {
 		}else{
 			return true;
 		}
+	}
+	
+	/**
+	 * Gets the depth that the {@code ray} intersects the plane represented by the {@code planeNormal, and planePoint}
+	 * 
+	 * @param ray Ray to calculate the intersection depth of with the plane
+	 * @param planeNormal Plane normal, this is used in calculating the plane
+	 * @param planePoint Point on the plane
+	 * 
+	 * @return Depth of intersection the {@code ray} has with the plane, given as a floating point value in world units
+	 */
+	public static float depth(Ray ray, Vec3 planeNormal, Vec3 planePoint){
+		//compute the depth along the line for the point on the line that intersects the plane
+		//d = ((p0-L0)·n)/(L·n), where n is the plane normal, L0 ray pos, L ray direction, p0 plane pos
+		return VecUtil.subtract(planePoint, ray.getPos()).dot(planeNormal)/
+				planeNormal.dot(ray.getDirection());
 	}
 	
 	//this seems to be producing the wrong results FIX IT

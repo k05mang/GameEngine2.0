@@ -53,8 +53,8 @@ public class HullVisualizer extends Mesh {
 		vao.setAttribVBO(0, "mesh");
 		
 		//add index buffers
-		vao.addIndexBuffer(FACES, RenderMode.TRIANGLES, ibos.get(0));
-		vao.addIndexBuffer(LINES, RenderMode.LINES, ibos.get(1));
+		vao.genIBO(FACES, RenderMode.TRIANGLES, ibos.get(0));
+		vao.genIBO(LINES, RenderMode.LINES, ibos.get(1));
 		
 		vao.setIndexBuffer(FACES);
 	}

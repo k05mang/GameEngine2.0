@@ -58,21 +58,26 @@ public final class Icosphere extends Mesh {
 		this.radius = Math.abs(radius);
 		int clampedOrder = Math.max(0,  order);
 		int lastIndex = 11+((1 << (clampedOrder << 1))-1)*10;//11+(2^(clampedOrder*2)-1)*10
+
+		//specify the attributes for the vertex array
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
 		
+		//get the datatype used by the index buffers
 		IndexBuffer.IndexType dataType = getIndexType(lastIndex);
 		
 		//create index buffers
-		IndexBuffer solidIbo = new IndexBuffer(dataType);
-		IndexBuffer edgeIbo = new IndexBuffer(dataType);
-		//add index buffers to mesh list
-		ibos.add(solidIbo);
-		ibos.add(edgeIbo);
-		//add index buffers to vertex array
-		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
-		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
+		vao.genIBO(SOLID_MODE, RenderMode.TRIANGLES, dataType);
+		vao.genIBO(EDGE_MODE, RenderMode.LINES, dataType);
 		
-		BufferObject vbo = new BufferObject(BufferType.ARRAY);
-		vbos.add(vbo);
+		//set some index buffer pointers
+		IndexBuffer solidIbo = vao.getIBO(SOLID_MODE);
+		IndexBuffer edgeIbo = vao.getIBO(EDGE_MODE);
+		
+		//create the vertex buffer
+		vao.genVBO(DEFAULT_VBO);
+		BufferObject vbo = vao.getVBO(DEFAULT_VBO);
 		
 		//approximate golden ratio 
 		float goldenRatio = (float)(1.0+Math.sqrt(5.0))/2.0f;
@@ -190,7 +195,6 @@ public final class Icosphere extends Mesh {
 		subdivide(new Triangle(3,7,11), clampedOrder, vertMap);//bottom left
 
 		vbo.flush(BufferUsage.STATIC_DRAW);
-		vao.addVertexBuffer("default", vbo);
 
 		solidIbo.flush(BufferUsage.STATIC_DRAW);
 		edgeIbo.flush(BufferUsage.STATIC_DRAW);
@@ -201,18 +205,10 @@ public final class Icosphere extends Mesh {
 			vao.setIndexBuffer(SOLID_MODE);
 		}
 		
-		//specify the attributes for the vertex array
-		vao.addAttrib(AttribType.VEC3, false, 0);//position
-		vao.addAttrib(AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(AttribType.VEC2, false, 0);//uv
-		
-		//register the vbo with the vao
-		vao.registerVBO("default");
-
 		//tell the vao what vbo to use for each attribute
-		vao.setAttribVBO(0, "default");
-		vao.setAttribVBO(1, "default");
-		vao.setAttribVBO(2, "default");
+		vao.setAttribVBO(0, DEFAULT_VBO);
+		vao.setAttribVBO(1, DEFAULT_VBO);
+		vao.setAttribVBO(2, DEFAULT_VBO);
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
@@ -232,17 +228,17 @@ public final class Icosphere extends Mesh {
 		//if we are at the lowest order then add the face to the mesh
 		if(order == 0){
 			geometry.add(base);
-			base.insertPrim(ibos.get(0));//solidIbo
+			base.insertPrim(vao.getIBO(SOLID_MODE));//solidIbo
 			
 			//edgeIbo
-			ibos.get(0).add(base.he1.sourceVert);
-			ibos.get(0).add(base.he2.sourceVert);
+			vao.getIBO(SOLID_MODE).add(base.he1.sourceVert);
+			vao.getIBO(SOLID_MODE).add(base.he2.sourceVert);
 
-			ibos.get(0).add(base.he2.sourceVert);
-			ibos.get(0).add(base.he3.sourceVert);
+			vao.getIBO(SOLID_MODE).add(base.he2.sourceVert);
+			vao.getIBO(SOLID_MODE).add(base.he3.sourceVert);
 
-			ibos.get(0).add(base.he3.sourceVert);
-			ibos.get(0).add(base.he1.sourceVert);
+			vao.getIBO(SOLID_MODE).add(base.he3.sourceVert);
+			vao.getIBO(SOLID_MODE).add(base.he1.sourceVert);
 		}else{//otherwise subdivide it and recurse
 			
 			Vec3 halfPoint = genVert(base.he1.sourceVert, base.he2.sourceVert);
@@ -256,19 +252,19 @@ public final class Icosphere extends Mesh {
 			
 			//add the new vertices to the mesh and the vert map if they ahven't been added already
 			if(vertMap.get(edge1) == null){
-				edge1.addTo(vbos.get(0));
+				edge1.addTo(vao.getVBO(DEFAULT_VBO));
 				vertMap.put(edge1, geometry.getNumVertices());
 				geometry.add(edge1);
 			}
 			
 			if(vertMap.get(edge2) == null){
-				edge2.addTo(vbos.get(0));
+				edge2.addTo(vao.getVBO(DEFAULT_VBO));
 				vertMap.put(edge2, geometry.getNumVertices());
 				geometry.add(edge2);
 			}
 			
 			if(vertMap.get(edge3) == null){
-				edge3.addTo(vbos.get(0));
+				edge3.addTo(vao.getVBO(DEFAULT_VBO));
 				vertMap.put(edge3, geometry.getNumVertices());
 				geometry.add(edge3);
 			}

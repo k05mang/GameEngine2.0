@@ -20,6 +20,7 @@ public class BezierCurve extends Mesh{
 	private BezierPath path;
 	private int numSegments;
 	private final int MIN_SEGMENTS = 50;
+	public static final String CONTROL_NODES = "control", CURVE = "curve";
 	
 	/**
 	 * Constructs a Bezier curve using the given {@code curve} as the source of data for rendering, with the given
@@ -33,74 +34,52 @@ public class BezierCurve extends Mesh{
 		path = curve;
 		path.curve = this;
 		numSegments = MIN_SEGMENTS+(path.getOrder())*20;
-		//indices for the curve mesh
-		IndexBuffer curveIbo = new IndexBuffer(getIndexType(numSegments));
-		ibos.add(curveIbo);
-
-		//indices for the curve mesh
-		IndexBuffer controlIbo = new IndexBuffer(getIndexType(curve.numPoints()));
-		ibos.add(controlIbo);
-		
-		
-		//vbo for the actual curve
-		BufferObject curveVbo = new BufferObject(BufferType.ARRAY);
-		vbos.add(curveVbo);
-
-		//vbo for the control points
-		BufferObject controlVbo = new BufferObject(BufferType.ARRAY);
-		vbos.add(controlVbo);
-		
-		constructCurve();
-		
-		//flush and add the curve vbo
-		vao.addVertexBuffer("curve", curveVbo);
-
-		//flush and add the control vbo
-		vao.addVertexBuffer("control", controlVbo);
-		
-
-		//add to vao
-		vao.addIndexBuffer("curve", RenderMode.LINE_STRIP, curveIbo);
-		
-		//add to vao
-		vao.addIndexBuffer("control", RenderMode.LINE_STRIP, controlIbo);
-		
 		
 		//specify the attributes for the vertex array of the curve vbo
 		vao.addAttrib(AttribType.VEC3, false, 0);//position
 		vao.addAttrib(AttribType.VEC3, false, 0);//normal
-				
-		//bind the vbos to the vao
-		vao.registerVBO("curve");
-		vao.registerVBO("control");
+		
+		//index buffer for the curve mesh
+		vao.genIBO(CURVE, RenderMode.LINE_STRIP, getIndexType(numSegments));
+		IndexBuffer curveIbo = vao.getIBO(CURVE);
+
+		//index buffer for the control mesh
+		vao.genIBO(CONTROL_NODES, RenderMode.LINE_STRIP, getIndexType(curve.numPoints()));
+		IndexBuffer controlIbo = vao.getIBO(CONTROL_NODES);
+		
+		
+		//vbo for the actual curve
+		vao.genVBO(CURVE);
+		BufferObject curveVbo = vao.getVBO(CURVE);
+
+		//vbo for the control points
+		vao.genVBO(CONTROL_NODES);
+		BufferObject controlVbo = vao.getVBO(CONTROL_NODES);
+		
+		constructCurve();
 		
 		//tell the vao what vbo to read from for each attribute
-		vao.setAttribVBO(0, "curve");
-		vao.setAttribVBO(1, "curve");
+		vao.setAttribVBO(0, CURVE);
+		vao.setAttribVBO(1, CURVE);
 		
-		vao.setIndexBuffer("curve");
+		vao.setIndexBuffer(CURVE);
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
 		vao.enableAttribute(1);
 	}
 	
-	/**
-	 * Sets this curve up to be able to render the curve itself
-	 */
-	public void renderCurve(){
-		vao.setIndexBuffer("curve");
-		vao.setAttribVBO(0, "curve");
-		vao.setAttribVBO(1, "curve");
-	}
-	
-	/**
-	 * Sets this curve up to be able to render the control points of the curve
-	 */
-	public void renderControl(){
-		vao.setIndexBuffer("control");
-		vao.setAttribVBO(0, "control");
-		vao.setAttribVBO(1, "control");
+	@Override
+	public void setRenderMode(String mode){
+		if(mode.equals(SOLID_MODE) || mode.equals(EDGE_MODE)){
+			vao.setIndexBuffer(CURVE);
+			vao.setAttribVBO(0, CURVE);
+			vao.setAttribVBO(1, CURVE);
+		}else{
+			vao.setIndexBuffer(mode);
+			vao.setAttribVBO(0, mode);
+			vao.setAttribVBO(1, mode);
+		}
 	}
 	
 	/**
@@ -110,26 +89,25 @@ public class BezierCurve extends Mesh{
 		numSegments = MIN_SEGMENTS+(path.getOrder())*20;
 		geometry.empty();
 		//indices for the curve mesh
-		IndexBuffer curveIbo = ibos.get(0);
+		IndexBuffer curveIbo = vao.getIBO(CURVE);
 		curveIbo.reset(getIndexType(numSegments));
 
 		//indices for the control mesh
-		IndexBuffer controlIbo = ibos.get(1);
+		IndexBuffer controlIbo = vao.getIBO(CONTROL_NODES);
 		controlIbo.reset(getIndexType(path.numPoints()));
 		
 		//vbo for the actual curve
-		BufferObject curveVbo = vbos.get(0);
+		BufferObject curveVbo = vao.getVBO(CURVE);
 		curveVbo.reset();
 		
 		//vbo for the control points
-		BufferObject controlVbo = vbos.get(1);
+		BufferObject controlVbo = vao.getVBO(CONTROL_NODES);
 		controlVbo.reset();
 		
 		float incr = 1.0f/numSegments;
 		float t = 0;
 		//generate points
 		for(int curVert = 0; curVert < numSegments; curVert++){
-			//TODO add normals
 			Vertex vert = new Vertex(path.getBezierPoint(t), path.getNormal(t), new Vec2());
 			geometry.add(vert);
 			curveVbo.add(vert.getPos());
@@ -167,10 +145,10 @@ public class BezierCurve extends Mesh{
 	 */
 	void updateCurve(){
 		//vbo for the actual curve
-		BufferObject curveVbo = vbos.get(0);
+		BufferObject curveVbo = vao.getVBO(CURVE);
 		
 		//vbo for the control points
-		BufferObject controlVbo = vbos.get(1);
+		BufferObject controlVbo = vao.getVBO(CONTROL_NODES);
 		
 		float incr = 1.0f/numSegments;
 		float t = 0;

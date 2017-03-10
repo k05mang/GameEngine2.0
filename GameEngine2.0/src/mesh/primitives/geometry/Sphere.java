@@ -96,25 +96,31 @@ public final class Sphere extends Mesh{
 		int maxStack = Math.max(1, stacks);
 		this.radius = Math.abs(radius);
 		
+		//specify the attributes for the vertex array
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
+		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
+		
+		//get the datatype used by the index buffers
 		IndexBuffer.IndexType dataType = getIndexType((maxSlice+1)*(maxStack+1));
 
-		IndexBuffer solidIbo = new IndexBuffer(dataType);
-		IndexBuffer edgeIbo = new IndexBuffer(dataType);
-		IndexBuffer latIbo = new IndexBuffer(dataType);
-		IndexBuffer orbIbo = new IndexBuffer(dataType);
+		//create the index buffers
+		vao.genIBO(SOLID_MODE, RenderMode.TRIANGLES, dataType);
+		vao.genIBO(EDGE_MODE, RenderMode.LINES, dataType);
+		vao.genIBO(LATERAL_MODE, RenderMode.LINES, dataType);
+		vao.genIBO(ORBITAL_MODE, RenderMode.LINES, dataType);
 		
-		ibos.add(solidIbo);
-		ibos.add(edgeIbo);
-		ibos.add(latIbo);
-		ibos.add(orbIbo);
+		//set some pointers to the index buffers to reduce look up calls
+		IndexBuffer solidIbo = vao.getIBO(SOLID_MODE);
+		IndexBuffer edgeIbo = vao.getIBO(EDGE_MODE);
+		IndexBuffer latIbo = vao.getIBO(LATERAL_MODE);
+		IndexBuffer orbIbo = vao.getIBO(ORBITAL_MODE);
 
-		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
-		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
-		vao.addIndexBuffer(LATERAL_MODE, RenderMode.LINES, latIbo);
-		vao.addIndexBuffer(ORBITAL_MODE, RenderMode.LINES, orbIbo);
-		
-		BufferObject vbo = new BufferObject(BufferType.ARRAY);
-		vbos.add(vbo);
+		//create the vertex buffer
+		vao.genVBO(DEFAULT_VBO);
+		BufferObject vbo = vao.getVBO(DEFAULT_VBO);
 		
 		for(int curStack = 0; curStack < maxStack+1; curStack++){
 			for(int curSlice = 0; curSlice < maxSlice+1; curSlice++){
@@ -237,7 +243,6 @@ public final class Sphere extends Mesh{
 		geometry.insertVertices(vbo);
 		
 		vbo.flush(BufferUsage.STATIC_DRAW);
-		vao.addVertexBuffer("default", vbo);
 		
 		//buffer the index buffers to the gpu
 		solidIbo.flush(BufferUsage.STATIC_DRAW);
@@ -255,23 +260,13 @@ public final class Sphere extends Mesh{
 		}else{
 			vao.setIndexBuffer(SOLID_MODE);
 		}
-		
-		//specify the attributes for the vertex array
-		vao.addAttrib(AttribType.VEC3, false, 0);//position
-		vao.addAttrib(AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(AttribType.VEC2, false, 0);//uv
-		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
-		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
-		
-		//register the vbo with the vao
-		vao.registerVBO("default");
 
 		//tell the vao what vbo to use for each attribute
-		vao.setAttribVBO(0, "default");
-		vao.setAttribVBO(1, "default");
-		vao.setAttribVBO(2, "default");
-		vao.setAttribVBO(3, "default");
-		vao.setAttribVBO(4, "default");
+		vao.setAttribVBO(0, DEFAULT_VBO);
+		vao.setAttribVBO(1, DEFAULT_VBO);
+		vao.setAttribVBO(2, DEFAULT_VBO);
+		vao.setAttribVBO(3, DEFAULT_VBO);
+		vao.setAttribVBO(4, DEFAULT_VBO);
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);

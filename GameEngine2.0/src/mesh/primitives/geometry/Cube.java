@@ -84,9 +84,17 @@ public final class Cube extends Mesh {
 		super();
 		
 		halfDimensions = new Vec3(Math.abs(width)/2.0f, Math.abs(height)/2.0f, Math.abs(depth)/2.0f);
+
+		//specify the attributes for the vertex array
+		vao.addAttrib(AttribType.VEC3, false, 0);//position
+		vao.addAttrib(AttribType.VEC3, false, 0);//normal
+		vao.addAttrib(AttribType.VEC2, false, 0);//uv
+		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
+		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
 		
-		BufferObject vbo = new BufferObject(BufferType.ARRAY);
-		vbos.add(vbo);
+		//create the vertex buffer
+		vao.genVBO(DEFAULT_VBO);
+		BufferObject vbo = vao.getVBO(DEFAULT_VBO);
 		
 		//-----xpos face------
 		geometry.add(new Vertex(
@@ -266,11 +274,13 @@ public final class Cube extends Mesh {
 				));
 
 		//create index buffers
-		IndexBuffer solidIbo = new IndexBuffer(IndexBuffer.IndexType.BYTE);
-		IndexBuffer edgeIbo = new IndexBuffer(IndexBuffer.IndexType.BYTE);
-		//add index buffers to mesh list
-		ibos.add(solidIbo);
-		ibos.add(edgeIbo);
+		vao.genIBO(SOLID_MODE, RenderMode.TRIANGLES, IndexBuffer.IndexType.BYTE);
+		vao.genIBO(EDGE_MODE, RenderMode.LINES, IndexBuffer.IndexType.BYTE);
+		
+		//set some pointers to the index buffers
+		IndexBuffer solidIbo = vao.getIBO(SOLID_MODE);
+		IndexBuffer edgeIbo = vao.getIBO(EDGE_MODE);
+		
 		//xpos face of the edges
 			//zpos edge
 			edgeIbo.add(0);
@@ -312,9 +322,6 @@ public final class Cube extends Mesh {
 			//ypos
 			edgeIbo.add(4);
 			edgeIbo.add(6);
-		//add index buffers to the vertex array
-		vao.addIndexBuffer(SOLID_MODE, RenderMode.TRIANGLES, solidIbo);
-		vao.addIndexBuffer(EDGE_MODE, RenderMode.LINES, edgeIbo);
 		//generate the face indices
 		for (int face = 0; face < 6; face++) {
 			geometry.add(new Triangle(
@@ -336,8 +343,6 @@ public final class Cube extends Mesh {
 		solidIbo.flush(BufferUsage.STATIC_DRAW);
 		
 		vbo.flush(BufferUsage.STATIC_DRAW);
-		vao.addVertexBuffer("default", vbo);
-		
 		
 		if(defaultMode.equals(SOLID_MODE) || defaultMode.equals(EDGE_MODE)){
 			vao.setIndexBuffer(defaultMode);
@@ -345,22 +350,12 @@ public final class Cube extends Mesh {
 			vao.setIndexBuffer(SOLID_MODE);
 		}
 
-		//specify the attributes for the vertex array
-		vao.addAttrib(AttribType.VEC3, false, 0);//position
-		vao.addAttrib(AttribType.VEC3, false, 0);//normal
-		vao.addAttrib(AttribType.VEC2, false, 0);//uv
-		vao.addAttrib(AttribType.VEC3, false, 0);//tangent
-		vao.addAttrib(AttribType.VEC3, false, 0);//bitangent
-		
-		//register the vbo with the vao
-		vao.registerVBO("default");
-
 		//tell the vao what vbo to use for each attribute
-		vao.setAttribVBO(0, "default");
-		vao.setAttribVBO(1, "default");
-		vao.setAttribVBO(2, "default");
-		vao.setAttribVBO(3, "default");
-		vao.setAttribVBO(4, "default");
+		vao.setAttribVBO(0, DEFAULT_VBO);
+		vao.setAttribVBO(1, DEFAULT_VBO);
+		vao.setAttribVBO(2, DEFAULT_VBO);
+		vao.setAttribVBO(3, DEFAULT_VBO);
+		vao.setAttribVBO(4, DEFAULT_VBO);
 		
 		//enable the attributes for the vertex array
 		vao.enableAttribute(0);
