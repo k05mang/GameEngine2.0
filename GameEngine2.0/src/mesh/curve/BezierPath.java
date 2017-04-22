@@ -146,7 +146,7 @@ public class BezierPath {
 	 * @return The normal at the given point on the curve
 	 */
 	public Vec3 getNormal(float t){
-		//clmap t first
+		//clamp t first
 		float clampT = Math.max(0, Math.min(1, t));
 		//TODO: update how this works, using the cross product might not work all the time
 		if(t >= 1){
@@ -403,6 +403,7 @@ public class BezierPath {
 		newPoints.add(points.get(0));
 		//loop through the current control points and modify them for the new point
 		for(int curPoint = 0; curPoint < n; curPoint++){
+			//get the factor to determine the amount of each curve point that should be used
 			float factor = (curPoint+1)/(float)(n+1);
 			newPoints.add(
 					VecUtil.scale(points.get(curPoint), factor).add( 
@@ -428,6 +429,7 @@ public class BezierPath {
 	 * Decreases the order of the curve by 1 while attempting to preserve the curve
 	 */
 	public void decreaseOrder(){
+		//cap the curve degradation to be up to 3 points 
 		if(points.size()-1 > 2){
 			//TODO: implement order reduction
 		}

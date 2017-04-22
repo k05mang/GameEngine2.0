@@ -41,20 +41,16 @@ public class BezierCurve extends Mesh{
 		
 		//index buffer for the curve mesh
 		vao.genIBO(CURVE, RenderMode.LINE_STRIP, getIndexType(numSegments));
-		IndexBuffer curveIbo = vao.getIBO(CURVE);
 
 		//index buffer for the control mesh
 		vao.genIBO(CONTROL_NODES, RenderMode.LINE_STRIP, getIndexType(curve.numPoints()));
-		IndexBuffer controlIbo = vao.getIBO(CONTROL_NODES);
 		
 		
 		//vbo for the actual curve
 		vao.genVBO(CURVE);
-		BufferObject curveVbo = vao.getVBO(CURVE);
 
 		//vbo for the control points
 		vao.genVBO(CONTROL_NODES);
-		BufferObject controlVbo = vao.getVBO(CONTROL_NODES);
 		
 		constructCurve();
 		
