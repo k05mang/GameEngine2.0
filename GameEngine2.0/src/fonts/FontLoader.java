@@ -23,7 +23,6 @@ public class FontLoader {
 	 * @throws IOException
 	 */
 	public Font load(/*possibly add a value here to determine if we want to load the file faster using the offset table*/) throws IOException{
-		Font font = new Font();
 		//begin parsing the file
 		//all True type font files must start with the font directory table
 		loadFontDirectory();
@@ -32,8 +31,10 @@ public class FontLoader {
 		
 		//parse the maximum profile table to get the number of glyphs in the glyph table
 		parseMaxp();
+		//the number of glyphs will be determined by parsing the max profile table
+		Font font = new Font(numGlyphs);
 		//next parse the glyph table
-		parseGlyph();
+		parseGlyph(font);
 		//close the input stream
 		stream.close();
 		return font;
@@ -167,13 +168,77 @@ public class FontLoader {
 	
 	/**
 	 * Parses the Glyf table which contains all the relevant rendering data for the fonts glyphs.
+	 * int16	numberOfContours	If the number of contours is greater than or equal to zero, this is a single glyph; if negative, this is a composite glyph.
+		int16	xMin	Minimum x for coordinate data.
+		int16	yMin	Minimum y for coordinate data.
+		int16	xMax	Maximum x for coordinate data.
+		int16	yMax	Maximum y for coordinate data.
+	 * 
+	 *  @param font Font to store the parsed glyphs into
 	 */
-	private void parseGlyph() throws IOException{
+	private void parseGlyph(Font font) throws IOException{
 		//set the file position to the start of the table
 		stream.seek(tableDir.get(FontTable.GLYPH).offset);
+		short numCurves = 0;
 		//begin parsing the table
 		for(int curGlyph = 0; curGlyph < numGlyphs; curGlyph++){
+			//get the number of contours that the glyph might have
+			numCurves = stream.readShort();	
 			
+			//determine whether the glyph is composite or not
+			if(numCurves < 0){
+				parseCompositeGlyph(font, numCurves);
+			}else{
+				parseGlyph(font, numCurves);
+			}
 		}
+	}
+	
+	/**
+	 * Parses the data from the glyf table for a single non-composite glyph and generates a glyph object
+	 * 
+	 * 
+uint16	endPtsOfContours[n]	Array of last points of each contour; n is the number of contours.
+uint16	instructionLength	Total number of bytes for instructions.
+uint8	instructions[n]	Array of instructions for each glyph; n is the number of instructions.
+uint8	flags[n]	Array of flags for each coordinate in outline; n is the number of flags.
+uint8 or int16	xCoordinates[ ]	First coordinates relative to (0,0); others are relative to previous point.
+uint8 or int16	yCoordinates[ ]	First coordinates relative to (0,0); others are relative to previous point.
+Note: In the glyf table, the position of a point is not stored in absolute terms but as a vector relative to the previous point. The delta-x and delta-y vectors represent these (often small) changes in position.
+Each flag is a single bit. Their meanings are shown below.
+	 * 
+	 * @param font Font to add the generated glyph to
+	 * @param numCurves Number of curves or contours the glyph contains
+	 * @throws IOException
+	 */
+	private void parseGlyph(Font font, short numCurves) throws IOException{
+		short xMin, yMin, xMax, yMax;
+		//get the minimum x for coordinate data.
+		xMin = stream.readShort();
+		//get the minimum y for coordinate data.
+		yMin = stream.readShort();
+		//get the maximum x for coordinate data.
+		xMax = stream.readShort();
+		//get the maximum y for coordinate data.
+		yMax = stream.readShort();
+		System.out.printf("Number of curves: %d%nXmin: %d%nYmin: %d%nXmax: %d%nXmax: %d%n", numCurves, xMin, yMin, xMax, yMax);
+		
+		//parse the flag value
+		
+		//If set, the point is on the curve; otherwise, it is off the curve
+		
+		//If set, the corresponding x-coordinate is a (uint8) else it's a (int16)
+		
+		//If set, the corresponding y-coordinate is a (uint8) else it's a (int16)
+		
+		//If set, the next byte (read as unsigned) specifies the number of additional times this set of flags is to be repeated
+		
+		//If x-Short Vector is set, this bit describes the sign of the value, with 1 equalling positive and 0 negative. 
+		//If the x-Short Vector bit is not set and this bit is set, then the current x-coordinate is the same as the previous x-coordinate. 
+		//If the x-Short Vector bit is not set and this bit is also not set, the current x-coordinate is a signed 16-bit delta vector.
+	}
+	
+	private void parseCompositeGlyph(Font font, short numCurves) throws IOException{
+		
 	}
 }
