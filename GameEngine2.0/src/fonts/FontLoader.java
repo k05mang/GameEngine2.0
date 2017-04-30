@@ -3,12 +3,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+
+import glMath.vectors.Vec3;
+import mesh.curve.BezierPath;
 
 public class FontLoader {
 	private File fontFile;
 	private RandomAccessFile stream;
 	private FontDirectory tableDir;
 	private int numGlyphs;
+	short indexToLocFormat;
+	private long[] glyphOffsets;
 	
 	protected FontLoader(File file) throws FileNotFoundException{
 		fontFile = file;
@@ -29,8 +35,10 @@ public class FontLoader {
 		//begin parsing the required tables
 		//start by parsing the header table
 		
+		parseHead();
 		//parse the maximum profile table to get the number of glyphs in the glyph table
 		parseMaxp();
+		parseLoca();
 		//the number of glyphs will be determined by parsing the max profile table
 		Font font = new Font(numGlyphs);
 		//next parse the glyph table
@@ -121,6 +129,37 @@ public class FontLoader {
 	}
 	
 	/**
+	 * Parses the head table which contains various information about the font file, currently this method only reads in the 
+	 * loca table type value
+	 * 
+	 * @throws IOException
+	 */
+	private void parseHead() throws IOException{
+		stream.seek(tableDir.get(FontTable.HEAD).offset+tableDir.get(FontTable.HEAD).length-4);
+		
+		//get the loca table format
+		indexToLocFormat = stream.readShort();
+	}
+	
+	/**
+	 * Parses the Loca table which contains byte offsets for each of the glyphs defined in the glyf table
+	 * 
+	 * @throws IOException
+	 */
+	private void parseLoca() throws IOException{
+		stream.seek(tableDir.get(FontTable.LOCA).offset);
+		glyphOffsets = new long[numGlyphs+1];
+		//get the offsets
+		for(int curGlyph = 0; curGlyph < numGlyphs+1; curGlyph++){
+			if(indexToLocFormat == 0){
+				glyphOffsets[curGlyph] = stream.readUnsignedShort() << 1;//the actual value is divided by 2 when stored, so shift to get *2
+			}else{
+				glyphOffsets[curGlyph] = Integer.toUnsignedLong(stream.readInt());
+			}
+		}
+	}
+	
+	/**
 	 * Parses the max profile table for gathering information about the glyphs
 	 * is table establishes the memory requirements for this font. 
 	 * Fonts with CFF data must use Version 0.5 of this table, specifying only the numGlyphs field. 
@@ -178,27 +217,33 @@ public class FontLoader {
 	 */
 	private void parseGlyph(Font font) throws IOException{
 		//set the file position to the start of the table
-		stream.seek(tableDir.get(FontTable.GLYPH).offset);
-		short numCurves = 0;
+//		stream.seek(tableDir.get(FontTable.GLYPH).offset);
+		short numContours = 0;
 		//begin parsing the table
 		for(int curGlyph = 0; curGlyph < numGlyphs; curGlyph++){
+			stream.seek(tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph]);
 			//get the number of contours that the glyph might have
-			numCurves = stream.readShort();	
+			numContours = stream.readShort();	
 			
 			//determine whether the glyph is composite or not
-			if(numCurves < 0){
-				parseCompositeGlyph(font, numCurves);
+			if(numContours < 0){
+				parseCompositeGlyph(font, numContours);
 			}else{
-				parseGlyph(font, numCurves);
+				parseGlyph(font, numContours);
 			}
+			System.out.println(stream.getFilePointer());
+			System.out.println(tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph+1]);
+			System.out.println(stream.getFilePointer() == (tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph+1]));
 		}
+		long fileOffset = stream.getFilePointer();
+		assert fileOffset < tableDir.get(FontTable.GLYPH).offset+tableDir.get(FontTable.GLYPH).length : "We exceeded the table size";
 	}
 	
 	/**
 	 * Parses the data from the glyf table for a single non-composite glyph and generates a glyph object
 	 * 
 	 * 
-uint16	endPtsOfContours[n]	Array of last points of each contour; n is the number of contours.
+uint16	endPtsOfContours[n]	Array of last point indices of each contour; n is the number of contours.
 uint16	instructionLength	Total number of bytes for instructions.
 uint8	instructions[n]	Array of instructions for each glyph; n is the number of instructions.
 uint8	flags[n]	Array of flags for each coordinate in outline; n is the number of flags.
@@ -208,10 +253,10 @@ Note: In the glyf table, the position of a point is not stored in absolute terms
 Each flag is a single bit. Their meanings are shown below.
 	 * 
 	 * @param font Font to add the generated glyph to
-	 * @param numCurves Number of curves or contours the glyph contains
+	 * @param numContours Number of curves or contours the glyph contains
 	 * @throws IOException
 	 */
-	private void parseGlyph(Font font, short numCurves) throws IOException{
+	private void parseGlyph(Font font, short numContours) throws IOException{
 		short xMin, yMin, xMax, yMax;
 		//get the minimum x for coordinate data.
 		xMin = stream.readShort();
@@ -221,24 +266,112 @@ Each flag is a single bit. Their meanings are shown below.
 		xMax = stream.readShort();
 		//get the maximum y for coordinate data.
 		yMax = stream.readShort();
-		System.out.printf("Number of curves: %d%nXmin: %d%nYmin: %d%nXmax: %d%nXmax: %d%n", numCurves, xMin, yMin, xMax, yMax);
+//		System.out.printf("Number of curves: %d%nXmin: %d%nYmin: %d%nXmax: %d%nXmax: %d%n", numContours, xMin, yMin, xMax, yMax);
 		
-		//parse the flag value
+		int[] endPoints = new int[numContours];
+		int numPoints = 0;
+		//read in the indices of the end points of the contours
+		for(int curEnd = 0; curEnd < numContours; curEnd++){
+			int endPoint = stream.readUnsignedShort();
+			endPoints[curEnd] = endPoint;//add the point to the list
+			//determine if this point is the max index in the list
+			numPoints = Math.max(numPoints, endPoint);//TODO this might not be necessary if the values are sequentially greater than the last
+		}
+		numPoints++;
+//		System.out.println(numPoints);
+		//get the length of the instruction set
+		int instLength = stream.readUnsignedShort();
+		//skip the instructions
+		stream.skipBytes(instLength);
 		
-		//If set, the point is on the curve; otherwise, it is off the curve
+		//create the point list
+		ArrayList<Vec3> points = new ArrayList<Vec3>(numPoints);
+		Glyph glyph = new Glyph(numContours);
+		//make a list to store the bytes with the bit flags for reading the values
+		byte[] flags = new byte[numPoints];
+		//get the flags for each of the points
+		for(int curFlag = 0; curFlag < numPoints; curFlag++){
+			//parse the flag value
+			byte flag = stream.readByte();
+			
+			//determine if the flag is repeating
+			int repeatTimes = 0;
+			//if we repeat then read the next byte as an unsigned value for the number of times repeated
+			if(GlyphFlag.REPEAT.isSet(flag)){
+				repeatTimes = stream.readUnsignedByte();
+			}
+			//repeat these flags n times
+			for(int recurr = 0; recurr < repeatTimes+1; recurr++){
+				flags[curFlag+recurr] = flag;//store the flag
+				//create empty points now
+				points.add(new Vec3());
+			}
+			
+			curFlag += repeatTimes;
+		}
 		
-		//If set, the corresponding x-coordinate is a (uint8) else it's a (int16)
-		
-		//If set, the corresponding y-coordinate is a (uint8) else it's a (int16)
-		
-		//If set, the next byte (read as unsigned) specifies the number of additional times this set of flags is to be repeated
-		
-		//If x-Short Vector is set, this bit describes the sign of the value, with 1 equalling positive and 0 negative. 
-		//If the x-Short Vector bit is not set and this bit is set, then the current x-coordinate is the same as the previous x-coordinate. 
-		//If the x-Short Vector bit is not set and this bit is also not set, the current x-coordinate is a signed 16-bit delta vector.
+		int curConEnd = 0;//tracks which contour end point we are on
+		boolean isFirst = true;
+		BezierPath contour = new BezierPath();
+		//read each of the coordinate values
+		readCoords(points, flags, true);//start with x
+		readCoords(points, flags, false);//the read y
+
+		//loop one last time to construct the contours and the glyph
+		for(int curPoint = 0; curPoint < points.size(); curPoint++){
+			//If set, the point is on the curve; otherwise, it is off the curve
+			boolean onCurve = GlyphFlag.ON_CURVE.isSet(flags[curPoint]);
+			if(isFirst && !onCurve){
+				System.err.println("Error: first point for contour is not on the curve");
+			}
+			//store the point
+			contour.add(points.get(curPoint));
+			
+			//determine if this is the last point for a contour
+			if(curPoint == endPoints[curConEnd]){
+				glyph.add(contour);//add the now completed contour
+				//and begin the next one
+				contour = new BezierPath();
+				isFirst = true;
+				curConEnd++;
+			}else{
+				isFirst = false;
+			}
+		}
 	}
 	
-	private void parseCompositeGlyph(Font font, short numCurves) throws IOException{
+	private void readCoords(ArrayList<Vec3> points, byte[] flags, boolean isX) throws IOException{
+		//create a central value to store point data in
+		float value = 0;
+		for(int curPoint = 0; curPoint < points.size(); curPoint++){
+			//parse the flag value
+			byte flag = flags[curPoint];
+			
+			//determine how to read the bit flag and get the values
+			boolean 
+			coorSame = isX ? GlyphFlag.X_SAME.isSet(flag) : GlyphFlag.Y_SAME.isSet(flag), 
+			coorIsByte = isX ? GlyphFlag.X_IS_BYTE.isSet(flag) : GlyphFlag.Y_IS_BYTE.isSet(flag);
+			//read the coordinate data
+			if(coorIsByte){
+				//check if the value is negative or positive
+				if(coorSame){
+					//if we have the short bit and same bit then the value is just read as a byte
+					value += stream.readUnsignedByte();
+				}else{
+					//if we have the short bit but not the same bit then the value is a negative byte
+					value -= stream.readUnsignedByte();
+				}
+			}else if(!coorSame){
+				//else the value is read a short
+				value += stream.readShort();
+			}//otherwise we just use the previous value for x
+			
+			//store the value in the appropriate coordinate in the vector in points
+			points.get(curPoint).set(isX ? 0 : 1, value);//since x is index 0 we can determine where to put the value with one line
+		}
+	}
+	
+	private void parseCompositeGlyph(Font font, short numContours) throws IOException{
 		
 	}
 }

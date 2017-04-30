@@ -19,7 +19,7 @@ public class BezierPath {
 //	private static ArrayList<int[]> binomialLUT = new ArrayList<int[]>();
 	private int n;//nth order of the curve
 	private float length;
-
+	
 	/**
 	 * Constructs a Bezier path or curve using the given starting points
 	 * 
@@ -147,13 +147,14 @@ public class BezierPath {
 	 */
 	public Vec3 getNormal(float t){
 		//clamp t first
-		float clampT = Math.max(0, Math.min(1, t));
-		//TODO: update how this works, using the cross product might not work all the time
-		if(t >= 1){
-			return getBezierPoint(t-T_STEP).cross(getTangent(t));
-		}else{
-			return getBezierPoint(t+T_STEP).cross(getTangent(t));
-		}
+//		float clampT = Math.max(0, Math.min(1, t));
+//		//TODO: update how this works, using the cross product might not work all the time
+//		if(t >= 1){
+//			return getBezierPoint(t-T_STEP).cross(getTangent(t));
+//		}else{
+//			return getBezierPoint(t+T_STEP).cross(getTangent(t));
+//		}
+		return getBezierPoint(t+T_STEP).cross(getTangent(t));
 	}
 	
 	/**
@@ -359,9 +360,9 @@ public class BezierPath {
 			derivative.n++;
 		}
 		
-		if(derivative.curve != null){
-			derivative.curve.updateCurve();
-		}
+//		if(derivative.curve != null){
+//			derivative.curve.updateCurve();
+//		}
 	}
 	
 	/**

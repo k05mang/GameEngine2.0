@@ -153,7 +153,6 @@ public class BezierCurve extends Mesh{
 		Vertex vert = new Vertex(0,0,0, 0,0,0, 0,0);
 		//generate points
 		for(int curVert = 0; curVert < numSegments; curVert++){
-			//TODO add normals
 			vert.setPos(path.getBezierPoint(t));
 			vert.setNormal(path.getNormal(t));
 			geometry.setVertex(curVert, vert);
