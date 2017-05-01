@@ -1,11 +1,14 @@
 package fonts;
 
 import java.util.ArrayList;
+
+import mesh.curve.BezierCurve;
 import mesh.curve.BezierPath;
 
 public class Glyph {
 
 	private ArrayList<BezierPath> curves;
+	private ArrayList<BezierCurve> renderables;
 	private ArrayList<Glyph> subGlyphs;
 	
 	/**
@@ -15,6 +18,7 @@ public class Glyph {
 	 */
 	public Glyph(int numContours) {
 		curves = new ArrayList<BezierPath>(numContours);
+		renderables = new ArrayList<BezierCurve>(numContours);
 		subGlyphs = new ArrayList<Glyph>();
 	}
 
@@ -25,6 +29,7 @@ public class Glyph {
 	 */
 	public void add(BezierPath contour){
 		curves.add(contour);
+		renderables.add(new BezierCurve(contour));
 	}
 	
 	public void add(Glyph glyph){

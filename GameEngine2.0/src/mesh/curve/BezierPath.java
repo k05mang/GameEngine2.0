@@ -19,6 +19,8 @@ public class BezierPath {
 //	private static ArrayList<int[]> binomialLUT = new ArrayList<int[]>();
 	private int n;//nth order of the curve
 	private float length;
+	private boolean needsUpdate = false;//variable for flagging whether there needs to be an update to the length and derivative
+	//due to changes in the bezier curve
 	
 	/**
 	 * Constructs a Bezier path or curve using the given starting points
@@ -33,10 +35,7 @@ public class BezierPath {
 		}
 		curve = null;
 		n = initPoints.length-1;
-		if(n > 0){
-			computeDerivative();
-		}
-		computeLength();
+		needsUpdate = true;
 	}
 	
 	/**
@@ -52,10 +51,7 @@ public class BezierPath {
 		}
 		curve = null;
 		n = initPoints.size()-1;
-		if(n > 0){
-			computeDerivative();
-		}
-		computeLength();
+		needsUpdate = true;
 	}
 	
 	/**
@@ -71,8 +67,7 @@ public class BezierPath {
 		if(curve != null){
 			curve.updateCurve();
 		}
-		computeDerivative();
-		computeLength();
+		needsUpdate = true;
 	}
 	
 	/**
@@ -88,8 +83,7 @@ public class BezierPath {
 		if(curve != null){
 			curve.updateCurve();
 		}
-		computeDerivative();
-		computeLength();
+		needsUpdate = true;
 	}
 	
 	/**
@@ -105,8 +99,7 @@ public class BezierPath {
 		if(curve != null){
 			curve.updateCurve();
 		}
-		computeDerivative();
-		computeLength();
+		needsUpdate = true;
 	}
 	
 	/**
@@ -136,6 +129,7 @@ public class BezierPath {
 	 * @return Tangent vector at the point t along the curve
 	 */
 	public Vec3 getTangent(float t){
+		update();
 		return derivative.getBezierPoint(t);
 	}
 	
@@ -146,6 +140,7 @@ public class BezierPath {
 	 * @return The normal at the given point on the curve
 	 */
 	public Vec3 getNormal(float t){
+		update();
 		//clamp t first
 //		float clampT = Math.max(0, Math.min(1, t));
 //		//TODO: update how this works, using the cross product might not work all the time
@@ -163,6 +158,7 @@ public class BezierPath {
 	 * @return The length of the bezier curve
 	 */
 	public float getLength(){
+		update();
 		return length;
 	}
 	
@@ -173,6 +169,7 @@ public class BezierPath {
 	 * @return Distance point {@code t} is along the curve
 	 */
 	public float getDistanceAt(float t){
+		update();
 		return t*length;
 	}
 	
@@ -391,8 +388,6 @@ public class BezierPath {
 			if(curve != null){
 				curve.updateCurve();
 			}
-			computeDerivative();
-			computeLength();
 		}
 	}
 	
@@ -492,5 +487,14 @@ public class BezierPath {
 	 */
 	public int getOrder(){
 		return n;
+	}
+	
+	private void update(){
+		//check if we need to update the derivative to be able to get accurate data
+		if(needsUpdate){
+			computeDerivative();
+			computeLength();
+			needsUpdate = false;
+		}
 	}
 }

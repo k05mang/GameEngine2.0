@@ -228,15 +228,16 @@ public class FontLoader {
 			//determine whether the glyph is composite or not
 			if(numContours < 0){
 				parseCompositeGlyph(font, numContours);
+//				System.out.println("We Have a composite");
 			}else{
 				parseGlyph(font, numContours);
 			}
-			System.out.println(stream.getFilePointer());
-			System.out.println(tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph+1]);
-			System.out.println(stream.getFilePointer() == (tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph+1]));
+//			System.out.println(stream.getFilePointer());
+//			System.out.println(tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph+1]);
+//			System.out.println(stream.getFilePointer() == (tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph+1]));
 		}
-		long fileOffset = stream.getFilePointer();
-		assert fileOffset < tableDir.get(FontTable.GLYPH).offset+tableDir.get(FontTable.GLYPH).length : "We exceeded the table size";
+//		long fileOffset = stream.getFilePointer();
+//		assert fileOffset < tableDir.get(FontTable.GLYPH).offset+tableDir.get(FontTable.GLYPH).length : "We exceeded the table size";
 	}
 	
 	/**
@@ -266,7 +267,6 @@ Each flag is a single bit. Their meanings are shown below.
 		xMax = stream.readShort();
 		//get the maximum y for coordinate data.
 		yMax = stream.readShort();
-//		System.out.printf("Number of curves: %d%nXmin: %d%nYmin: %d%nXmax: %d%nXmax: %d%n", numContours, xMin, yMin, xMax, yMax);
 		
 		int[] endPoints = new int[numContours];
 		int numPoints = 0;
@@ -278,7 +278,7 @@ Each flag is a single bit. Their meanings are shown below.
 			numPoints = Math.max(numPoints, endPoint);//TODO this might not be necessary if the values are sequentially greater than the last
 		}
 		numPoints++;
-//		System.out.println(numPoints);
+
 		//get the length of the instruction set
 		int instLength = stream.readUnsignedShort();
 		//skip the instructions
@@ -310,30 +310,27 @@ Each flag is a single bit. Their meanings are shown below.
 			curFlag += repeatTimes;
 		}
 		
-		int curConEnd = 0;//tracks which contour end point we are on
-		boolean isFirst = true;
-		BezierPath contour = new BezierPath();
+//		int curContour = 0;
+		boolean isFirst = true;//tracks whether this is the first 
+		BezierPath curve = new BezierPath();
 		//read each of the coordinate values
 		readCoords(points, flags, true);//start with x
 		readCoords(points, flags, false);//the read y
 
 		//loop one last time to construct the contours and the glyph
+		//Note: the contours are composite bezier curves, meaning they share the on curve points
 		for(int curPoint = 0; curPoint < points.size(); curPoint++){
 			//If set, the point is on the curve; otherwise, it is off the curve
 			boolean onCurve = GlyphFlag.ON_CURVE.isSet(flags[curPoint]);
-			if(isFirst && !onCurve){
-				System.err.println("Error: first point for contour is not on the curve");
-			}
 			//store the point
-			contour.add(points.get(curPoint));
+			curve.add(points.get(curPoint));
 			
-			//determine if this is the last point for a contour
-			if(curPoint == endPoints[curConEnd]){
-				glyph.add(contour);//add the now completed contour
-				//and begin the next one
-				contour = new BezierPath();
+			//determine if this point ends the bezier curve
+			if(onCurve && !isFirst){
+				glyph.add(curve);//add the now completed curve
+				//begin the next one
+				curve = new BezierPath(points.get(curPoint));//use the current point to begin the next curve
 				isFirst = true;
-				curConEnd++;
 			}else{
 				isFirst = false;
 			}

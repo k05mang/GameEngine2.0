@@ -67,8 +67,8 @@ public final class Cylinder extends Mesh{
 		vao.genIBO(EDGE_MODE, RenderMode.LINES, dataType);
 		
 		//set some pointers to the index buffers
-		IndexBuffer solidIbo = new IndexBuffer(dataType);
-		IndexBuffer edgeIbo = new IndexBuffer(dataType);
+		IndexBuffer solidIbo = vao.getIBO(SOLID_MODE);
+		IndexBuffer edgeIbo = vao.getIBO(EDGE_MODE);
 		
 		//create the vertex buffer
 		vao.genVBO(DEFAULT_VBO);
