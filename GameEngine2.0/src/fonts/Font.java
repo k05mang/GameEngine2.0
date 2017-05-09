@@ -8,7 +8,7 @@ import java.util.Hashtable;
 public class Font {
 
 	private Hashtable<Integer, Glyph> glyphs;
-	private ArrayList<Glyph> glyphIndices;
+	public ArrayList<Glyph> glyphIndices;
 	
 	/**
 	 * Construct a Font object using the given Array list of Glyph objects to build the font

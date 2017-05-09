@@ -6,7 +6,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 import glMath.vectors.Vec3;
-import mesh.curve.BezierPath;
+import mesh.curve.BezierCurve;
 
 public class FontLoader {
 	private File fontFile;
@@ -220,11 +220,14 @@ public class FontLoader {
 //		stream.seek(tableDir.get(FontTable.GLYPH).offset);
 		short numContours = 0;
 		//begin parsing the table
-		for(int curGlyph = 0; curGlyph < numGlyphs; curGlyph++){
+		for(int curGlyph = 0; curGlyph < numGlyphs/4; curGlyph++){
 			stream.seek(tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph]);
 			//get the number of contours that the glyph might have
 			numContours = stream.readShort();	
-			
+
+//			if(curGlyph == 19){
+//				System.out.println();
+//			}
 			//determine whether the glyph is composite or not
 			if(numContours < 0){
 				parseCompositeGlyph(font, numContours);
@@ -232,6 +235,7 @@ public class FontLoader {
 			}else{
 				parseGlyph(font, numContours);
 			}
+//			System.out.println("glyph: "+curGlyph);
 //			System.out.println(stream.getFilePointer());
 //			System.out.println(tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph+1]);
 //			System.out.println(stream.getFilePointer() == (tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph+1]));
@@ -311,30 +315,46 @@ Each flag is a single bit. Their meanings are shown below.
 		}
 		
 //		int curContour = 0;
-		boolean isFirst = true;//tracks whether this is the first 
-		BezierPath curve = new BezierPath();
+//		boolean isFirst = true;//tracks whether this is the first 
+		BezierCurve curve = new BezierCurve();
 		//read each of the coordinate values
 		readCoords(points, flags, true);//start with x
 		readCoords(points, flags, false);//the read y
-
-		//loop one last time to construct the contours and the glyph
-		//Note: the contours are composite bezier curves, meaning they share the on curve points
-		for(int curPoint = 0; curPoint < points.size(); curPoint++){
-			//If set, the point is on the curve; otherwise, it is off the curve
-			boolean onCurve = GlyphFlag.ON_CURVE.isSet(flags[curPoint]);
-			//store the point
-			curve.add(points.get(curPoint));
-			
-			//determine if this point ends the bezier curve
-			if(onCurve && !isFirst){
-				glyph.add(curve);//add the now completed curve
-				//begin the next one
-				curve = new BezierPath(points.get(curPoint));//use the current point to begin the next curve
-				isFirst = true;
-			}else{
-				isFirst = false;
+		
+		//loop through each contour
+		for(int curContour = 0; curContour < endPoints.length; curContour++){
+			int basePoint = curContour == 0 ? 0 : endPoints[curContour-1]+1;//cap to 0 in case of -1 
+			curve = new BezierCurve();
+			//for each point in that contour construct curves
+			for(int curPoint = basePoint; curPoint < endPoints[curContour]+1; curPoint++){
+				//If set, the point is on the curve; otherwise, it is off the curve
+				boolean onCurve = GlyphFlag.ON_CURVE.isSet(flags[curPoint]);
+				//store the point
+				curve.add(points.get(curPoint));
+				
+				//if we have an on curve point and are not the first point of the contour
+				if(onCurve && curPoint != basePoint){
+					//then we need to end the curve and start a new one
+					glyph.add(curve);
+					
+					//create new curve using current point as base point for new curve
+					curve = new BezierCurve(points.get(curPoint));
+					
+					
+					if(curPoint == endPoints[curContour]){
+						//then we need a loop back curve to end the contour
+						curve.add(points.get(basePoint));
+						glyph.add(curve);
+					}
+				}else if(curPoint == endPoints[curContour]){//check if we are on the last point for the contour
+					//then we need a loop back curve to end the contour
+					curve.add(points.get(basePoint));
+					glyph.add(curve);
+				}
 			}
 		}
+		//lastly add the glyph to the font
+		font.add(glyph);
 	}
 	
 	private void readCoords(ArrayList<Vec3> points, byte[] flags, boolean isX) throws IOException{
