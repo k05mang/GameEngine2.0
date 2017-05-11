@@ -142,12 +142,16 @@ public class Vec4 implements Vector {
 	
 	@Override
 	public float dot(Vector vector) {
-		if(vector instanceof Vec4){
+		//determine what vector was passed to the function
+		if(vector instanceof Vec2){
+			Vec2 vect = (Vec2)vector;
+			return x*vect.x+y*vect.y;//z and w are 0
+		}else if(vector instanceof Vec3){
+			Vec3 vect = (Vec3)vector;
+			return x*vect.x+y*vect.y+z*vect.z;//w is 0
+		}else{
 			Vec4 vect = (Vec4)vector;
 			return x*vect.x+y*vect.y+z*vect.z+w*vect.w;
-		}else{
-			System.err.println("Type mismatch in dot product, vector is not of type Vec4");
-			return 0;	
 		}
 	}
 
@@ -179,7 +183,7 @@ public class Vec4 implements Vector {
 			w += vect.w;
 			trunc();
 		}else{
-			System.err.println("Type mismatch in vector addition, vector is not of type Vec3");
+			System.err.println("Type mismatch in vector addition, vector is not of type Vec4");
 		}
 		return this;
 	}

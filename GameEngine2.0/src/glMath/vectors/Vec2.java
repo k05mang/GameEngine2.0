@@ -72,12 +72,16 @@ public class Vec2 implements Vector {
 	
 	@Override
 	public float dot(Vector vector) {
+		//determine what vector was passed to the function
 		if(vector instanceof Vec2){
 			Vec2 vect = (Vec2)vector;
-			return x*vect.x+y*vect.y;
+			return x*vect.x+y*vect.y;//z and w are 0
+		}else if(vector instanceof Vec3){
+			Vec3 vect = (Vec3)vector;
+			return x*vect.x+y*vect.y;//z and w are 0
 		}else{
-			System.err.println("Type mismatch in dot product, vector is not of type Vec2");
-			return 0;
+			Vec4 vect = (Vec4)vector;
+			return x*vect.x+y*vect.y;//z and w are 0
 		}
 	}
 

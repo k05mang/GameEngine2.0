@@ -2,6 +2,7 @@ package mesh.curve;
 
 import java.util.ArrayList;
 
+import glMath.VecUtil;
 import glMath.vectors.Vec3;
 
 /**
@@ -55,7 +56,7 @@ public class BezierPath {
 			curves.add(start.curve);//store the new curve object for reference when rendering
 			end = new BezierNode(null, start, null);//create a new node for end
 			start.next = end;//set the next node to be the end node
-		}else if(!isClosed){
+		}else if(!isClosed && curve.getOrder() > 1){
 			//determine if the curve should be added to the front, end, or neither
 			Vec3 startPoint = curve.getBezierPoint(0), endPoint = curve.getBezierPoint(1);
 			//compare with the start curves start point
@@ -94,8 +95,10 @@ public class BezierPath {
 				end.next = start;
 				isClosed = true;
 			}
-			//smooth the path
-			smooth();
+			//smooth the path only if the curve added is not 2 points
+			if(curve.getOrder() > 1){
+				smooth();
+			}
 		}else{//the path is closed and isn't accepting new curves
 			return false;
 		}
@@ -123,10 +126,73 @@ public class BezierPath {
 	}
 	
 	/**
-	 * Smooth's the curve at the end points, any existing points between are ignored since they are already smoothed
+	 * Smooth's the curve at the joint points of the end curves
 	 */
 	private void smooth(){
-		
+		switch(smoothness){
+//			case C0: if it is c0 do nothing since this just means the curves are joint
+//				break;
+			case C1:
+				ArrayList<Vec3> changeCurve = start.curve.getPoints();
+				ArrayList<Vec3> bodyCurve = start.next.curve.getPoints();
+				//check that the first curve and second curve can be linearized
+				if(changeCurve.size() > 2 && bodyCurve.size() > 2){
+					//linearize the curves at the joint point
+					linearize(bodyCurve.get(0), 					//joint point
+							bodyCurve.get(1), 						//body control
+							changeCurve.get(changeCurve.size()-1));	//control to change
+				}
+				changeCurve = end.curve.getPoints();
+				bodyCurve = end.prev.curve.getPoints();
+				//check that the last curve curve and second to last curve can be linearized
+				if(changeCurve.size() > 2 && bodyCurve.size() > 2){
+					//linearize the curves at the joint point
+					linearize(changeCurve.get(0), 				//joint point
+							bodyCurve.get(bodyCurve.size()-1), 	//body control
+							changeCurve.get(0));				//control to change
+				}
+				
+				//lastly check if the end curves are joined in which case they also need to be linearized
+				if(start.prev != null){
+					
+				}
+				break;
+			case C2:
+				break;
+		}
+	}
+	
+	/**
+	 * Takes 3 points from a curve and linearizes them for c1 smoothness conditions. Only the end control will
+	 * have its value updated, this is to reduce the need to update the entire curve 
+	 * 
+	 * @param joint Point that is shared between the curves
+	 * @param bodyControl Control point coming from the main body of the path
+	 * @param endControl Control point coming from the end curve.
+	 */
+	private void linearize(Vec3 joint, Vec3 bodyControl, Vec3 endControl){
+		//check if they are already colinear
+		if(VecUtil.distance(joint, bodyControl, endControl) == 0){
+			//this means they are already co-linear
+			//but test to see how the control points line up to guarantee they aren't on the same side of the joint
+			//which in turn makes sharp edges
+			Vec3 relaPoint1 = VecUtil.subtract(endControl, joint);//line from the joint to the start curve control
+			Vec3 relaPoint2 = VecUtil.subtract(bodyControl, joint);//line from the joint to the second curve control
+			double angle = Math.acos(relaPoint1.dot(relaPoint2));
+			//check if the angle is 180 or 0
+			if(angle == 0){
+				//if it is 0 then that means one of the control points is over extending the joint and needs to be adjusted
+				//move the control point on the end curve, this preserves the rest of the curve smoothness
+				//move the control point opposite the joint point the same distance it currently is from the joint
+				//get a translation vector
+				Vec3 adjust = VecUtil.subtract(joint, endControl);//from target control to joint
+				adjust.scale(2);//translate once to reach the joint again to mirror it = adjust+adjust = 2*adjust
+				//apply the translation
+				
+			}
+		}else{
+			
+		}
 	}
 	
 	private class BezierNode{

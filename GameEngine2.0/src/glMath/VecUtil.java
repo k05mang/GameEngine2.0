@@ -15,25 +15,7 @@ public abstract class VecUtil {
 	 * mismatch
 	 */
 	public static float dot(Vector vec1, Vector vec2){
-		//check if the given vectors of a matching type and compute the result if they are 
-		if(vec1 instanceof Vec2 && vec2 instanceof Vec2){
-			Vec2 vect1 = (Vec2)vec1;
-			Vec2 vect2 = (Vec2)vec2;
-			return vect1.dot(vect2);
-			
-		}else if(vec1 instanceof Vec3 && vec2 instanceof Vec3){
-			Vec3 vect1 = (Vec3)vec1;
-			Vec3 vect2 = (Vec3)vec2;
-			return vect1.dot(vect2);
-			
-		}else if(vec1 instanceof Vec4 && vec2 instanceof Vec4){
-			Vec4 vect1 = (Vec4)vec1;
-			Vec4 vect2 = (Vec4)vec2;
-			return vect1.dot(vect2);
-		}else{
-			System.err.println("Type mismatch, the vectors given are not of the same type");
-			return 0;
-		}
+		return vec1.dot(vec2);
 	}
 	
 	/**
@@ -240,5 +222,102 @@ public abstract class VecUtil {
 	 */
 	public static Vec4 scale(Vec4 vector, float scalar){
 		return new Vec4(vector).scale(scalar);
+	}
+	
+	/**
+	 * Converts the given Vector {@code vec} to a type Vec2.
+	 * <br>
+	 * With the higher order vectors the first two values are used to construct the Vec2, the x and y values.
+	 * If the type passed to this function is a Vec2 then the vector is returned from the function, not a copy.
+	 * 
+	 * @param vec Vector to convert
+	 * 
+	 * @return Vec2 containing the first two values of the passed vector
+	 */
+	public static Vec2 toVec2(Vector vec){
+		//check if the vector given is one of the other types and convert
+		if(vec instanceof Vec3){
+			Vec3 vector = (Vec3)vec;
+			return new Vec2(vector.x, vector.y);
+		}else if(vec instanceof Vec4){
+			Vec4 vector = (Vec4)vec;
+			return new Vec2(vector.x, vector.y);
+		}
+		//otherwise return the vector
+		return (Vec2)vec;
+	}
+	
+	/**
+	 * Converts the given Vector {@code vec} to a type Vec3.
+	 * <br>
+	 * With Vec4 types the first three values are used to construct the Vec3, the x, y, z values.
+	 * In the case of Vec2 types the vector returned will contain the first two values of the vector with z = 0.
+	 * If the type passed to this function is a Vec3 then the vector is returned from the function, not a copy.
+	 * 
+	 * @param vec Vector to convert
+	 * 
+	 * @return Vec3 containing the padded or trimmed values of the passed vector
+	 */
+	public static Vec3 toVec3(Vector vec){
+		//check if the vector given is one of the other types and convert
+		if(vec instanceof Vec2){
+			Vec2 vector = (Vec2)vec;
+			return new Vec3(vector.x, vector.y, 0.0f);
+		}else if(vec instanceof Vec4){
+			Vec4 vector = (Vec4)vec;
+			return new Vec3(vector.x, vector.y, vector.z);
+		}
+		//otherwise return the vector
+		return (Vec3)vec;
+	}
+	
+	/**
+	 * Converts the given Vector {@code vec} to a type Vec4.
+	 * <br>
+	 * With Vec3 types the first three values are used to construct the Vec4 then w = 0.
+	 * In the case of Vec2 types the vector returned will contain the first two values of the vector with z and y = 0.
+	 * If the type passed to this function is a Vec4 then the vector is returned from the function, not a copy.
+	 * 
+	 * @param vec Vector to convert
+	 * 
+	 * @return Vec4 containing the the padded values of the passed vector
+	 */
+	public static Vec4 toVec4(Vector vec){
+		//check if the vector given is one of the other types and convert
+		if(vec instanceof Vec2){
+			Vec2 vector = (Vec2)vec;
+			return new Vec4(vector.x, vector.y, 0.0f, 0.0f);
+		}else if(vec instanceof Vec3){
+			Vec3 vector = (Vec3)vec;
+			return new Vec4(vector.x, vector.y, vector.z, 0.0f);
+		}
+		//otherwise return the vector
+		return (Vec4)vec;
+	}
+	
+	/**
+	 * Determines the distance the given {@code point} is from the line formed by {@code start} and {@code end}
+	 * 
+	 * @param start Starting point of the line formed with end
+	 * @param end End point of the line formed with start
+	 * @param point Point to determine distance of from the line made by start and end
+	 * 
+	 * @return Distance {@code point} is from the line formed by {@code start} and {@code end}
+	 */
+	public static float distance(Vector start, Vector end, Vector point){
+		//d = |(end-start)X(point-start)|
+//		      ---------------------------
+//		      		 |(end-start)|
+		
+		Vec3 line = toVec3(end).subtract(toVec3(start));
+		Vec3 relaPoint = toVec3(point).subtract(toVec3(start));
+		//check if the line is 0 length
+		if(line.length() == 0){
+			//if it is then just return the distance between the start and point
+			return relaPoint.length();
+		}else{
+			//otherwise use the formula above to get the distance
+			return line.cross(relaPoint).length()/line.length();
+		}
 	}
 }
