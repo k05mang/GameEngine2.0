@@ -1,9 +1,6 @@
 package core;
 
-import glMath.Transform;
-import glMath.vectors.Vec3;
 import mesh.Mesh;
-import mesh.primitives.geometry.Cube;
 import physics.collision.AABB;
 import physics.collision.CollisionMesh;
 import physics.collision.ConvexHull;

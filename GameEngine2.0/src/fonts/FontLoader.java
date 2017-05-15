@@ -7,6 +7,8 @@ import java.util.ArrayList;
 
 import glMath.vectors.Vec3;
 import mesh.curve.BezierCurve;
+import mesh.curve.BezierPath;
+import mesh.curve.Continuity;
 
 public class FontLoader {
 	private File fontFile;
@@ -315,7 +317,8 @@ Each flag is a single bit. Their meanings are shown below.
 		}
 		
 //		int curContour = 0;
-//		boolean isFirst = true;//tracks whether this is the first 
+//		boolean isFirst = true;//tracks whether this is the first\
+		BezierPath contour = new BezierPath(Continuity.C2);
 		BezierCurve curve = new BezierCurve();
 		//read each of the coordinate values
 		readCoords(points, flags, true);//start with x
@@ -324,6 +327,7 @@ Each flag is a single bit. Their meanings are shown below.
 		//loop through each contour
 		for(int curContour = 0; curContour < endPoints.length; curContour++){
 			int basePoint = curContour == 0 ? 0 : endPoints[curContour-1]+1;//cap to 0 in case of -1 
+			contour = new BezierPath(Continuity.C2);
 			curve = new BezierCurve();
 			//for each point in that contour construct curves
 			for(int curPoint = basePoint; curPoint < endPoints[curContour]+1; curPoint++){
@@ -335,7 +339,7 @@ Each flag is a single bit. Their meanings are shown below.
 				//if we have an on curve point and are not the first point of the contour
 				if(onCurve && curPoint != basePoint){
 					//then we need to end the curve and start a new one
-					glyph.add(curve);
+					contour.add(curve);
 					
 					//create new curve using current point as base point for new curve
 					curve = new BezierCurve(points.get(curPoint));
@@ -344,14 +348,15 @@ Each flag is a single bit. Their meanings are shown below.
 					if(curPoint == endPoints[curContour]){
 						//then we need a loop back curve to end the contour
 						curve.add(points.get(basePoint));
-						glyph.add(curve);
+						contour.add(curve);
 					}
 				}else if(curPoint == endPoints[curContour]){//check if we are on the last point for the contour
 					//then we need a loop back curve to end the contour
 					curve.add(points.get(basePoint));
-					glyph.add(curve);
+					contour.add(curve);
 				}
 			}
+			glyph.add(contour);
 		}
 		//lastly add the glyph to the font
 		font.add(glyph);

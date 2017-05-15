@@ -228,7 +228,7 @@ public abstract class VecUtil {
 	 * Converts the given Vector {@code vec} to a type Vec2.
 	 * <br>
 	 * With the higher order vectors the first two values are used to construct the Vec2, the x and y values.
-	 * If the type passed to this function is a Vec2 then the vector is returned from the function, not a copy.
+	 * If the type passed to this function is a Vec2 then the vector is returned from the function as a copy.
 	 * 
 	 * @param vec Vector to convert
 	 * 
@@ -244,7 +244,7 @@ public abstract class VecUtil {
 			return new Vec2(vector.x, vector.y);
 		}
 		//otherwise return the vector
-		return (Vec2)vec;
+		return new Vec2((Vec2)vec);
 	}
 	
 	/**
@@ -252,7 +252,7 @@ public abstract class VecUtil {
 	 * <br>
 	 * With Vec4 types the first three values are used to construct the Vec3, the x, y, z values.
 	 * In the case of Vec2 types the vector returned will contain the first two values of the vector with z = 0.
-	 * If the type passed to this function is a Vec3 then the vector is returned from the function, not a copy.
+	 * If the type passed to this function is a Vec3 then the vector is returned from the function as a copy.
 	 * 
 	 * @param vec Vector to convert
 	 * 
@@ -268,7 +268,7 @@ public abstract class VecUtil {
 			return new Vec3(vector.x, vector.y, vector.z);
 		}
 		//otherwise return the vector
-		return (Vec3)vec;
+		return new Vec3((Vec3)vec);
 	}
 	
 	/**
@@ -276,7 +276,7 @@ public abstract class VecUtil {
 	 * <br>
 	 * With Vec3 types the first three values are used to construct the Vec4 then w = 0.
 	 * In the case of Vec2 types the vector returned will contain the first two values of the vector with z and y = 0.
-	 * If the type passed to this function is a Vec4 then the vector is returned from the function, not a copy.
+	 * If the type passed to this function is a Vec4 then the vector is returned from the function as a copy.
 	 * 
 	 * @param vec Vector to convert
 	 * 
@@ -292,7 +292,7 @@ public abstract class VecUtil {
 			return new Vec4(vector.x, vector.y, vector.z, 0.0f);
 		}
 		//otherwise return the vector
-		return (Vec4)vec;
+		return new Vec4((Vec4)vec);
 	}
 	
 	/**

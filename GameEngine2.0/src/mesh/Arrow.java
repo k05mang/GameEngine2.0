@@ -166,7 +166,7 @@ public class Arrow extends SpatialAsset{
 		Transform tipTrans = new Transform().scale(xzScale, tipLength, xzScale);
 		//first orient the meshes
 		Vec3 axis = Transform.yAxis.cross(direction);
-		float angle = (float)(Math.acos(Transform.yAxis.dot(direction))*180/Math.PI);
+		float angle = (float)(Math.toDegrees(Math.acos(Transform.yAxis.dot(direction))));
 		shaftTrans.rotate(angle == 180 ? Transform.xAxis : axis, angle);
 		tipTrans.rotate(angle == 180 ? Transform.xAxis : axis, angle);
 		//translate the cylinder

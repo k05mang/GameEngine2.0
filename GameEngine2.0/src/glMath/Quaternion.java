@@ -352,7 +352,7 @@ public class Quaternion {
 	}
 	
 	/**
-	 * Generates a quaternion that can be used to transform the {@code start} start to the 
+	 * Generates a quaternion that can be used to transform the {@code start} to the 
 	 * vector {@code end} through a rotation around some axis
 	 * 
 	 * @param start Vector to start the rotation from

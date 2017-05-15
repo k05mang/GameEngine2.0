@@ -2,12 +2,13 @@ package fonts;
 
 import java.util.ArrayList;
 
-import mesh.curve.BezierMesh;
 import mesh.curve.BezierCurve;
+import mesh.curve.BezierMesh;
+import mesh.curve.BezierPath;
 
 public class Glyph {
 
-	public ArrayList<BezierCurve> curves;
+	public ArrayList<BezierPath> contours;
 	public ArrayList<BezierMesh> renderables;
 	private ArrayList<Glyph> subGlyphs;
 	
@@ -17,19 +18,21 @@ public class Glyph {
 	 * @param numContours Number of contours or curves this glyph uses in its rendering
 	 */
 	public Glyph(int numContours) {
-		curves = new ArrayList<BezierCurve>(numContours);
+		contours = new ArrayList<BezierPath>(numContours);
 		renderables = new ArrayList<BezierMesh>(numContours);
 		subGlyphs = new ArrayList<Glyph>();
 	}
 
 	/**
-	 * Adds the given curve to this glyph to be used in its rendering
+	 * Adds the given path contour to this glyph to be used in its rendering
 	 * 
 	 * @param contour Contour formed in parsing the glyph, to be used in rendering the shape of the glyph
 	 */
-	public void add(BezierCurve contour){
-		curves.add(contour);
-		renderables.add(new BezierMesh(contour));
+	public void add(BezierPath contour){
+		contours.add(contour);
+		for(BezierCurve curve : contour.getCurves()){
+			renderables.add(new BezierMesh(curve));
+		}
 	}
 	
 	public void add(Glyph glyph){
