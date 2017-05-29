@@ -138,72 +138,67 @@ public class BezierPath {
 	}
 	
 	/**
-	 * Smooth's the curve at the joint points of the end curves
+	 * Gets the current starting Bezier Curve for this Bezier Path
 	 * 
-	 * @param newCurve Pointer to the new curve that was added
+	 * @return Curve that is at the start of this BezierPath
 	 */
-	private void smooth(BezierCurve newCurve){
-		switch(smoothness){
-//			case C0: if it is c0 do nothing since this just means the curves are joint
-//				break;
-			case C1:
-				smoothC1(newCurve);
-				break;
-			case C2:
-				smoothC2(newCurve);
-				break;
-		}
+	public BezierCurve start(){
+		return start.curve;
 	}
 	
 	/**
-	 * Smooths out the curves to create a path with c1 smoothness
+	 * Gets the current ending Bezier Curve for this Bezier Path
 	 * 
-	 * @param curve New curve that was added, this will be used to determine where we are on the path and how to handle data
+	 * @return Curve that is at the end of this BezierPath
 	 */
-	private void smoothC1(BezierCurve curve){
+	public BezierCurve end(){
+		return end.curve;
+	}
+	
+	/**
+	 * Smooth's the curve at the joint points of the end curves
+	 * 
+	 * @param curve Pointer to the new curve that was added
+	 */
+	private void smooth(BezierCurve curve){
+		//if the smoothness is just c0 return from the function and do nothing
+		if(smoothness == Continuity.C0){
+			return;
+		}
 		ArrayList<Vec3> edgeCurve = null;
 		ArrayList<Vec3> bodyCurve = null;
 		Vec3 joint = null, body = null, change = null;
 		boolean shouldProp = false;//tracks whether we need to perform a propagation to reflect a change in the path smoothness
 		//determine if the new curve added was added to the start or end of the path, this way we know what the flow of the data is
-		if(curve == start.curve){
-			edgeCurve = start.curve.getPoints();
-			bodyCurve = start.next.curve.getPoints();
-			joint = bodyCurve.get(0);
-			//check which curve can be updated
-			if(edgeCurve.size() < 3){//check if the new curve is just a line
-				//in which case we want to make changes to the body curve not the edge
-				body = edgeCurve.get(0);
-				change = bodyCurve.get(1);
-				//if the body curve we just adjusted was part of a 3 point curve then we need to propagate changes to the rest of the path
-				shouldProp = bodyCurve.size() == 3;//4 point curves and higher order curves don't need updating
-			}else{
-				//otherwise we want to adjust the edge curve
-				body = bodyCurve.get(1);
-				change = edgeCurve.get(edgeCurve.size()-2);
-			}
-		}else{//otherwise it is the end curve
-			edgeCurve = end.curve.getPoints();
-			bodyCurve = end.prev.curve.getPoints();
-			joint = edgeCurve.get(0);
-			//check which curve can be updated
-			if(edgeCurve.size() < 3){//check if the new curve is just a line
-				//in which case we want to make changes to the body curve not the edge
-				body = edgeCurve.get(1);
-				change = bodyCurve.get(bodyCurve.size()-2);
-				//if the body curve we just adjusted was part of a 3 point curve then we need to propagate changes to the rest of the path
-				shouldProp = bodyCurve.size() == 3;//4 point curves and higher order curves don't need updating
-			}else{
-				//otherwise we want to adjust the edge curve
-				body = bodyCurve.get(bodyCurve.size()-2);
-				change = edgeCurve.get(1);
-			}
+		edgeCurve = start.curve.getPoints();
+		bodyCurve = start.next.curve.getPoints();
+		joint = bodyCurve.get(0);
+		
+		//check which curve can be updated
+		if(edgeCurve.size() < 3){//check if the new curve is just a line
+			//in which case we want to make changes to the body curve not the edge
+			body = edgeCurve.get(0);
+			change = bodyCurve.get(1);
+			//if the body curve we just adjusted was part of a 3 point curve then we need to propagate changes to the rest of the path
+			shouldProp = bodyCurve.size() == 3;//4 point curves and higher order curves don't need updating
+		}else{
+			//otherwise we want to adjust the edge curve
+			body = bodyCurve.get(1);
+			change = edgeCurve.get(edgeCurve.size()-2);
 		}
 		
 		//check to see if both adjacent curves are just lines
 		if(edgeCurve.size() > 2 || bodyCurve.size() > 2){
 			//since at least one of them is not a line we can linearize them
-			linearize(joint, body, change);
+			switch(smoothness){
+				case C1:
+					linearize(joint, body, change);
+					break;
+				case C2:
+					linearize(joint, body, change);
+					midShift(joint, body, change);
+					break;
+			}
 		}
 		
 		//check if the edge curves are jointed and the path is closed
@@ -211,84 +206,6 @@ public class BezierPath {
 			//then we also need to linearize these
 			edgeCurve = end.curve.getPoints();
 			bodyCurve = start.curve.getPoints();
-			joint = bodyCurve.get(0);
-			
-			//determine which curve is more easily updated
-			//not a line            and    body curve isn't more easily updated
-			if(edgeCurve.size() > 2 && bodyCurve.size() <= edgeCurve.size()){
-				//this means it isn't and can be updated normally
-				body = bodyCurve.get(1);
-				change = edgeCurve.get(edgeCurve.size()-2);
-				//however we will need to propagate changes to the path only if the curve was a 3 point curve
-				shouldProp = edgeCurve.size() == 3;
-				linearize(joint, body, change);
-			}else if(bodyCurve.size() > 2){//check if the body curve is a line
-				body = edgeCurve.get(edgeCurve.size()-2);
-				change = bodyCurve.get(1);
-				//however we will need to propagate changes to the path
-				shouldProp = true;
-				linearize(joint, body, change);
-			}//otherwise they are both lines and nothing can be done
-		}
-		
-		//check if we need to propagate changes to the rest of the path
-		if(shouldProp){
-			//TODO right propagation function
-		}
-	}
-	
-	private void smoothC2(BezierCurve curve){
-		ArrayList<Vec3> edgeCurve = null;
-		ArrayList<Vec3> bodyCurve = null;
-		Vec3 joint = null, body = null, change = null;
-		boolean shouldProp = false;//tracks whether we need to perform a propagation to reflect a change in the path smoothness
-		//determine if the new curve added was added to the start or end of the path, this way we know what the flow of the data is
-		if(curve == start.curve){
-			edgeCurve = start.curve.getPoints();
-			bodyCurve = start.next.curve.getPoints();
-			joint = bodyCurve.get(0);
-			//check which curve can be updated
-			if(edgeCurve.size() < 3){//check if the new curve is just a line
-				//in which case we want to make changes to the body curve not the edge
-				body = edgeCurve.get(0);
-				change = bodyCurve.get(1);
-				//if the body curve we just adjusted was part of a 3 point curve then we need to propagate changes to the rest of the path
-				shouldProp = bodyCurve.size() == 3;//4 point curves and higher order curves don't need updating
-			}else{
-				//otherwise we want to adjust the edge curve
-				body = bodyCurve.get(1);
-				change = edgeCurve.get(edgeCurve.size()-2);
-			}
-		}else{//otherwise it is the end curve
-			edgeCurve = end.curve.getPoints();
-			bodyCurve = end.prev.curve.getPoints();
-			joint = edgeCurve.get(0);
-			//check which curve can be updated
-			if(edgeCurve.size() < 3){//check if the new curve is just a line
-				//in which case we want to make changes to the body curve not the edge
-				body = edgeCurve.get(1);
-				change = bodyCurve.get(bodyCurve.size()-2);
-				//if the body curve we just adjusted was part of a 3 point curve then we need to propagate changes to the rest of the path
-				shouldProp = bodyCurve.size() == 3;//4 point curves and higher order curves don't need updating
-			}else{
-				//otherwise we want to adjust the edge curve
-				body = bodyCurve.get(bodyCurve.size()-2);
-				change = edgeCurve.get(1);
-			}
-		}
-		
-		//check to see if both adjacent curves are just lines
-		if(edgeCurve.size() > 2 || bodyCurve.size() > 2){
-			//since at least one of them is not a line we can linearize them
-			Vec3 adjustVec = VecUtil.subtract(joint, body).scale(2).add(body);//(joint-body)*2+body = 2*joint-2*body+body = 2*joint-3*body
-			change.set(adjustVec);
-		}
-		
-		//check if the edge curves are jointed and the path is closed
-//		if(isClosed){
-//			//then we also need to linearize these
-//			edgeCurve = end.curve.getPoints();
-//			bodyCurve = start.curve.getPoints();
 //			joint = bodyCurve.get(0);
 //			
 //			//determine which curve is more easily updated
@@ -298,16 +215,24 @@ public class BezierPath {
 //				body = bodyCurve.get(1);
 //				change = edgeCurve.get(edgeCurve.size()-2);
 //				//however we will need to propagate changes to the path only if the curve was a 3 point curve
-//				shouldProp = edgeCurve.size() == 3;Vec3 adjustVec = VecUtil.subtract(joint, body).scale(2).add(joint);//(joint-body)*2+joint = 2*joint-2*body+joint = 3*joint-2*body
-//				change.set(adjustVec);
+//				shouldProp = edgeCurve.size() == 3;
 //			}else if(bodyCurve.size() > 2){//check if the body curve is a line
 //				body = edgeCurve.get(edgeCurve.size()-2);
 //				change = bodyCurve.get(1);
 //				//however we will need to propagate changes to the path
-//				shouldProp = true;Vec3 adjustVec = VecUtil.subtract(joint, body).scale(2).add(joint);//(joint-body)*2+joint = 2*joint-2*body+joint = 3*joint-2*body
-//				change.set(adjustVec);
+//				shouldProp = true;
 //			}//otherwise they are both lines and nothing can be done
-//		}
+			
+			switch(smoothness){
+				case C1:
+					linearize(joint, bodyCurve.get(1), edgeCurve.get(edgeCurve.size()-2));
+					break;
+				case C2:
+					linearize(joint, bodyCurve.get(1), edgeCurve.get(edgeCurve.size()-2));
+					midShift(joint, bodyCurve.get(1), edgeCurve.get(edgeCurve.size()-2));
+					break;
+			}
+		}
 		
 		//check if we need to propagate changes to the rest of the path
 		if(shouldProp){
@@ -316,8 +241,8 @@ public class BezierPath {
 	}
 	
 	/**
-	 * Takes 3 points from a curve and linearizes them for c1 smoothness conditions. Only the end control will
-	 * have its value updated, this is to reduce the need to update the entire curve 
+	 * Takes three points from a curve and linearizes them for c1 smoothness conditions. Both control points
+	 * are adjusted and share in the shift.
 	 * 
 	 * @param joint Point that is shared between the curves
 	 * @param bodyControl Control point coming from the main body of the path
@@ -327,7 +252,7 @@ public class BezierPath {
 		//get the angle between the lines formed between the joint and the control points
 		Vec3 relaPoint1 = VecUtil.subtract(endControl, joint).normalize();//line from the joint to the start curve control
 		Vec3 relaPoint2 = VecUtil.subtract(bodyControl, joint).normalize();//line from the joint to the second curve control
-		double angle = Math.toDegrees(Math.acos(relaPoint1.dot(relaPoint2)));//angle bewtween the lines
+		double angle = Math.toDegrees(Math.acos(relaPoint1.dot(relaPoint2)));//angle between the lines
 		//check if they are already colinear
 		if(VecUtil.distance(joint, bodyControl, endControl) == 0){
 			//this means they are already co-linear
@@ -348,17 +273,48 @@ public class BezierPath {
 		}else{//they are not co-linear
 			//get the axis of rotation
 			Vec3 axis = relaPoint1.cross(relaPoint2);
-			Vec3 origVec = VecUtil.subtract(endControl, joint);//original vector from the join to the end control
+			Vec3 endVec = VecUtil.subtract(endControl, joint);//original vector from the join to the end control
+			Vec3 bodyVec = VecUtil.subtract(bodyControl, joint);
+			float adjustAngle = (float)(180-angle)/2.0f;
 			//get the rotation
-			Quaternion rot = Quaternion.fromAxisAngle(axis, (float)angle-180);//we want angle to be negative to rotate it to be 180 to the body control
-			endControl.add(rot.multVec(origVec).subtract(origVec));//perform the rotation and set the control point
+			Quaternion endRot = Quaternion.fromAxisAngle(axis, -adjustAngle);//we want angle to be negative to rotate it to be 180 to the body control
+			endControl.set(endRot.multVec(endVec).add(joint));//perform the rotation and set the control point
+			
+			Quaternion bodyRot = Quaternion.fromAxisAngle(axis, adjustAngle);//we want angle to be negative to rotate it to be 180 to the body control
+			bodyControl.set(bodyRot.multVec(bodyVec).add(joint));//perform the rotation and set the control point
 		}
+	}
+	
+	/**
+	 * Given three linearized control points that define a joint between two bezier curves in the path this method will adjust both control points such 
+	 * that the joint point is the mid point between both control points.
+	 * 
+	 * @param joint Joint point
+	 * @param body Control coming from the main body of the bezier path
+	 * @param end Control coming from the edge of the bezier path
+	 */
+	private void midShift(Vec3 joint, Vec3 body, Vec3 end){
+		//get the vectors relative to the joint point
+		Vec3 bodyVec = VecUtil.subtract(body, joint);
+		Vec3 edgeVec = VecUtil.subtract(end, joint);
+		
+		//get the vector we will use to adjust the control points
+		Vec3 adjustVec = VecUtil.add(bodyVec, edgeVec).scale(.5f);//since they are already opposite of each other then addition is the same as if we were subtracting
+		//we also scale by half so taht both controls get a portion of the adjustment
+//		System.out.println(bodyVec.length());
+//		System.out.println(edgeVec.length());
+//		System.out.println(adjustVec.length());
+//		System.out.println(bodyVec.subtract(adjustVec).length());
+//		System.out.println(edgeVec.subtract(adjustVec).length());
+		//adjust the control points
+		body.subtract(adjustVec);
+		end.subtract(adjustVec);
 	}
 	
 	/**
 	 * Gets the Bezier Curves that define this Bezier path object
 	 * 
-	 * @return ArrayList containing the Bezier curves taht make up this Bezier Path
+	 * @return ArrayList containing the Bezier curves that make up this Bezier Path
 	 */
 	public ArrayList<BezierCurve> getCurves(){
 		return curves;

@@ -222,6 +222,7 @@ public class FontLoader {
 //		stream.seek(tableDir.get(FontTable.GLYPH).offset);
 		short numContours = 0;
 		//begin parsing the table
+		//TODO make sure the 4 is removed from this for loop
 		for(int curGlyph = 0; curGlyph < numGlyphs/4; curGlyph++){
 			stream.seek(tableDir.get(FontTable.GLYPH).offset+glyphOffsets[curGlyph]);
 			//get the number of contours that the glyph might have
@@ -339,21 +340,48 @@ Each flag is a single bit. Their meanings are shown below.
 				//if we have an on curve point and are not the first point of the contour
 				if(onCurve && curPoint != basePoint){
 					//then we need to end the curve and start a new one
-					contour.add(curve);
+					//determine if the curve we are adding or connecting to is a straight line
+					if(curve.getOrder() == 1 ||
+					  (contour.start() != null && contour.start().getOrder() == 1) ||
+					  (contour.end() != null && contour.end().getOrder() == 1)){
+						//if it is then we want to add the curve to the path as C0 continuity to avoid stretching existing curves
+						contour.setSmoothness(Continuity.C0);
+						contour.add(curve);
+						contour.setSmoothness(Continuity.C2);
+					}else{
+						contour.add(curve);
+					}
 					
 					//create new curve using current point as base point for new curve
 					curve = new BezierCurve(points.get(curPoint));
-					
-					
+
 					if(curPoint == endPoints[curContour]){
 						//then we need a loop back curve to end the contour
 						curve.add(points.get(basePoint));
-						contour.add(curve);
+						if(curve.getOrder() == 1 ||
+						  (contour.start() != null && contour.start().getOrder() == 1) ||
+						  (contour.end() != null && contour.end().getOrder() == 1)){
+							//if it is then we want to add the curve to the path as C0 continuity to avoid stretching existing curves
+							contour.setSmoothness(Continuity.C0);
+							contour.add(curve);
+							contour.setSmoothness(Continuity.C2);
+						}else{
+							contour.add(curve);
+						}
 					}
 				}else if(curPoint == endPoints[curContour]){//check if we are on the last point for the contour
 					//then we need a loop back curve to end the contour
 					curve.add(points.get(basePoint));
-					contour.add(curve);
+					if(curve.getOrder() == 1 ||
+					  (contour.start() != null && contour.start().getOrder() == 1) ||
+					  (contour.end() != null && contour.end().getOrder() == 1)){
+						//if it is then we want to add the curve to the path as C0 continuity to avoid stretching existing curves
+						contour.setSmoothness(Continuity.C0);
+						contour.add(curve);
+						contour.setSmoothness(Continuity.C2);
+					}else{
+						contour.add(curve);
+					}
 				}
 			}
 			glyph.add(contour);

@@ -30,8 +30,15 @@ public class Glyph {
 	 */
 	public void add(BezierPath contour){
 		contours.add(contour);
+		int count = 0;
 		for(BezierCurve curve : contour.getCurves()){
 			renderables.add(new BezierMesh(curve));
+//			if(count == contour.getCurves().size()-1){
+//				renderables.get(renderables.size()-1).setMaterial("path");
+//			}else if(count == contour.getCurves().size()-2){
+//				renderables.get(renderables.size()-1).setMaterial("sec");
+//			}
+			count++;
 		}
 	}
 	
