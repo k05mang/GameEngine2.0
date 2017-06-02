@@ -1,4 +1,4 @@
-package events.window;
+package windowing.events.window;
 import windowing.Window;
 
 public interface WindowListener {

@@ -1,4 +1,4 @@
-package events.keyboard;
+package windowing.events.keyboard;
 import static org.lwjgl.glfw.GLFW.*;
 
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
-package events.mouse;
-import events.keyboard.ModKey;
+package windowing.events.mouse;
 import windowing.Window;
+import windowing.events.keyboard.ModKey;
 
 public interface MouseListener {
 	/**

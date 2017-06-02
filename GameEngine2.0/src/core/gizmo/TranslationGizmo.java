@@ -1,7 +1,5 @@
 package core.gizmo;
 
-import events.keyboard.ModKey;
-import events.mouse.MouseButton;
 import glMath.Transform;
 import glMath.VecUtil;
 import glMath.vectors.Vec3;
@@ -10,6 +8,8 @@ import physics.collision.CollisionDetector;
 import physics.collision.Ray;
 import shaders.ShaderProgram;
 import windowing.Window;
+import windowing.events.keyboard.ModKey;
+import windowing.events.mouse.MouseButton;
 import core.Camera;
 import static core.gizmo.TransformType.TRANSLATE;
 

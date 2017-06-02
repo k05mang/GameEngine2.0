@@ -10,12 +10,12 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
 import core.Scene;
-import events.keyboard.KeyListener;
-import events.keyboard.KeyboardHandler;
-import events.mouse.MouseHandler;
-import events.mouse.MouseListener;
-import events.window.WindowHandler;
-import events.window.WindowListener;
+import windowing.events.keyboard.KeyListener;
+import windowing.events.keyboard.KeyboardHandler;
+import windowing.events.mouse.MouseHandler;
+import windowing.events.mouse.MouseListener;
+import windowing.events.window.WindowHandler;
+import windowing.events.window.WindowListener;
 
 /**
  * TODO expand to multi monitor support

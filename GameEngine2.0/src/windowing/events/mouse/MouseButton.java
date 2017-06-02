@@ -1,4 +1,4 @@
-package events.mouse;
+package windowing.events.mouse;
 import static org.lwjgl.glfw.GLFW.*;
 
 public enum MouseButton {

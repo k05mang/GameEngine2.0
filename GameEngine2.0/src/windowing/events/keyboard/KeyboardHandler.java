@@ -1,4 +1,4 @@
-package events.keyboard;
+package windowing.events.keyboard;
 
 import java.util.ArrayList;
 

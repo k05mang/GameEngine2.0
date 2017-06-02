@@ -1,4 +1,4 @@
-package events.window;
+package windowing.events.window;
 
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 

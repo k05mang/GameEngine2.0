@@ -1,4 +1,4 @@
-package events.mouse;
+package windowing.events.mouse;
 
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 
@@ -10,8 +10,8 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 
-import events.keyboard.ModKey;
 import windowing.Window;
+import windowing.events.keyboard.ModKey;
 
 public class MouseHandler implements 
 GLFWMouseButtonCallback.SAM,

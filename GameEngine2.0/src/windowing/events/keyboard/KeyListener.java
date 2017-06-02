@@ -1,4 +1,4 @@
-package events.keyboard;
+package windowing.events.keyboard;
 import windowing.Window;
 
 public interface KeyListener {
