@@ -32,7 +32,7 @@ public class BezierPath {
 	 */
 	public BezierPath(Continuity c){
 		curves = new ArrayList<BezierCurve>();
-		start = new BezierNode();
+		start = new BezierNode(null);
 		end = start;//since there is no data both start and end are the same
 		smoothness = c;
 		isClosed = false;
@@ -57,62 +57,73 @@ public class BezierPath {
 		if(curves.size() == 0 && !isPoint){
 			start.curve = new BezierCurve(curve);//since there is no current data this is the first new curve
 			curves.add(start.curve);//store the new curve object for reference when rendering
-			end = new BezierNode(null, start, null);//create a new node for end
-			start.next = end;//set the next node to be the end node
-		}else if(curves.size() == 1 && !isPoint){
-			end.curve = new BezierCurve(curve);
-			curves.add(end.curve);
+//			end = new BezierNode(null, start, null);//create a new node for end
+//			start.next = end;//set the next node to be the end node
+//		}else if(curves.size() == 1 && !isPoint){
+//			end.curve = new BezierCurve(curve);
+//			curves.add(end.curve);
 		}else if(!isClosed && !isPoint){
+			ArrayList<Vec3> points = curve.getPoints();
 			//determine if the curve should be added to the front, end, or neither
-			Vec3 startPoint = curve.getBezierPoint(0), endPoint = curve.getBezierPoint(1);
-			
-			//compare with the start curves start point
-			if(start.curve.getBezierPoint(0).equals(endPoint)){//check if the end point matches this end
-				//in this case we only need to add the curve and make it the new start
-				BezierNode curStart = start;
-				start = new BezierNode(curStart, null, new BezierCurve(curve));
-				curves.add(start.curve);
-				curStart.prev = start;
-			}else if(start.curve.getBezierPoint(0).equals(startPoint)){//check if the start point matches
-				//in this case we need to add the curve but reverse, this way values read consecutively along the path
-				//are order in the same direction making reading the path much easier
-				BezierNode curStart = start;
-				start = new BezierNode(curStart, null, new BezierCurve(curve, true));
-				curves.add(start.curve);
-				curStart.prev = start;
-			}//the start doesn't match anywhere, so try the end curve
-			
-			else if(end.curve.getBezierPoint(1).equals(startPoint)){//check if the start point matches this end
+			Vec3 startPoint = points.get(0), endPoint = points.get(points.size()-1);
+			PathJoint joint = null;
+			if(end.curve.getBezierPoint(1).equals(startPoint)){//check if the start point matches this end
 				//in this case we only need to add the curve and make it the new end
 				BezierNode curEnd = end;
-				end = new BezierNode(null, curEnd, new BezierCurve(curve));
+				end = new BezierNode(new BezierCurve(curve));
+				joint = new PathJoint(curEnd, end);
 				curves.add(end.curve);
-				curEnd.prev = end;
+				//associate the joint with the nodes
+				curEnd.forwardJoint = joint;
+				end.backJoint = joint;
 			}else if(end.curve.getBezierPoint(1).equals(endPoint)){//check if the end point matches
 				//in this case we need to add the curve but reverse, this way values read consecutively along the path
 				//are order in the same direction making reading the path much easier
 				BezierNode curEnd = end;
-				end = new BezierNode(null, curEnd, new BezierCurve(curve, true));
+				end = new BezierNode(new BezierCurve(curve, true));
+				joint = new PathJoint(curEnd, end);
 				curves.add(end.curve);
-				curEnd.prev = end;
+				//associate the joint with the nodes
+				curEnd.forwardJoint = joint;
+				end.backJoint = joint;
+			}
+			//compare with the start curves start point
+			else if(start.curve.getBezierPoint(0).equals(endPoint)){//check if the end point matches this end
+				//in this case we only need to add the curve and make it the new start
+				BezierNode curStart = start;
+				start = new BezierNode(new BezierCurve(curve));
+				joint = new PathJoint(start, curStart);
+				curves.add(start.curve);
+				//associate the joint with the nodes
+				curStart.backJoint = joint;
+				start.forwardJoint = joint;
+			}else if(start.curve.getBezierPoint(0).equals(startPoint)){//check if the start point matches
+				//in this case we need to add the curve but reverse, this way values read consecutively along the path
+				//are order in the same direction making reading the path much easier
+				BezierNode curStart = start;
+				start = new BezierNode(new BezierCurve(curve, true));
+				joint = new PathJoint(start, curStart);
+				curves.add(start.curve);
+				//associate the joint with the nodes
+				curStart.backJoint = joint;
+				start.forwardJoint = joint;
 			}else{//else they dont match
 				return false;
 			}
-			
+			//smooth the joint
+			joint.smooth(smoothness);
 			//check if the start and end curves match tips, in which case the loop is closed
 			if(end.curve.getBezierPoint(1).equals(start.curve.getBezierPoint(0))){
+				joint = new PathJoint(end, start);
 				//if they are connect the list and mark it closed
-				start.prev = end;
-				end.next = start;
+				start.backJoint = joint;
+				end.forwardJoint = joint;
 				isClosed = true;
+				//smooth the joint
+				joint.smooth(smoothness);
 			}
 		}else{//the path is closed and isn't accepting new curves
 			return false;
-		}
-		
-		//smooth the path only if there is another curve to smooth it with
-		if(curves.size() > 1){
-			smooth(curves.get(curves.size()-1));
 		}
 		return true;
 	}
@@ -156,162 +167,6 @@ public class BezierPath {
 	}
 	
 	/**
-	 * Smooth's the curve at the joint points of the end curves
-	 * 
-	 * @param curve Pointer to the new curve that was added
-	 */
-	private void smooth(BezierCurve curve){
-		//if the smoothness is just c0 return from the function and do nothing
-		if(smoothness == Continuity.C0){
-			return;
-		}
-		ArrayList<Vec3> edgeCurve = null;
-		ArrayList<Vec3> bodyCurve = null;
-		Vec3 joint = null, body = null, change = null;
-		boolean shouldProp = false;//tracks whether we need to perform a propagation to reflect a change in the path smoothness
-		//determine if the new curve added was added to the start or end of the path, this way we know what the flow of the data is
-		edgeCurve = start.curve.getPoints();
-		bodyCurve = start.next.curve.getPoints();
-		joint = bodyCurve.get(0);
-		
-		//check which curve can be updated
-		if(edgeCurve.size() < 3){//check if the new curve is just a line
-			//in which case we want to make changes to the body curve not the edge
-			body = edgeCurve.get(0);
-			change = bodyCurve.get(1);
-			//if the body curve we just adjusted was part of a 3 point curve then we need to propagate changes to the rest of the path
-			shouldProp = bodyCurve.size() == 3;//4 point curves and higher order curves don't need updating
-		}else{
-			//otherwise we want to adjust the edge curve
-			body = bodyCurve.get(1);
-			change = edgeCurve.get(edgeCurve.size()-2);
-		}
-		
-		//check to see if both adjacent curves are just lines
-		if(edgeCurve.size() > 2 || bodyCurve.size() > 2){
-			//since at least one of them is not a line we can linearize them
-			switch(smoothness){
-				case C1:
-					linearize(joint, body, change);
-					break;
-				case C2:
-					linearize(joint, body, change);
-					midShift(joint, body, change);
-					break;
-			}
-		}
-		
-		//check if the edge curves are jointed and the path is closed
-		if(isClosed){
-			//then we also need to linearize these
-			edgeCurve = end.curve.getPoints();
-			bodyCurve = start.curve.getPoints();
-//			joint = bodyCurve.get(0);
-//			
-//			//determine which curve is more easily updated
-//			//not a line            and    body curve isn't more easily updated
-//			if(edgeCurve.size() > 2 && bodyCurve.size() <= edgeCurve.size()){
-//				//this means it isn't and can be updated normally
-//				body = bodyCurve.get(1);
-//				change = edgeCurve.get(edgeCurve.size()-2);
-//				//however we will need to propagate changes to the path only if the curve was a 3 point curve
-//				shouldProp = edgeCurve.size() == 3;
-//			}else if(bodyCurve.size() > 2){//check if the body curve is a line
-//				body = edgeCurve.get(edgeCurve.size()-2);
-//				change = bodyCurve.get(1);
-//				//however we will need to propagate changes to the path
-//				shouldProp = true;
-//			}//otherwise they are both lines and nothing can be done
-			
-			switch(smoothness){
-				case C1:
-					linearize(joint, bodyCurve.get(1), edgeCurve.get(edgeCurve.size()-2));
-					break;
-				case C2:
-					linearize(joint, bodyCurve.get(1), edgeCurve.get(edgeCurve.size()-2));
-					midShift(joint, bodyCurve.get(1), edgeCurve.get(edgeCurve.size()-2));
-					break;
-			}
-		}
-		
-		//check if we need to propagate changes to the rest of the path
-		if(shouldProp){
-			//TODO right propagation function
-		}
-	}
-	
-	/**
-	 * Takes three points from a curve and linearizes them for c1 smoothness conditions. Both control points
-	 * are adjusted and share in the shift.
-	 * 
-	 * @param joint Point that is shared between the curves
-	 * @param bodyControl Control point coming from the main body of the path
-	 * @param endControl Control point coming from the end curve.
-	 */
-	private void linearize(Vec3 joint, Vec3 bodyControl, Vec3 endControl){
-		//get the angle between the lines formed between the joint and the control points
-		Vec3 relaPoint1 = VecUtil.subtract(endControl, joint).normalize();//line from the joint to the start curve control
-		Vec3 relaPoint2 = VecUtil.subtract(bodyControl, joint).normalize();//line from the joint to the second curve control
-		double angle = Math.toDegrees(Math.acos(relaPoint1.dot(relaPoint2)));//angle between the lines
-		//check if they are already colinear
-		if(VecUtil.distance(joint, bodyControl, endControl) == 0){
-			//this means they are already co-linear
-			//but test to see how the control points line up to guarantee they aren't on the same side of the joint
-			//which in turn makes sharp edges
-			
-			//check if the angle is 180 or 0
-			if(angle == 0){
-				//if it is 0 then that means one of the control points is over extending the joint and needs to be adjusted
-				//move the control point on the end curve, this preserves the rest of the curve smoothness
-				//move the control point opposite the joint point the same distance it currently is from the joint
-				//get a translation vector
-				Vec3 adjust = VecUtil.subtract(joint, endControl);//from target control to joint
-				adjust.scale(2);//translate once to reach the joint again to mirror it = adjust+adjust = 2*adjust
-				//apply the translation
-				endControl.add(adjust);
-			}
-		}else{//they are not co-linear
-			//get the axis of rotation
-			Vec3 axis = relaPoint1.cross(relaPoint2);
-			Vec3 endVec = VecUtil.subtract(endControl, joint);//original vector from the join to the end control
-			Vec3 bodyVec = VecUtil.subtract(bodyControl, joint);
-			float adjustAngle = (float)(180-angle)/2.0f;
-			//get the rotation
-			Quaternion endRot = Quaternion.fromAxisAngle(axis, -adjustAngle);//we want angle to be negative to rotate it to be 180 to the body control
-			endControl.set(endRot.multVec(endVec).add(joint));//perform the rotation and set the control point
-			
-			Quaternion bodyRot = Quaternion.fromAxisAngle(axis, adjustAngle);//we want angle to be negative to rotate it to be 180 to the body control
-			bodyControl.set(bodyRot.multVec(bodyVec).add(joint));//perform the rotation and set the control point
-		}
-	}
-	
-	/**
-	 * Given three linearized control points that define a joint between two bezier curves in the path this method will adjust both control points such 
-	 * that the joint point is the mid point between both control points.
-	 * 
-	 * @param joint Joint point
-	 * @param body Control coming from the main body of the bezier path
-	 * @param end Control coming from the edge of the bezier path
-	 */
-	private void midShift(Vec3 joint, Vec3 body, Vec3 end){
-		//get the vectors relative to the joint point
-		Vec3 bodyVec = VecUtil.subtract(body, joint);
-		Vec3 edgeVec = VecUtil.subtract(end, joint);
-		
-		//get the vector we will use to adjust the control points
-		Vec3 adjustVec = VecUtil.add(bodyVec, edgeVec).scale(.5f);//since they are already opposite of each other then addition is the same as if we were subtracting
-		//we also scale by half so taht both controls get a portion of the adjustment
-//		System.out.println(bodyVec.length());
-//		System.out.println(edgeVec.length());
-//		System.out.println(adjustVec.length());
-//		System.out.println(bodyVec.subtract(adjustVec).length());
-//		System.out.println(edgeVec.subtract(adjustVec).length());
-		//adjust the control points
-		body.subtract(adjustVec);
-		end.subtract(adjustVec);
-	}
-	
-	/**
 	 * Gets the Bezier Curves that define this Bezier path object
 	 * 
 	 * @return ArrayList containing the Bezier curves that make up this Bezier Path
@@ -320,18 +175,192 @@ public class BezierPath {
 		return curves;
 	}
 	
+	/**
+	 * Maintains the flow and connection between Bezier Curves along the path, and maintains the joints between these curve nodes
+	 * 
+	 * @author Kevin Mango
+	 *
+	 */
 	private class BezierNode{
-		public BezierNode next, prev;
+		public PathJoint forwardJoint, backJoint;
 		public BezierCurve curve;
 		
-		public BezierNode(){
-			this(null, null, null);
+		public BezierNode(BezierCurve data){
+			forwardJoint = null;
+			backJoint = null;
+			curve = data;
+		}
+	}
+	
+	/**
+	 * Represents the joint between two bezier curves in the path. This class can handle the smoothing and propagation of that smoothing.
+	 * @author Kevin Mango
+	 *
+	 */
+	private class PathJoint{
+		private BezierNode prev, next;
+		private Vec3 incoming, outgoing, joint;
+		private Continuity curSmoothing;
+		
+		/**
+		 * Constructs a Bezier path joint based on the nodes provided. 
+		 * 
+		 * @param prev Previous node to take data from and update
+		 * @param next Next node to take data from and update 
+		 */
+		public PathJoint(BezierNode prev, BezierNode next){
+			this.prev = prev;
+			this.next = next;
+			curSmoothing = null;
+			
+			joint = null;
+			ArrayList<Vec3> points = null;
+			
+			//set the data taken from the previous node
+			points = prev.curve.getPoints();
+			incoming = points.get(points.size()-2);
+			
+			//set the data taken from the next node
+			points = next.curve.getPoints();
+			outgoing = points.get(1);
+			//set the joint
+			joint = points.get(0);
 		}
 		
-		public BezierNode(BezierNode next, BezierNode prev, BezierCurve data){
-			this.next = next;
-			this.prev = prev;
-			curve = data;
+		public void smooth(Continuity smoothness){
+			smooth(smoothness, false, false);
+		}
+		
+		private void smooth(boolean constrainIn, boolean constrainOut){
+			smooth(curSmoothing, constrainIn, constrainOut);
+		}
+		
+		private void smooth(Continuity smoothness, boolean constrainIn, boolean constrainOut){
+			if(isClosed){
+				if(start.backJoint == this){
+					return;
+				}
+			}
+			
+			//check to make sure that the curves this joint merges are both order 2 or higher, if one is a line ignore the smoothing
+			if(prev.curve.getOrder() < 2 || next.curve.getOrder() < 2){
+				return;
+			}
+			
+			curSmoothing = smoothness;
+			switch(smoothness){
+				case C0:
+					return;
+				case C1:
+					linearize(constrainIn, constrainOut);
+					break;
+				case C2:
+					if(linearize(constrainIn, constrainOut)){
+						midShift(constrainIn, constrainOut);
+					}
+					break;
+			}
+			//propagate these changes to adjacent joints if necessary
+			
+			//determine if the adjacent curves are 3 point curves, these are the only curves that need to be updated on the other joint
+			//3 points curves share the single off curve control with both joints and lines are end points for propagation
+			if(prev.curve.getOrder() == 2 &&  //the previous curve has 3 points
+					prev.backJoint != null && //has a joint with another curve going backward
+					!constrainIn){//and we aren't constraining the incoming control
+				prev.backJoint.smooth(false, true);
+			}
+			
+			if(next.curve.getOrder() == 2 && //the adjacent next curve has 3 points
+					next.forwardJoint != null && //has a joint with another curve going forward
+					!constrainOut){//and we aren't constraining the outgoing control
+				next.forwardJoint.smooth(true, false);
+			}
+		}
+		
+		/**
+		 * Takes three points from a curve and linearizes them for c1 smoothness conditions. Both control points
+		 * are adjusted and share in the shift.
+		 * 
+		 * @param constrainIn Determines if the incoming control should not be modified and only the outgoing or both
+		 * @param constrainOut Determines if the outgoing control should not be modified and only the incoming or both
+		 * 
+		 * @return True if the joint can be linearized and therefore smoothed, false if it cannot. This is decided based on the angle
+		 * between the controls being greater than 90 degrees acute angles will not be linearized
+		 */
+		private boolean linearize(boolean constrainIn, boolean constrainOut){
+			//if we are to constrain movement on both controls simply do nothing and return
+			if(constrainIn && constrainOut){
+				return false;
+			}
+			//get the angle between the lines formed between the joint and the control points
+			Vec3 relaPoint1 = VecUtil.subtract(outgoing, joint).normalize();//line from the joint to the start curve control
+			Vec3 relaPoint2 = VecUtil.subtract(incoming, joint).normalize();//line from the joint to the second curve control
+			double angle = Math.toDegrees(Math.acos(relaPoint1.dot(relaPoint2)));//angle between the lines
+			//check if they are already colinear
+			if(angle <= 90){
+//				//this means they are already co-linear and that the control points lie on the same side of the joint
+//				//TODO update this to be contextual and adjust the control that is on the wrong side of the joint
+//				Vec3 adjust = VecUtil.subtract(joint, outgoing);//from target control to joint
+//				adjust.scale(2);//translate once to reach the joint again to mirror it = adjust+adjust = 2*adjust
+//				//apply the translation
+//				outgoing.add(adjust);
+				return false;
+			}else{//they are not co-linear
+				//get the axis of rotation
+				Vec3 axis = relaPoint1.cross(relaPoint2);
+				Vec3 outVec = VecUtil.subtract(outgoing, joint);//original vector from the joint to the end control
+				Vec3 inVec = VecUtil.subtract(incoming, joint);
+				float adjustAngle = (float)(180-angle);
+				
+				//determine if we are only modifying one control
+				if(!constrainIn && !constrainOut){
+					adjustAngle /= 2.0f;
+				}
+				//get the rotation
+				if(!constrainOut){
+					Quaternion outRot = Quaternion.fromAxisAngle(axis, -adjustAngle);//we want angle to be negative to rotate it to be 180 to the body control
+					outgoing.set(outRot.multVec(outVec).add(joint));//perform the rotation and set the control point
+				}
+				
+				if(!constrainIn){
+					Quaternion inRot = Quaternion.fromAxisAngle(axis, adjustAngle);//we want angle to be negative to rotate it to be 180 to the body control
+					incoming.set(inRot.multVec(inVec).add(joint));//perform the rotation and set the control point
+				}
+				return true;
+			}
+		}
+		
+		/**
+		 * Given three linearized control points that define a joint between two bezier curves in the path this method will adjust both control points such 
+		 * that the joint point is the mid point between both control points.
+		 * 
+		 * @param constrainIn Determines if the incoming control should not be modified and only the outgoing or both
+		 * @param constrainOut Determines if the outgoing control should not be modified and only the incoming or both
+		 */
+		private void midShift(boolean constrainIn, boolean constrainOut){
+			//if we are to constrain movement on both controls simply do nothing and return
+			if(constrainIn && constrainOut){
+				return;
+			}
+			//get the vectors relative to the joint point
+			Vec3 inVec = VecUtil.subtract(incoming, joint);
+			Vec3 outVec = VecUtil.subtract(outgoing, joint);
+			
+			//get the vector we will use to adjust the control points
+			Vec3 adjustVec = VecUtil.add(inVec, outVec);//since they are already opposite of each other then addition is the same as if we were subtracting
+			
+			//determine whether the adjust vector needs to be halved to distribute the change based on the contraints
+			if(!constrainIn && !constrainOut){
+				adjustVec.scale(.5f);
+			}
+			//adjust the control points
+			if(!constrainIn){
+				incoming.subtract(adjustVec);
+			}
+			
+			if(!constrainOut){
+				outgoing.subtract(adjustVec);
+			}
 		}
 	}
 }

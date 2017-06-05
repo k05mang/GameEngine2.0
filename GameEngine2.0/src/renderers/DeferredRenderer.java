@@ -17,11 +17,11 @@ import shaders.ShaderStage;
 import core.Camera;
 import core.Entity;
 import core.SceneManager;
-import framebuffer.Gbuffer;
+import framebuffer.GBuffer;
 
 public class DeferredRenderer {
 
-	private Gbuffer gbuffer;
+	private GBuffer gBuffer;
 	private ShaderProgram geoPass, stencilPass, lightPass, finalPass;
 	private Camera main;
 	public static final Plane quad = new Plane(2);
@@ -29,7 +29,7 @@ public class DeferredRenderer {
 	
 	public DeferredRenderer(int width, int height, Camera cam){
 		main = cam;
-		gbuffer = new Gbuffer(width, height);
+		gBuffer = new GBuffer(width, height);
 		Shader geoVert = new Shader("shaders/geoPass/geoVert.glsl", ShaderStage.VERTEX);
 		Shader geoFrag = new Shader("shaders/geoPass/geoFrag.glsl", ShaderStage.FRAG);
 
@@ -124,7 +124,7 @@ public class DeferredRenderer {
 	}
 	
 	public void render(Collection<Entity> meshes, ArrayList<Light> lights){
-		gbuffer.geoPass();//ready the gbuffer for the geometry pass
+		gBuffer.geoPass();//ready the gbuffer for the geometry pass
 		geoPass.setUniform("view", main.getLookAt());
 		stencilPass.setUniform("view", main.getLookAt());
 		lightPass.setUniform("view", main.getLookAt());
@@ -140,12 +140,12 @@ public class DeferredRenderer {
 		}
 		geoPass.unbind();
 		
-		gbuffer.setupLightingPass();
+		gBuffer.setupLightingPass();
 		
 		for(Light light : lights){
 			Mesh mesh = light.getVolume();
 			stencilPass.bind();
-			gbuffer.stencilPass();
+			gBuffer.stencilPass();
 			//render the light volume for stenciling
 			stencilPass.setUniform("model", light.getTransform().getMatrix());
 			mesh.render();
@@ -153,13 +153,13 @@ public class DeferredRenderer {
 			
 			lightPass.bind();
 			//render the volume for calculation
-			gbuffer.lightPass();
+			gBuffer.lightPass();
 			light.bind(lightPass);
 			mesh.render();
 			lightPass.unbind();
 		}
 		
-		gbuffer.finalPass();
+		gBuffer.finalPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		finalPass.bind();
 		quad.render();
@@ -167,7 +167,7 @@ public class DeferredRenderer {
 	}
 	
 	public void delete(){
-		gbuffer.delete();
+		gBuffer.delete();
 		geoPass.delete(); 
 		stencilPass.delete(); 
 		lightPass.delete();

@@ -319,7 +319,7 @@ Each flag is a single bit. Their meanings are shown below.
 		
 //		int curContour = 0;
 //		boolean isFirst = true;//tracks whether this is the first\
-		BezierPath contour = new BezierPath(Continuity.C2);
+		BezierPath contour = null;//new BezierPath(Continuity.C2);
 		BezierCurve curve = new BezierCurve();
 		//read each of the coordinate values
 		readCoords(points, flags, true);//start with x
