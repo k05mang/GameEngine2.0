@@ -199,7 +199,7 @@ public class BezierPath {
 	 */
 	private class PathJoint{
 		private BezierNode prev, next;
-		private Vec3 incoming, outgoing, joint;
+		private Vec3 incoming, incomingPrev, outgoing, outgoingNext, joint;
 		private Continuity curSmoothing;
 		
 		/**
@@ -219,28 +219,36 @@ public class BezierPath {
 			//set the data taken from the previous node
 			points = prev.curve.getPoints();
 			incoming = points.get(points.size()-2);
+			//check to make sure we can actually get a secondary point from the curve
+			if(points.size() > 2){
+				incomingPrev = points.get(points.size()-3);
+			}
 			
 			//set the data taken from the next node
 			points = next.curve.getPoints();
 			outgoing = points.get(1);
 			//set the joint
 			joint = points.get(0);
+			
+			if(points.size() > 2){
+				outgoingNext = points.get(2);
+			}
 		}
 		
 		public void smooth(Continuity smoothness){
 			smooth(smoothness, false, false);
 		}
 		
-		private void smooth(boolean constrainIn, boolean constrainOut){
-			smooth(curSmoothing, constrainIn, constrainOut);
-		}
-		
-		private void smooth(Continuity smoothness, boolean constrainIn, boolean constrainOut){
+		protected void smooth(Continuity smoothness, boolean constrainIn, boolean constrainOut){
 			if(isClosed){
 				if(start.backJoint == this){
 					return;
 				}
 			}
+			
+//			if(VecUtil.distance(incoming, outgoing, joint) == 0){
+//				return;
+//			}
 			
 			//check to make sure that the curves this joint merges are both order 2 or higher, if one is a line ignore the smoothing
 			if(prev.curve.getOrder() < 2 || next.curve.getOrder() < 2){
@@ -248,15 +256,31 @@ public class BezierPath {
 			}
 			
 			curSmoothing = smoothness;
+//			if(curSmoothing == null){
+//				System.out.println("Cursmoothing");
+//			}
 			switch(smoothness){
 				case C0:
 					return;
-				case C1:
+				case G1:
+					if(VecUtil.distance(incoming, outgoing, joint) == 0){
+						return;
+					}
 					linearize(constrainIn, constrainOut);
+					break;
+				case C1:
+					if(VecUtil.distance(incoming, outgoing, joint) == 0){
+						midShift(constrainIn, constrainOut);
+						return;
+					}else 
+						if(linearize(constrainIn, constrainOut)){
+						midShift(constrainIn, constrainOut);
+					}
 					break;
 				case C2:
 					if(linearize(constrainIn, constrainOut)){
 						midShift(constrainIn, constrainOut);
+						neighborShift();
 					}
 					break;
 			}
@@ -267,13 +291,13 @@ public class BezierPath {
 			if(prev.curve.getOrder() == 2 &&  //the previous curve has 3 points
 					prev.backJoint != null && //has a joint with another curve going backward
 					!constrainIn){//and we aren't constraining the incoming control
-				prev.backJoint.smooth(false, true);
+				prev.backJoint.smooth(smoothness, false, true);
 			}
 			
 			if(next.curve.getOrder() == 2 && //the adjacent next curve has 3 points
 					next.forwardJoint != null && //has a joint with another curve going forward
 					!constrainOut){//and we aren't constraining the outgoing control
-				next.forwardJoint.smooth(true, false);
+				next.forwardJoint.smooth(smoothness, true, false);
 			}
 		}
 		
@@ -326,6 +350,9 @@ public class BezierPath {
 					Quaternion inRot = Quaternion.fromAxisAngle(axis, adjustAngle);//we want angle to be negative to rotate it to be 180 to the body control
 					incoming.set(inRot.multVec(inVec).add(joint));//perform the rotation and set the control point
 				}
+				
+//				Quaternion outRot = Quaternion.fromAxisAngle(axis, -adjustAngle);//we want angle to be negative to rotate it to be 180 to the body control
+//				outgoing.set(outRot.multVec(outVec).add(joint));//perform the rotation and set the control point
 				return true;
 			}
 		}
@@ -349,7 +376,7 @@ public class BezierPath {
 			//get the vector we will use to adjust the control points
 			Vec3 adjustVec = VecUtil.add(inVec, outVec);//since they are already opposite of each other then addition is the same as if we were subtracting
 			
-			//determine whether the adjust vector needs to be halved to distribute the change based on the contraints
+			//determine whether the adjust vector needs to be halved to distribute the change based on the constraints
 			if(!constrainIn && !constrainOut){
 				adjustVec.scale(.5f);
 			}
@@ -361,6 +388,20 @@ public class BezierPath {
 			if(!constrainOut){
 				outgoing.subtract(adjustVec);
 			}
+//			outgoing.subtract(adjustVec);
+		}
+		
+		private void neighborShift(){
+			//determine if there are neighboring controls to manipulate
+			if(incomingPrev == null || outgoingNext == null){
+				return;
+			}
+			//get the vector to make the adjustments with on the neighboring vectors
+			Vec3 adjustDir = VecUtil.subtract(outgoingNext, incomingPrev).normalize();
+			//get the length of the joint vectors
+			float jointLen = VecUtil.subtract(incoming, joint).length();
+			
+			outgoingNext.set(adjustDir.scale(4*jointLen).add(incomingPrev));
 		}
 	}
 }

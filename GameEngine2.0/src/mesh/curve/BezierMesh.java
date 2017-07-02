@@ -101,15 +101,17 @@ public class BezierMesh extends Mesh{
 		BufferObject controlVbo = vao.getVBO(CONTROL_NODES);
 		controlVbo.reset();
 		
-		float incr = 1.0f/numSegments;
 		float t = 0;
-		//generate points
-		for(int curVert = 0; curVert < numSegments; curVert++){
+		//generate points, +1 to segments so the loop captures the last point
+		for(int curVert = 0; curVert < numSegments+1; curVert++){
+			t = curVert/(float)numSegments;
 			Vertex vert = new Vertex(path.getBezierPoint(t), path.getNormal(t), new Vec2());
+			//add the vertex to the geometry object
 			geometry.add(vert);
+			//add the position and normals to the vbo
 			curveVbo.add(vert.getPos());
 			curveVbo.add(vert.getNormal());
-			t += incr;
+			//add the index to the ibo
 			curveIbo.add(curVert);
 		}
 		

@@ -5,13 +5,13 @@ import static org.lwjgl.opengl.GL20.glStencilOpSeparate;
 import textures.Texture2D;
 import textures.enums.InternalFormat;
 
-public class Gbuffer {
+public class GBuffer {
 
 	private FBO framebuffer;
 	private Texture2D diffuse, position, normal, lighting, depth;
 	private int width, height;
 	
-	public Gbuffer(int width, int height) {
+	public GBuffer(int width, int height) {
 		this.width = width;
 		this.height = height;
 		framebuffer = new FBO();//create framebuffer
