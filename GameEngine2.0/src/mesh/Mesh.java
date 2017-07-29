@@ -9,8 +9,8 @@ import gldata.VertexArray;
 import java.util.ArrayList;
 
 import core.Resource;
-import core.SceneManager;
 import core.SpatialAsset;
+import core.managers.SceneManager;
 
 public abstract class Mesh implements Resource{
 	protected Geometry geometry;
@@ -60,7 +60,7 @@ public abstract class Mesh implements Resource{
 	 * @return Number of vertices in this renderable's mesh
 	 */
 	public int getNumVertices(){
-		return geometry.getNumVertices();
+		return geometry.numVertices();
 	}
 
 	/**
@@ -69,7 +69,7 @@ public abstract class Mesh implements Resource{
 	 * @return Number of faces in this renderable's mesh
 	 */
 	public int getNumFaces(){
-		return geometry.getNumFaces();
+		return geometry.numFaces();
 	}
 	
 	@Override

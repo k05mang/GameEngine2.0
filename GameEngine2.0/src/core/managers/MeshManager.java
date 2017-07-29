@@ -1,4 +1,4 @@
-package core;
+package core.managers;
 
 import glMath.Transform;
 

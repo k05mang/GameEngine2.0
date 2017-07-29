@@ -253,19 +253,19 @@ public final class Icosphere extends Mesh {
 			//add the new vertices to the mesh and the vert map if they ahven't been added already
 			if(vertMap.get(edge1) == null){
 				edge1.addTo(vao.getVBO(DEFAULT_VBO));
-				vertMap.put(edge1, geometry.getNumVertices());
+				vertMap.put(edge1, geometry.numVertices());
 				geometry.add(edge1);
 			}
 			
 			if(vertMap.get(edge2) == null){
 				edge2.addTo(vao.getVBO(DEFAULT_VBO));
-				vertMap.put(edge2, geometry.getNumVertices());
+				vertMap.put(edge2, geometry.numVertices());
 				geometry.add(edge2);
 			}
 			
 			if(vertMap.get(edge3) == null){
 				edge3.addTo(vao.getVBO(DEFAULT_VBO));
-				vertMap.put(edge3, geometry.getNumVertices());
+				vertMap.put(edge3, geometry.numVertices());
 				geometry.add(edge3);
 			}
 			

@@ -46,9 +46,9 @@ public class ConvexHull2D extends ConvexHull {
 
 		Vec3 edge3 = getEdgeNormal(baseTri.he3.sourceVert, baseTri.he1.sourceVert);
 		//create the index list to partition
-		ArrayList<Integer> partitionList = new ArrayList<Integer>(mesh.getNumVertices());
+		ArrayList<Integer> partitionList = new ArrayList<Integer>(mesh.numVertices());
 		//initialize the index list
-		for(int curPoint = 0; curPoint < mesh.getNumVertices(); curPoint++){
+		for(int curPoint = 0; curPoint < mesh.numVertices(); curPoint++){
 			partitionList.add(curPoint);
 		}
 		//partition the points

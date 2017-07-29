@@ -25,7 +25,7 @@ public class OBJ extends Mesh {
 		//create vertex buffer
 		vao.genVBO(SOLID_MODE);
 		//create index buffer
-		vao.genIBO(SOLID_MODE, RenderMode.TRIANGLES, getIndexType(geometry.getNumVertices()-1));
+		vao.genIBO(SOLID_MODE, RenderMode.TRIANGLES, getIndexType(geometry.numVertices()-1));
 		
 		//add indices and vertices to the buffers
 		geometry.insertVertices(vao.getVBO(SOLID_MODE));

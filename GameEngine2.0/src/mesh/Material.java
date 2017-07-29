@@ -4,7 +4,7 @@ import glMath.vectors.Vec4;
 import shaders.ShaderProgram;
 import textures.Texture;
 import core.Resource;
-import core.SceneManager;
+import core.managers.SceneManager;
 
 public class Material implements Resource{
 

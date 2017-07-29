@@ -12,8 +12,8 @@ import physics.collision.CollisionMesh;
 import physics.collision.Ray;
 import shaders.ShaderProgram;
 import core.Entity;
-import core.SceneManager;
 import core.SpatialAsset;
+import core.managers.SceneManager;
 
 /**
  * 

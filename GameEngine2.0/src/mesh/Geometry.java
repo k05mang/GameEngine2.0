@@ -309,7 +309,7 @@ public class Geometry {
 	 * 
 	 * @return Number of vertices in this mesh
 	 */
-	public int getNumVertices(){
+	public int numVertices(){
 		return vertices.size();
 	}
 	
@@ -319,7 +319,7 @@ public class Geometry {
 	 * 
 	 * @return Number of faces in this mesh
 	 */
-	public int getNumFaces(){
+	public int numFaces(){
 		return faces.size();
 	}
 	

@@ -55,7 +55,7 @@ public class ConvexHullGen extends Mesh {
 		ibos.add(new IndexBuffer(IndexType.INT));
 		
 		//add just the vertex position information to the vbo
-		for(int curVert = 0; curVert < geometry.getNumVertices(); curVert++){
+		for(int curVert = 0; curVert < geometry.numVertices(); curVert++){
 			vbos.get(0).add(geometry.getVertex(curVert).getPos());
 			//initialize the point ibo with all the points
 			ibos.get(2).add(curVert);
@@ -255,14 +255,14 @@ public class ConvexHullGen extends Mesh {
 		vertIndex = -1;
 		
 		//create conflict lists for the different halves of the triangle for use in the expansion of the polyhedra
-		ArrayList<Integer> posList = new ArrayList<Integer>(geometry.getNumVertices()), //vertex indices that are in front of the triangle
-				negList = new ArrayList<Integer>(geometry.getNumVertices());//vertex indices that are in behind of the triangle
+		ArrayList<Integer> posList = new ArrayList<Integer>(geometry.numVertices()), //vertex indices that are in front of the triangle
+				negList = new ArrayList<Integer>(geometry.numVertices());//vertex indices that are in behind of the triangle
 
 		boolean inFront = false;//boolean indicating what side of the triangle the farthest point will be which will decide which
 		//list is assigned to the face and which gets partitioned
 		
 		//iterate over all the vertices and test which is the farthest
-		for(int curPoint = 0; curPoint < geometry.getNumVertices(); curPoint++){
+		for(int curPoint = 0; curPoint < geometry.numVertices(); curPoint++){
 			//get the current point relative to the start point on the triangle
 			Vec3 relaPoint = VecUtil.subtract(geometry.getVertex(curPoint).getPos(), geometry.getVertex(startVert).getPos());
 			float distance = relaPoint.dot(normal);//since normal is normalized the magnitude of the projection of

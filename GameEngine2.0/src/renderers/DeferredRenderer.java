@@ -16,7 +16,7 @@ import shaders.ShaderProgram;
 import shaders.ShaderStage;
 import core.Camera;
 import core.Entity;
-import core.SceneManager;
+import core.managers.SceneManager;
 import framebuffer.GBuffer;
 
 public class DeferredRenderer {

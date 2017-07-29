@@ -32,7 +32,7 @@ public class HullVisualizer extends Mesh {
 		ibos.add(new IndexBuffer(IndexType.INT));
 		
 		//add just the vertex position information to the vbo
-		for(int curVert = 0; curVert < geometry.getNumVertices(); curVert++){
+		for(int curVert = 0; curVert < geometry.numVertices(); curVert++){
 			vbos.get(0).add(geometry.getVertex(curVert).getPos());
 			//initialize the point ibo with all the points
 			ibos.get(2).add(curVert);

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import core.managers.SceneManager;
 import mesh.Geometry;
 import mesh.Material;
 import mesh.OBJ;
@@ -20,7 +21,6 @@ import textures.enums.TexParam;
 import textures.enums.TexParamEnum;
 import textures.enums.TextureType;
 import textures.loaders.ImageLoader;
-import core.SceneManager;
 
 public class OBJLoader implements MeshLoader {
 	

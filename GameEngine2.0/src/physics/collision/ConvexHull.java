@@ -126,14 +126,14 @@ public abstract class ConvexHull extends CollisionMesh {
 		vertIndex = -1;
 		
 		//create conflict lists for the different halves of the triangle for use in the expansion of the polyhedra
-		ArrayList<Integer> posList = new ArrayList<Integer>(mesh.getNumVertices()), //vertex indices that are in front of the triangle
-				negList = new ArrayList<Integer>(mesh.getNumVertices());//vertex indices that are in behind of the triangle
+		ArrayList<Integer> posList = new ArrayList<Integer>(mesh.numVertices()), //vertex indices that are in front of the triangle
+				negList = new ArrayList<Integer>(mesh.numVertices());//vertex indices that are in behind of the triangle
 
 		boolean inFront = false;//boolean indicating what side of the triangle the farthest point will be which will decide which
 		//list is assigned to the face and which gets partitioned
 		
 		//iterate over all the vertices and test which is the farthest
-		for(int curPoint = 0; curPoint < mesh.getNumVertices(); curPoint++){
+		for(int curPoint = 0; curPoint < mesh.numVertices(); curPoint++){
 			//get the current point relative to the start point on the triangle
 			Vec3 relaPoint = VecUtil.subtract(mesh.getVertex(curPoint).getPos(), mesh.getVertex(startVert).getPos());
 			float distance = relaPoint.dot(normal);//since normal is normalized the magnitude of the projection of

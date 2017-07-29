@@ -1,7 +1,9 @@
-package core;
+package core.managers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import core.Resource;
 
 public class ResourceManager {
 	protected HashMap<String, Resource> resources;

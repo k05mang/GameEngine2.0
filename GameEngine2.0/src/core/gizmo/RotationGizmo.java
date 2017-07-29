@@ -9,7 +9,7 @@ import windowing.events.keyboard.ModKey;
 import windowing.events.mouse.MouseButton;
 import core.Camera;
 import core.Entity;
-import core.SceneManager;
+import core.managers.SceneManager;
 import glMath.Quaternion;
 import glMath.Transform;
 import glMath.VecUtil;
