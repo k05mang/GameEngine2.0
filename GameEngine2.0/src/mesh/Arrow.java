@@ -204,8 +204,8 @@ public class Arrow extends SpatialAsset{
 	@Override
 	public void transform(Transform trans){
 		super.transform(trans);
-		Transform shaftTrans = new Transform(trans);
-		Transform tipTrans = new Transform(trans);
+		Transform shaftTrans = new Transform().translate(trans.getTranslation()).scale(trans.getScalars().y);
+		Transform tipTrans = new Transform().translate(trans.getTranslation()).scale(trans.getScalars().y);
 
 		//scale
 		//these are the differences between the old lengths and the new
@@ -224,21 +224,13 @@ public class Arrow extends SpatialAsset{
 		
 		//rotate
 		Quaternion rotation = trans.getOrientation();
-		//compute the center points of the shaft and tip relative to the origin
-		Vec3 shaftOrigin = VecUtil.subtract(shaft.getPos(), getPos());
-		Vec3 tipOrigin = VecUtil.subtract(tip.getPos(), getPos());
-		//compute the center points after rotating them
-		Vec3 shaftPoint = rotation.multVec(shaftOrigin);
-		Vec3 tipPoint = rotation.multVec(tipOrigin);
-		//translate the shaft based on the vector from the shaft origin to the new shaft point
-		shaftTrans.translate(VecUtil.subtract(shaftPoint, shaftOrigin));
-		//translate the tip using the same process as the shaft
-		tipTrans.translate(VecUtil.subtract(tipPoint, tipOrigin));
 		//store the new direction of the vector
 		direction = rotation.multVec(direction);
 		
 		shaft.transform(shaftTrans);
 		tip.transform(tipTrans);
+		shaft.getTransform().rotate(getPos(), rotation);
+		tip.getTransform().rotate(getPos(), rotation);
 	}
 	
 	/**

@@ -428,6 +428,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, Vec2 value) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+Vec2.SIZE_IN_BYTES-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -459,6 +460,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, Vec3 value) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+Vec3.SIZE_IN_BYTES-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -497,6 +499,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, Vec4 value) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+Vec4.SIZE_IN_BYTES-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input value results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -542,6 +545,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, Matrix value) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		int size_in_bytes = 0, size_in_floats = 0;
 		//determine what type the matrix is to decide the controlling variable for the loop below and the index check
 		if(value instanceof Mat2){
@@ -582,6 +586,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, byte[] values) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+values.length-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input values results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -606,6 +611,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, short[] values) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+(values.length << 1)-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input values results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -631,6 +637,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, int[] values) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+(values.length << 2)-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input values results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -658,6 +665,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, float[] values) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+(values.length << 2)-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input values results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -687,6 +695,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, double[] values) throws IndexOutOfBoundsException{
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+(values.length << 3)-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input values results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -720,6 +729,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, Vec2[] values){
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+(values.length << 2)-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input values results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed
@@ -757,6 +767,7 @@ public class BufferObject {
 	 * @throws IndexOutOfBoundsException
 	 */
 	public void set(int offset, Vec3[] values){
+		//determine if the offset would attempt to set values out of bounds
 		if(offset+values.length*12-1 > (finished ? size : data.size())-1 || offset < 0){
 			throw new IndexOutOfBoundsException("the area defined from offset through the size of the input values results in an insertion out of the buffers bounds");
 		}else if(!finished){//check if this buffer has been flushed

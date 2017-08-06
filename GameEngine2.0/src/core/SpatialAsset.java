@@ -28,8 +28,8 @@ public abstract class SpatialAsset {
 	 * 
 	 * @param trans Transform to modify this spatial object
 	 */
-	public void transform(Transform transform){
-		transforms.transform(transform);
+	public void transform(Transform trans){
+		transforms.transform(trans);
 	}
 	
 	/**

@@ -124,7 +124,7 @@ public class Transform {
 	}
 
 	/**
-	 * Rotates this transform be the given axis and angel theta
+	 * Rotates this transform be the given axis and angle theta
 	 * 
 	 * @param x X component of the axis to rotate around
 	 * @param y Y component of the axis to rotate around
@@ -138,7 +138,7 @@ public class Transform {
 	} 
 	
 	/**
-	 * Rotates this transform be the given axis and angel theta
+	 * Rotates this transform be the given axis and angle theta
 	 * 
 	 * @param axis Vector representing the axis to rotate around
 	 * @param theta Amount to rotate around the given axis
@@ -147,6 +147,106 @@ public class Transform {
 	 */
 	public Transform rotate(Vec3 axis, float theta){
 		return rotate(Quaternion.fromAxisAngle(axis, theta));
+	}
+	
+	/**
+	 * Rotates this transform around the given {@code axis} and {@code point}. The resulting transformation will be rotated and translated as a result
+	 * of this function.
+	 * 
+	 * @param point Point to rotate the transformation around
+	 * @param axis Axis to perform the rotation around
+	 * @param theta Angle to rotate around the given axis and point by
+	 * 
+	 * @return This Transform object post transformation
+	 */
+	public Transform rotate(Vec3 point, Vec3 axis, float theta){
+		return rotate(point, Quaternion.fromAxisAngle(axis, theta));
+	}
+	
+	/**
+	 * Rotates this transform around the given {@code point} by the rotation defined by the given Quaternion. 
+	 * The resulting transformation will be rotated and translated as a result of this function.
+	 * 
+	 * @param point Point to rotate the transformation around
+	 * @param rotation Quaternion representing the rotation to be applied to this Transform
+	 * 
+	 * @return This Transform object post transformation
+	 */
+	public Transform rotate(Vec3 point, Quaternion rotation){
+		//start with the vector from the point to the transform origin
+		Vec3 relaPoint = VecUtil.subtract(position, point);
+		//apply the rotation on that vector
+		Vec3 postTrans = rotation.multVec(relaPoint);
+		//translate from the current position to the new position
+		translate(VecUtil.subtract(postTrans, relaPoint));
+		//apply the rotation onto the objects orientation
+		return rotate(rotation);
+	}
+	
+	/**
+	 * Rotates this transform around the given point {@code posx, posy, posz} by the rotation defined by the given Quaternion. 
+	 * The resulting transformation will be rotated and translated as a result of this function.
+	 * 
+	 * @param x X component of the position to rotate around
+	 * @param y Y component of the position to rotate around
+	 * @param z Z component of the position to rotate around
+	 * @param rotation Quaternion representing the rotation to be applied to this Transform
+	 * 
+	 * @return This Transform object post transformation
+	 */
+	public Transform rotate(float x, float y, float z, Quaternion rotation){
+		return rotate(new Vec3(x, y, z), rotation);
+	}
+	
+	/**
+	 * Rotates this transform around the given axis represented by {@code axisx, axisy, axisz} and {@code point}. 
+	 * The resulting transformation will be rotated and translated as a result of this function.
+	 * 
+	 * @param point Point to rotate the transformation around
+	 * @param posz Z component of the position to rotate around
+	 * @param axisx X component of the axis to rotate around
+	 * @param axisy Y component of the axis to rotate around
+	 * @param axisz Z component of the axis to rotate around
+	 * @param theta Angle to rotate around the given axis and point by
+	 * 
+	 * @return This Transform object post transformation
+	 */
+	public Transform rotate(Vec3 point, float axisx, float axisy, float axisz, float theta){
+		return rotate(point, Quaternion.fromAxisAngle(new Vec3(axisx, axisy, axisz), theta));
+	}
+	
+	/**
+	 * Rotates this transform around the given {@code axis} and point {@code posx, posy, posz}. 
+	 * The resulting transformation will be rotated and translated as a result of this function.
+	 * 
+	 * @param posx X component of the position to rotate around
+	 * @param posy Y component of the position to rotate around
+	 * @param posz Z component of the position to rotate around
+	 * @param axis Axis to perform the rotation around
+	 * @param theta Angle to rotate around the given axis and point by
+	 * 
+	 * @return This Transform object post transformation
+	 */
+	public Transform rotate(float posx, float posy, float posz, Vec3 axis, float theta){
+		return rotate(new Vec3(posx, posy, posz), Quaternion.fromAxisAngle(axis, theta));
+	}
+	
+	/**
+	 * Rotates this transform around the given axis represented by {@code axisx, axisy, axisz} and point {@code posx, posy, posz}. 
+	 * The resulting transformation will be rotated and translated as a result of this function.
+	 * 
+	 * @param posx X component of the position to rotate around
+	 * @param posy Y component of the position to rotate around
+	 * @param posz Z component of the position to rotate around
+	 * @param axisx X component of the axis to rotate around
+	 * @param axisy Y component of the axis to rotate around
+	 * @param axisz Z component of the axis to rotate around
+	 * @param theta Angle to rotate around the given axis and point by
+	 * 
+	 * @return This Transform object post transformation
+	 */
+	public Transform rotate(float posx, float posy, float posz, float axisx, float axisy, float axisz, float theta){
+		return rotate(new Vec3(posx, posy, posz), Quaternion.fromAxisAngle(new Vec3(axisx, axisy, axisz), theta));
 	}
 	
 	/**

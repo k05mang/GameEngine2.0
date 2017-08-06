@@ -293,15 +293,9 @@ public class Geometry {
 	 * 
 	 * @param index Index of the vertex to modify
 	 * @param vert Vertex to set the vertex at {@code index} to
-	 * @return True if the value was set, false if the index was out of bounds
 	 */
-	public boolean setVertex(int index, Vertex vert){
-		if(index < 0 || index > vertices.size()-1){
-			return false;
-		}else{
-			vertices.get(index).set(vert);
-			return true;
-		}
+	public void setVertex(int index, Vertex vert){
+		vertices.get(index).set(vert);
 	}
 	
 	/**

@@ -21,9 +21,5 @@ public class FontTableAttr {
 		checkSum = Integer.toUnsignedLong(chckSum);
 		this.offset = Integer.toUnsignedLong(offset);
 		this.length = Integer.toUnsignedLong(length);
-
-//		System.out.println("checkSum: "+checkSum);
-//		System.out.println("Offset: "+this.offset);
-//		System.out.println("Length: "+this.length);
 	}
 }
