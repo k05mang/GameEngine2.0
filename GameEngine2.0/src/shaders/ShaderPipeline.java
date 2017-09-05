@@ -3,7 +3,9 @@ package shaders;
 import static org.lwjgl.opengl.GL41.*;
 import static org.lwjgl.opengl.GL45.*;
 
-public class ShaderPipeline {
+import core.Resource;
+
+public class ShaderPipeline implements Resource{
 
 	private int id;
 	

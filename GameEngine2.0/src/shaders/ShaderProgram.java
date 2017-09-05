@@ -8,8 +8,13 @@ import static org.lwjgl.opengl.GL20.glGetProgramInfoLog;
 import static org.lwjgl.opengl.GL20.glGetProgrami;
 import static org.lwjgl.opengl.GL20.glLinkProgram;
 import static org.lwjgl.opengl.GL20.glUseProgram;
-import static org.lwjgl.opengl.GL41.glProgramParameteri;
 import static org.lwjgl.opengl.GL41.glCreateShaderProgramv;
+import static org.lwjgl.opengl.GL41.glProgramParameteri;
+
+import java.io.File;
+import java.util.ArrayList;
+
+import core.Resource;
 import glMath.matrices.Mat2;
 import glMath.matrices.Mat3;
 import glMath.matrices.Matrix;
@@ -17,15 +22,9 @@ import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
 import glMath.vectors.Vec4;
 import glMath.vectors.Vector;
-import gldata.BufferObject;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import shaders.data.ShaderData;
 
-public class ShaderProgram {
+public class ShaderProgram implements Resource{
 	private int programId, stageBits;
 	private ArrayList<Shader> shaders;
 	private boolean isSeparable;

@@ -10,6 +10,7 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
 import core.Scene;
+import core.managers.SceneManager;
 import windowing.events.keyboard.KeyListener;
 import windowing.events.keyboard.KeyboardHandler;
 import windowing.events.mouse.MouseHandler;

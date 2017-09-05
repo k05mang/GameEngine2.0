@@ -15,8 +15,14 @@ public class ConfigManager {
 	public ConfigManager(String configFile) {
 		Gson parser = new Gson();
 		try{
-			FileReader json = new FileReader(new File(configFile));
-			configs = parser.fromJson(json, JsonObject.class);
+			File config = new File(configFile);
+			if(config.exists()){
+				FileReader json = new FileReader(config);
+				configs = parser.fromJson(json, JsonObject.class);
+			}else{
+				//if the configuration file doesn't exist then load the default config
+				configs = parser.fromJson(defaultConfig, JsonObject.class);
+			}
 		}catch(Exception e){
 			//if we failed to load the configuration load the default
 			configs = parser.fromJson(defaultConfig, JsonObject.class);
@@ -45,8 +51,25 @@ public class ConfigManager {
 	public JsonPrimitive settings(String name){
 		JsonObject settings = (JsonObject)configs.get("Settings");
 		//check that both the settings section and the value specified exist
-		if(configs.has("Settings") && settings.has(name)){
+		if(settings != null && settings.has(name)){
 			return (JsonPrimitive)settings.get(name);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets a named value from the "System" section in the config file, specified by the given {@code name}
+	 * 
+	 * @param name Value to get from the "System" section of the config file
+	 * 
+	 * @return
+	 */
+	public JsonElement system(String name){
+		JsonObject system = (JsonObject)configs.get("System");
+		
+		if(system != null && system.has(name)){
+			return (JsonElement)system.get(name);
 		}
 		
 		return null;

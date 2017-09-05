@@ -1,7 +1,32 @@
 package framebuffer;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.*;
+import static org.lwjgl.opengl.GL11.GL_ALWAYS;
+import static org.lwjgl.opengl.GL11.GL_BACK;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.GL_FRONT;
+import static org.lwjgl.opengl.GL11.GL_KEEP;
+import static org.lwjgl.opengl.GL11.GL_NOTEQUAL;
+import static org.lwjgl.opengl.GL11.GL_ONE;
+import static org.lwjgl.opengl.GL11.GL_STENCIL_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_STENCIL_TEST;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glCullFace;
+import static org.lwjgl.opengl.GL11.glDepthMask;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glStencilFunc;
+import static org.lwjgl.opengl.GL14.GL_DECR_WRAP;
+import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
+import static org.lwjgl.opengl.GL14.GL_INCR_WRAP;
+import static org.lwjgl.opengl.GL14.glBlendEquation;
 import static org.lwjgl.opengl.GL20.glStencilOpSeparate;
+
+import java.util.HashMap;
+
 import textures.Texture2D;
 import textures.enums.InternalFormat;
 
@@ -9,9 +34,11 @@ public class GBuffer {
 
 	private FBO framebuffer;
 	private Texture2D diffuse, position, normal, lighting, depth;
+	private HashMap<String, Texture2D> buffers;
 	private int width, height;
 	
 	public GBuffer(int width, int height) {
+		buffers = new HashMap<String, Texture2D>();
 		this.width = width;
 		this.height = height;
 		framebuffer = new FBO();//create framebuffer
@@ -51,8 +78,10 @@ public class GBuffer {
 		glEnable(GL_BLEND);
 	    glBlendEquation(GL_FUNC_ADD);
 	    glBlendFunc(GL_ONE, GL_ONE);
+	    //set position and normal textures to be readable for the lighting pass
 		position.bindToTextureUnit(0);
 		normal.bindToTextureUnit(1);
+		//set the lighting buffer to render in to
 		framebuffer.setDrawBuffers(3);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_DECR_WRAP, GL_KEEP);
@@ -60,6 +89,7 @@ public class GBuffer {
 	}
 	
 	public void stencilPass(){
+		//disable render buffers
 		framebuffer.setDrawBuffers();
 		glStencilFunc(GL_ALWAYS, 0, 0);//have the stencil test always pass
 		glClear(GL_STENCIL_BUFFER_BIT);//clear the previous stencil value from the buffer

@@ -5,30 +5,30 @@ import java.util.HashMap;
 
 import core.Resource;
 
-public class ResourceManager {
-	protected HashMap<String, Resource> resources;
+public class ResourceManager<T extends Resource> {
+	protected HashMap<String, T> resources;
 	
 	public ResourceManager(){
-		resources = new HashMap<String, Resource>();
+		resources = new HashMap<String, T>();
 	}
 	
-	public void put(String id, Resource res){
+	public void put(String id, T res){
 		resources.put(id,  res);
 	}
 	
-	public Resource get(String id){
+	public T get(String id){
 		return resources.get(id);
 	}
 	
 	public void remove(String id){
-		Resource removed = resources.remove(id);
+		T removed = resources.remove(id);
 		if(removed != null){
 			removed.delete();
 		}
 	}
 	
 	public void removeAll(){
-		for(Resource remove : resources.values()){
+		for(T remove : resources.values()){
 			remove.delete();
 		}
 		resources.clear();
@@ -38,11 +38,11 @@ public class ResourceManager {
 		return new ArrayList<String>(resources.keySet());
 	}
 	
-	public ArrayList<Resource> getResources(){
-		return new ArrayList<Resource>(resources.values());
+	public ArrayList<T> getResources(){
+		return new ArrayList<T>(resources.values());
 	}
 	
-	public int numResource(){
+	public int numResources(){
 		return resources.size();
 	}
 }

@@ -7,171 +7,108 @@ import static org.lwjgl.opengl.GL11.glClear;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import lights.Light;
-import mesh.Material;
-import mesh.Mesh;
-import mesh.primitives.geometry.Plane;
-import shaders.Shader;
-import shaders.ShaderProgram;
-import shaders.ShaderStage;
 import core.Camera;
 import core.Entity;
 import core.managers.SceneManager;
 import framebuffer.GBuffer;
+import lights.Light;
+import mesh.Material;
+import mesh.Mesh;
+import mesh.primitives.geometry.Plane;
+import static renderers.ShaderProgramTypes.*;
 
-public class DeferredRenderer {
+public class DeferredRenderer extends Renderer{
 
 	private GBuffer gBuffer;
-	private ShaderProgram geoPass, stencilPass, lightPass, finalPass;
-	private Camera main;
+    private Camera main;
 	public static final Plane quad = new Plane(2);
-	//TODO update this class and its various classes to be more robust, upon doing so return to other classes that use a render function and update them to better utilize the changes made here, such as in the gizmo classes
-	
+
 	public DeferredRenderer(int width, int height, Camera cam){
+		super(width, height);
 		main = cam;
 		gBuffer = new GBuffer(width, height);
-		Shader geoVert = new Shader("shaders/geoPass/geoVert.glsl", ShaderStage.VERTEX);
-		Shader geoFrag = new Shader("shaders/geoPass/geoFrag.glsl", ShaderStage.FRAG);
-
-		if(!geoVert.compile()){
-			System.out.println(geoVert.getInfoLog());
-		}
-		if(!geoFrag.compile()){
-			System.out.println(geoFrag.getInfoLog());
-		}
-		geoPass = new ShaderProgram();
-		geoPass.attach(geoVert);
-		geoPass.attach(geoFrag);
-		if(!geoPass.link()){
-			System.out.println(geoPass.getInfoLog());
-		}
 		
-		Shader stencilVert = new Shader("shaders/stencilPass/stencilVert.glsl", ShaderStage.VERTEX);
-		Shader stencilFrag = new Shader("shaders/stencilPass/stencilFrag.glsl", ShaderStage.FRAG);
-
-		if(!stencilVert.compile()){
-			System.out.println(stencilVert.getInfoLog());
-		}
-		if(!stencilFrag.compile()){
-			System.out.println(stencilFrag.getInfoLog());
-		}
-		stencilPass = new ShaderProgram();
-		stencilPass.attach(stencilVert);
-		stencilPass.attach(stencilFrag);
-		if(!stencilPass.link()){
-			System.out.println(stencilPass.getInfoLog());
-		}
-		
-		Shader lightVert = new Shader("shaders/lightPass/lightVert.glsl", ShaderStage.VERTEX);
-		Shader lightFrag = new Shader("shaders/lightPass/lightFrag.glsl", ShaderStage.FRAG);
-
-		if(!lightVert.compile()){
-			System.out.println(lightVert.getInfoLog());
-		}
-		if(!lightFrag.compile()){
-			System.out.println(lightFrag.getInfoLog());
-		}
-		lightPass = new ShaderProgram();
-		lightPass.attach(lightVert);
-		lightPass.attach(lightFrag);
-		if(!lightPass.link()){
-			System.out.println(lightPass.getInfoLog());
-		}
-
-		Shader finalVert = new Shader("shaders/finalPass/finalVert.glsl", ShaderStage.VERTEX);
-		Shader finalFrag = new Shader("shaders/finalPass/finalFrag.glsl", ShaderStage.FRAG);
-
-		if(!finalVert.compile()){
-			System.out.println(finalVert.getInfoLog());
-		}
-		if(!finalFrag.compile()){
-			System.out.println(finalFrag.getInfoLog());
-		}
-		finalPass = new ShaderProgram();
-		finalPass.attach(finalVert);
-		finalPass.attach(finalFrag);
-		if(!finalPass.link()){
-			System.out.println(finalPass.getInfoLog());
-		}
-
-		lightPass.setUniform("screenSpace", width, height);
+		SceneManager.shaderPrograms.get("lightPass").setUniform("screenSpace", width, height);
 		setupUniforms();
 	}
 	
 	private void setupUniforms(){
-		geoPass.setUniform("proj", main.getProjection());
-		geoPass.setUniform("color", 1, 1, 1);
-		geoPass.setUniform("specPower", 157.0f);
-		geoPass.setUniform("specInt", 2);
+		SceneManager.shaderPrograms.get("geoPass").setUniform("proj", main.getProjection());
+		SceneManager.shaderPrograms.get("geoPass").setUniform("color", 1, 1, 1);
+		SceneManager.shaderPrograms.get("geoPass").setUniform("specPower", 157.0f);
+		SceneManager.shaderPrograms.get("geoPass").setUniform("specInt", 2);
 		
-		geoPass.setUniform("albedo", 0);
-		geoPass.setUniform("normalMap", 1);
-		geoPass.setUniform("specMap", 2);
-		geoPass.setUniform("bumpMap", 3);
+		SceneManager.shaderPrograms.get("geoPass").setUniform("albedo", 0);
+		SceneManager.shaderPrograms.get("geoPass").setUniform("normalMap", 1);
+		SceneManager.shaderPrograms.get("geoPass").setUniform("specMap", 2);
+		SceneManager.shaderPrograms.get("geoPass").setUniform("bumpMap", 3);
 		
-		geoPass.setUniform("gamma", 1);
+		SceneManager.shaderPrograms.get("geoPass").setUniform("gamma", 1);
 
-		stencilPass.setUniform("proj", main.getProjection());
+		SceneManager.shaderPrograms.get("stencilPass").setUniform("proj", main.getProjection());
 		
-		lightPass.setUniform("proj", main.getProjection());
-		lightPass.setUniform("positions", 0);
-		lightPass.setUniform("normals", 1);
+		SceneManager.shaderPrograms.get("lightPass").setUniform("proj", main.getProjection());
+		SceneManager.shaderPrograms.get("lightPass").setUniform("positions", 0);
+		SceneManager.shaderPrograms.get("lightPass").setUniform("normals", 1);
 
-		finalPass.setUniform("diffuse", 0);
-		finalPass.setUniform("lighting", 1);
-		finalPass.setUniform("ambient", .3f);
-		finalPass.setUniform("gamma", 1);
+		SceneManager.shaderPrograms.get("finalPass").setUniform("diffuse", 0);
+		SceneManager.shaderPrograms.get("finalPass").setUniform("lighting", 1);
+		SceneManager.shaderPrograms.get("finalPass").setUniform("ambient", .3f);
+		SceneManager.shaderPrograms.get("finalPass").setUniform("gamma", 1);
 	}
 	
-	public void render(Collection<Entity> meshes, ArrayList<Light> lights){
-		gBuffer.geoPass();//ready the gbuffer for the geometry pass
-		geoPass.setUniform("view", main.getLookAt());
-		stencilPass.setUniform("view", main.getLookAt());
-		lightPass.setUniform("view", main.getLookAt());
-		lightPass.setUniform("eye", main.getPos());
+	public void render(Collection<Entity> meshes, 
+			ArrayList<Light> lights, 
+			RenderLogic logic){
 		
-		geoPass.bind();
+		gBuffer.geoPass();//ready the gbuffer for the geometry pass
+		SceneManager.shaderPrograms.get("geoPass").setUniform("view", main.getLookAt());
+		SceneManager.shaderPrograms.get("stencilPass").setUniform("view", main.getLookAt());
+		SceneManager.shaderPrograms.get("lightPass").setUniform("view", main.getLookAt());
+		SceneManager.shaderPrograms.get("lightPass").setUniform("eye", main.getPos());
+		
+		SceneManager.shaderPrograms.get("geoPass").bind();
 		//render geometry
 		for(Entity mesh : meshes){
-			geoPass.setUniform("model", mesh.getTransform().getMatrix());
+			SceneManager.shaderPrograms.get("geoPass").setUniform("model", mesh.getTransform().getMatrix());
 			Material mat = (Material) SceneManager.materials.get(mesh.getMesh().getMaterial());
-			mat.bind(geoPass);
+			mat.bind(SceneManager.shaderPrograms.get("geoPass"));
 			mesh.getMesh().render();
 		}
-		geoPass.unbind();
+		SceneManager.shaderPrograms.get("geoPass").unbind();
 		
 		gBuffer.setupLightingPass();
 		
 		for(Light light : lights){
 			Mesh mesh = light.getVolume();
-			stencilPass.bind();
+			SceneManager.shaderPrograms.get("stencilPass").bind();
 			gBuffer.stencilPass();
 			//render the light volume for stenciling
-			stencilPass.setUniform("model", light.getTransform().getMatrix());
+			SceneManager.shaderPrograms.get("stencilPass").setUniform("model", light.getTransform().getMatrix());
 			mesh.render();
-			stencilPass.unbind();
+			SceneManager.shaderPrograms.get("stencilPass").unbind();
 			
-			lightPass.bind();
+			SceneManager.shaderPrograms.get("lightPass").bind();
 			//render the volume for calculation
 			gBuffer.lightPass();
-			light.bind(lightPass);
+			light.bind(SceneManager.shaderPrograms.get("lightPass"));
 			mesh.render();
-			lightPass.unbind();
+			SceneManager.shaderPrograms.get("lightPass").unbind();
 		}
 		
 		gBuffer.finalPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		finalPass.bind();
+		SceneManager.shaderPrograms.get("finalPass").bind();
 		quad.render();
-		finalPass.unbind();
+		SceneManager.shaderPrograms.get("finalPass").unbind();
 	}
 	
 	public void delete(){
 		gBuffer.delete();
-		geoPass.delete(); 
-		stencilPass.delete(); 
-		lightPass.delete();
-		finalPass.delete();
+		SceneManager.shaderPrograms.get("geoPass").delete(); 
+		SceneManager.shaderPrograms.get("stencilPass").delete(); 
+		SceneManager.shaderPrograms.get("lightPass").delete();
+		SceneManager.shaderPrograms.get("finalPass").delete();
 		quad.delete();
 	}
 }

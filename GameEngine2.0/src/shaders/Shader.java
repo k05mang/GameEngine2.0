@@ -7,10 +7,13 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import core.Resource;
+
 import java.io.File;
 import java.io.IOException;
 
-public class Shader {
+public class Shader implements Resource{
 	private int shaderId;
 	private ShaderStage type;
 	private String fileName;
