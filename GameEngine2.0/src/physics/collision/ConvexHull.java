@@ -22,8 +22,8 @@ public abstract class ConvexHull extends CollisionMesh {
 		mesh = copy.mesh;
 	}
 	
-	@Override
-	public abstract CollisionMesh copy();
+//	@Override
+//	public abstract CollisionMesh copy();
 
 	@Override
 	public abstract Vec3 support(Vec3 direction);

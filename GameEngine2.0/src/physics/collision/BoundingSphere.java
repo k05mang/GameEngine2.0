@@ -18,7 +18,7 @@ public class BoundingSphere extends CollisionMesh{
 	}
 
 	@Override
-	public CollisionMesh copy() {
+	public CollisionMesh clone() {
 		return new BoundingSphere(this);
 	}
 

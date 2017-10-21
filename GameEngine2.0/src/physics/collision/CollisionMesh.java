@@ -3,7 +3,7 @@ package physics.collision;
 import glMath.vectors.Vec3;
 import core.SpatialAsset;
 
-public abstract class CollisionMesh extends SpatialAsset{
+public abstract class CollisionMesh extends SpatialAsset implements Cloneable{
 	
 	/**
 	 * Constructs a CollisionMesh
@@ -21,12 +21,15 @@ public abstract class CollisionMesh extends SpatialAsset{
 		super(copy);
 	}
 	
+	@Override
+	public abstract CollisionMesh clone();
+	
 	/**
 	 * Creates a copy of this instance of the CollisionMesh
 	 * 
 	 * @return New instance that is an identical copy of this CollisionMesh
 	 */
-	public abstract CollisionMesh copy();
+//	public abstract CollisionMesh copy();
 	
 	/**
 	 * Gets the farthest point on the mesh in the given direction.

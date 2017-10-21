@@ -271,9 +271,7 @@ public class BezierPath {
 				case C1:
 					if(VecUtil.distance(incoming, outgoing, joint) == 0){
 						midShift(constrainIn, constrainOut);
-						return;
-					}else 
-						if(linearize(constrainIn, constrainOut)){
+					}else if(linearize(constrainIn, constrainOut)){
 						midShift(constrainIn, constrainOut);
 					}
 					break;

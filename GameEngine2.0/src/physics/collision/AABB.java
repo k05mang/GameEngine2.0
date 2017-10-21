@@ -100,7 +100,7 @@ public class AABB extends CollisionMesh{
 	}
 	
 	@Override
-	public CollisionMesh copy(){
+	public CollisionMesh clone(){
 		return new AABB(this);
 	}
 	

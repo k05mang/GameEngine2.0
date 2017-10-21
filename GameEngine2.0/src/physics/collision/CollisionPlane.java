@@ -27,7 +27,7 @@ public class CollisionPlane extends CollisionMesh{
 	}
 	
 	@Override
-	public CollisionMesh copy(){
+	public CollisionMesh clone(){
 		return new CollisionPlane(this);
 	}
 	

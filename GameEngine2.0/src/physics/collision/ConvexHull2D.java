@@ -71,7 +71,7 @@ public class ConvexHull2D extends ConvexHull {
 	}
 	
 	@Override
-	public CollisionMesh copy(){
+	public CollisionMesh clone(){
 		return new ConvexHull2D(this);
 	}
 	

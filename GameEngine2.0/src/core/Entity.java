@@ -60,7 +60,7 @@ public class Entity extends SpatialAsset{
 		super();
 		this.mesh = mesh;
 		if(collider != null){
-			this.collider = collider.copy();
+			this.collider = collider.clone();
 		}
 	}
 	
@@ -80,7 +80,7 @@ public class Entity extends SpatialAsset{
 	 */
 	public void set(CollisionMesh collider){
 		if(collider != null){
-			this.collider = collider.copy();//copy the collision mesh
+			this.collider = collider.clone();//copy the collision mesh
 		}else{
 			this.collider = null;
 		}

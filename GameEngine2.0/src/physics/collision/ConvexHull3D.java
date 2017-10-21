@@ -103,7 +103,7 @@ public class ConvexHull3D extends ConvexHull {
 	}
 	
 	@Override
-	public CollisionMesh copy(){
+	public CollisionMesh clone(){
 		return new ConvexHull3D(this);
 	}
 	
