@@ -11,6 +11,8 @@ import windowing.Window;
 import windowing.events.keyboard.ModKey;
 import windowing.events.mouse.MouseButton;
 import core.Camera;
+import core.gizmo.TransformGizmo.ActiveControl;
+
 import static core.gizmo.TransformType.TRANSLATE;
 
 public class TranslationGizmo extends TransformGizmo{
@@ -112,15 +114,15 @@ public class TranslationGizmo extends TransformGizmo{
 			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
 			//perform each collision check, starting with the center sphere
 			if(CollisionDetector.intersects(clickRay, center)){
-				activeController = CENTER;
+				activeController = ActiveControl.CENTER;
 			}else if(xaxis.colliding(clickRay)){
-				activeController = X_AXIS;
+				activeController = ActiveControl.X_AXIS;
 			}else if(yaxis.colliding(clickRay)){
-				activeController = Y_AXIS;
+				activeController = ActiveControl.Y_AXIS;
 			}else if(zaxis.colliding(clickRay)){
-				activeController = Z_AXIS;
+				activeController = ActiveControl.Z_AXIS;
 			}else{
-				activeController = NO_CONTROLLER;
+				activeController = ActiveControl.NO_CONTROLLER;
 			}
 		}
 	}

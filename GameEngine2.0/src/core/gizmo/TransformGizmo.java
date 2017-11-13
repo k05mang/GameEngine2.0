@@ -22,17 +22,24 @@ public abstract class TransformGizmo implements MouseListener{
 	protected static Vec3 centerColor = new Vec3(1,1,0);
 	protected static SpatialAsset target;
 	protected static Camera view;
-	protected static char activeController;//represents what controlling axis should be used in modifying the object
+	protected static ActiveControl activeController;//represents what controlling axis should be used in modifying the object
 	protected static TransformType modifier = TransformType.TRANSLATE;
 	protected static final float viewScale = 150f;//reduces the scaling factor when scaling the gizmo to make use easier at further distances
 	protected static final float controllerLength = 10f;//length for the arrow controllers on certain gizmos
 	
-	protected static final char 
-	NO_CONTROLLER = 0,
-	CENTER = 'c',
-	X_AXIS = 'x',
-	Y_AXIS = 'y',
-	Z_AXIS = 'z';
+//	protected static final char 
+//	NO_CONTROLLER = 0,
+//	CENTER = 'c',
+//	X_AXIS = 'x',
+//	Y_AXIS = 'y',
+//	Z_AXIS = 'z';
+	protected enum ActiveControl{
+		NO_CONTROLLER,
+		CENTER,
+		X_AXIS,
+		Y_AXIS,
+		Z_AXIS;
+	}
 	
 	/**
 	 * Constructs a TranformGizmo, the gizmo is a 3D representation of the cardinal transformations of an object.
@@ -119,7 +126,7 @@ public abstract class TransformGizmo implements MouseListener{
 	
 	@Override
 	public final void onMouseRelease(Window window, MouseButton button, ModKey[] mods){
-		activeController = NO_CONTROLLER;
+		activeController = ActiveControl.NO_CONTROLLER;
 	}
 	
 	@Override

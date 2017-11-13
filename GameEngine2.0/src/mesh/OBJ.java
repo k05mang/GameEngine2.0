@@ -48,6 +48,6 @@ public class OBJ extends Mesh {
 		vao.enableAttribute(3);
 		vao.enableAttribute(4);
 		
-		this.material = material;
+//		this.material = material;
 	}
 }

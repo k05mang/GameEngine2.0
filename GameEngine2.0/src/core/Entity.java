@@ -1,5 +1,6 @@
 package core;
 
+import core.managers.SceneManager;
 import mesh.Mesh;
 import physics.collision.AABB;
 import physics.collision.CollisionMesh;
@@ -9,6 +10,7 @@ public class Entity extends SpatialAsset{
 
 	private Mesh mesh;
 	private CollisionMesh collider;
+	private String material;
 	
 	/**
 	 * Constructs an Entity object with the given {@code mesh} as this Entities render Mesh. This Entity will initially have
@@ -47,6 +49,7 @@ public class Entity extends SpatialAsset{
 				this.collider = null;
 			}
 		}
+		material = "default";
 	}
 	
 	/**
@@ -62,6 +65,7 @@ public class Entity extends SpatialAsset{
 		if(collider != null){
 			this.collider = collider.clone();
 		}
+		material = "default";
 	}
 	
 	/**
@@ -124,5 +128,25 @@ public class Entity extends SpatialAsset{
 	 */
 	public Mesh getMesh(){
 		return mesh;
+	}
+	
+	/**
+	 * Sets the material this mesh should use when rendering
+	 * 
+	 * @param material Material to use when rendering this mesh
+	 */
+	public void setMaterial(String material){
+		if(SceneManager.materials.get(material) != null){
+			this.material = material;
+		}
+	}
+	
+	/**
+	 * Gets the material this mesh is currently using to render with
+	 * 
+	 * @return Id of the material this mesh is using to render with
+	 */
+	public String getMaterial(){
+		return material;
 	}
 }

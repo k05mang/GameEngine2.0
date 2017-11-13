@@ -14,6 +14,7 @@ import windowing.Window;
 import windowing.events.keyboard.ModKey;
 import windowing.events.mouse.MouseButton;
 import core.Camera;
+import core.gizmo.TransformGizmo.ActiveControl;
 
 public class ScaleGizmo extends TransformGizmo {
 	private Arrow xaxis, yaxis, zaxis;
@@ -59,7 +60,7 @@ public class ScaleGizmo extends TransformGizmo {
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
 		if(TransformGizmo.target != null && modifier == SCALE){
-			if(activeController != NO_CONTROLLER){
+			if(activeController != ActiveControl.NO_CONTROLLER){
 				//get the Ray from the previous movement
 				Ray preMoveRay = view.genRay((float)prevX, (float)prevY);
 				//get the Ray for the current movement
@@ -113,15 +114,15 @@ public class ScaleGizmo extends TransformGizmo {
 			origClickDist = VecUtil.subtract(clickPoint, target.getPos()).length();
 			//perform each collision check, starting with the center sphere
 			if(CollisionDetector.intersects(clickRay, center)){
-				activeController = CENTER;
+				activeController = ActiveControl.CENTER;
 			}else if(xaxis.colliding(clickRay)){
-				activeController = X_AXIS;
+				activeController = ActiveControl.X_AXIS;
 			}else if(yaxis.colliding(clickRay)){
-				activeController = Y_AXIS;
+				activeController = ActiveControl.Y_AXIS;
 			}else if(zaxis.colliding(clickRay)){
-				activeController = Z_AXIS;
+				activeController = ActiveControl.Z_AXIS;
 			}else{
-				activeController = NO_CONTROLLER;
+				activeController = ActiveControl.NO_CONTROLLER;
 			}
 		}
 	}

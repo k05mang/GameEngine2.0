@@ -5,18 +5,16 @@ import shaders.ShaderProgram;
 import textures.Texture;
 import core.Resource;
 import core.managers.SceneManager;
+import static mesh.MaterialType.*;
 
 public class Material implements Resource{
 
-	public static final int 
-	DIFFUSE = 0,
-	NORMAL = 1,
-	SPECULAR = 2,
-	BUMP = 3,
-	COLOR = 4;
+	
+	
 	private String diffuse, normal, specular, bump;
 	private float specPower, specInt;
 	private Vec4 color;
+	private boolean isShaded;
 	
 	/**
 	 * Creates a material with no initial data
@@ -29,6 +27,7 @@ public class Material implements Resource{
 		color = null;
 		specPower = 0;
 		specInt = 0;
+		isShaded = false;
 	}
 	
 	/**
@@ -108,13 +107,31 @@ public class Material implements Resource{
 	}
 	
 	/**
+	 * Gets whether this material is shaded normally or rendered flat
+	 * 
+	 * @return True if this material is shaded normally, false otherwise
+	 */
+	public boolean isShaded(){
+		return isShaded;
+	}
+	
+	/**
+	 * Sets whether the mesh bound to this material should have standard shading applied to it or be flat
+	 * 
+	 * @param shade Value to specify whether the material should be shaded normally
+	 */
+	public void setShaded(boolean shade){
+		isShaded = shade;
+	}
+	
+	/**
 	 * Sets the specified texture type of this material to the given
 	 * texture id stored in the system
 	 * 
-	 * @param type Integer constant defined in Material that specifies which texture to set
+	 * @param type Specifies which texture to set
 	 * @param id Texture id stored in the system to set this materials texture to
 	 */
-	public void setTexture(int type, String id){
+	public void setTexture(MaterialType type, String id){
 		switch(type){
 			case DIFFUSE:
 				diffuse = new String(id);
@@ -128,6 +145,8 @@ public class Material implements Resource{
 			case BUMP:
 				bump = new String(id);
 				break;
+			case COLOR:
+				return;
 		}
 	}
 	
@@ -136,7 +155,7 @@ public class Material implements Resource{
 	 * 
 	 * @param type Texture to remove from this material
 	 */
-	public void removeTexture(int type){
+	public void removeTexture(MaterialType type){
 		switch(type){
 			case DIFFUSE:
 				diffuse = null;
@@ -150,6 +169,9 @@ public class Material implements Resource{
 			case BUMP:
 				bump = null;
 				break;
+			case COLOR:
+				color.set(0,0,0,1);
+				break;
 		}
 	}
 	
@@ -159,7 +181,7 @@ public class Material implements Resource{
 	 * @param type Texture type to retrieve the value of from this material
 	 * @return Id of the texture in the system that this material uses for the specified texture
 	 */
-	public String getTextureId(int type){
+	public String getTextureId(MaterialType type){
 		switch(type){
 			case DIFFUSE:
 				return diffuse;
@@ -180,7 +202,7 @@ public class Material implements Resource{
 	 * @param type Type of data to check in this material
 	 * @return True if this material has renderable values assigned to the given field, false otherwise
 	 */
-	public boolean hasMaterial(int type){
+	public boolean hasMaterial(MaterialType type){
 		switch(type){
 			case DIFFUSE:
 				return diffuse != null;
@@ -220,14 +242,14 @@ public class Material implements Resource{
 			Texture albedo = (Texture) SceneManager.textures.get(diffuse);
 			//check to make sure the texture assigned to the diffuse exists
 			if(albedo != null){
-				albedo.bindToTextureUnit(DIFFUSE);
+				albedo.bindToTextureUnit(DIFFUSE.textureUnit);
 				program.setUniform("useDiffuse", true);
 			}else{
 				if(color != null){
 					program.setUniform("useDiffuse", false);
 					program.setUniform("color", color);
 				}else{
-					((Texture) SceneManager.textures.get("default")).bindToTextureUnit(DIFFUSE);
+					((Texture) SceneManager.textures.get("default")).bindToTextureUnit(DIFFUSE.textureUnit);
 					program.setUniform("useDiffuse", true);
 				}
 			}
@@ -236,14 +258,14 @@ public class Material implements Resource{
 				program.setUniform("useDiffuse", false);
 				program.setUniform("color", color);
 			}else{
-				((Texture) SceneManager.textures.get("default")).bindToTextureUnit(DIFFUSE);
+				((Texture) SceneManager.textures.get("default")).bindToTextureUnit(DIFFUSE.textureUnit);
 				program.setUniform("useDiffuse", true);
 			}
 		}
 		
 		//bind the normal texture
 		if(normal != null){
-			((Texture) SceneManager.textures.get(normal)).bindToTextureUnit(NORMAL);
+			((Texture) SceneManager.textures.get(normal)).bindToTextureUnit(NORMAL.textureUnit);
 			program.setUniform("useNormalMap", true);
 		}else{
 			program.setUniform("useNormalMap", false);
@@ -251,7 +273,7 @@ public class Material implements Resource{
 		
 		//bind the specular map
 		if(specular != null){
-			((Texture) SceneManager.textures.get(specular)).bindToTextureUnit(SPECULAR);
+			((Texture) SceneManager.textures.get(specular)).bindToTextureUnit(SPECULAR.textureUnit);
 			program.setUniform("useSpecMap", true);
 			program.setUniform("specPower", specPower);
 			program.setUniform("specInt", specInt);
@@ -263,7 +285,7 @@ public class Material implements Resource{
 		
 		//bind the bump map
 		if(bump != null){
-			((Texture) SceneManager.textures.get(bump)).bindToTextureUnit(BUMP);
+			((Texture) SceneManager.textures.get(bump)).bindToTextureUnit(BUMP.textureUnit);
 			program.setUniform("useBump", true);
 		}else{
 			program.setUniform("useBump", false);

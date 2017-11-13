@@ -113,15 +113,15 @@ public class RotationGizmo extends TransformGizmo {
 			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
 			//perform each collision check, starting with the center sphere
 			if(CollisionDetector.intersects(clickRay, center)){
-				activeController = CENTER;
+				activeController = ActiveControl.CENTER;
 			}else if(CollisionDetector.intersects(clickRay, xyWheel)){
-				activeController = X_AXIS;
+				activeController = ActiveControl.X_AXIS;
 			}else if(CollisionDetector.intersects(clickRay, yzWheel)){
-				activeController = Y_AXIS;
+				activeController = ActiveControl.Y_AXIS;
 			}else if(CollisionDetector.intersects(clickRay, xzWheel)){
-				activeController = Z_AXIS;
+				activeController = ActiveControl.Z_AXIS;
 			}else{
-				activeController = NO_CONTROLLER;
+				activeController = ActiveControl.NO_CONTROLLER;
 			}
 		}
 	}

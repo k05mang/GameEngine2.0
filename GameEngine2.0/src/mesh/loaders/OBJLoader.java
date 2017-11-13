@@ -1,17 +1,17 @@
 package mesh.loaders;
 
-import glMath.vectors.Vec2;
-import glMath.vectors.Vec3;
-import glMath.vectors.Vec4;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import core.managers.SceneManager;
+import glMath.vectors.Vec2;
+import glMath.vectors.Vec3;
+import glMath.vectors.Vec4;
 import mesh.Geometry;
 import mesh.Material;
+import mesh.MaterialType;
 import mesh.OBJ;
 import mesh.primitives.Triangle;
 import mesh.primitives.Vertex;
@@ -239,7 +239,7 @@ public class OBJLoader implements MeshLoader {
 									texture.setParam(TexParam.WRAP_T, TexParamEnum.REPEAT);
 									SceneManager.textures.put(lineValues[lineValues.length-1], texture);
 								}
-								curMat.setTexture(Material.DIFFUSE, lineValues[lineValues.length-1]);//add texture to material
+								curMat.setTexture(MaterialType.DIFFUSE, lineValues[lineValues.length-1]);//add texture to material
 								break;
 							case "map_Kd":
 								//check to make sure the map hasn't been added to the system already
@@ -251,7 +251,7 @@ public class OBJLoader implements MeshLoader {
 									texture.setParam(TexParam.WRAP_T, TexParamEnum.REPEAT);
 									SceneManager.textures.put(lineValues[lineValues.length-1], texture);
 								}
-								curMat.setTexture(Material.DIFFUSE, lineValues[lineValues.length-1]);//add texture to material
+								curMat.setTexture(MaterialType.DIFFUSE, lineValues[lineValues.length-1]);//add texture to material
 								break;
 							case "map_bump":
 								//check to make sure the map hasn't been added to the system already
@@ -263,7 +263,7 @@ public class OBJLoader implements MeshLoader {
 									texture.setParam(TexParam.WRAP_T, TexParamEnum.REPEAT);
 									SceneManager.textures.put(lineValues[lineValues.length-1], texture);
 								}
-								curMat.setTexture(Material.BUMP, lineValues[lineValues.length-1]);//add texture to material
+								curMat.setTexture(MaterialType.BUMP, lineValues[lineValues.length-1]);//add texture to material
 								break;
 							case "bump":
 								//check to make sure the map hasn't been added to the system already
@@ -275,7 +275,7 @@ public class OBJLoader implements MeshLoader {
 									texture.setParam(TexParam.WRAP_T, TexParamEnum.REPEAT);
 									SceneManager.textures.put(lineValues[lineValues.length-1], texture);
 								}
-								curMat.setTexture(Material.BUMP, lineValues[lineValues.length-1]);//add texture to material
+								curMat.setTexture(MaterialType.BUMP, lineValues[lineValues.length-1]);//add texture to material
 								break;
 						}
 					}while(mtl.hasNextLine() && !line.isEmpty());//only read the materials until a new one is found or the file ends

@@ -205,6 +205,16 @@ public abstract class ImageLoader {
 		return loadDefault(iformat, type, 8, 8);
 	}
 	
+	/**
+	 * Loads the system defined default image
+	 * 
+	 * @param iformat Internal format of the texture object
+	 * @param type Texture type to create 
+	 * @param width Width of the texture
+	 * @param height Height of the texture
+	 * 
+	 * @return Texture object of the given type that is the default image from the system
+	 */
 	public static Texture loadDefault(InternalFormat iformat, TextureType type, int width, int height){
 		Texture result = null;
 		ByteBuffer pixels = ImageParser.getDefault(width, height, type == TextureType.CUBE_MAP || type == TextureType.CUBE_MAP_ARRAY, false);

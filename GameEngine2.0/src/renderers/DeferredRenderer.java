@@ -21,7 +21,10 @@ public class DeferredRenderer extends Renderer{
 
 	private GBuffer gBuffer;
     private Camera main;
-	public static final Plane quad = new Plane(2);
+//	public static final Plane quad = new Plane(2);
+	static{
+		SceneManager.meshes.put("unit_quad", new Plane(2));
+	}
 
 	public DeferredRenderer(int width, int height, Camera cam){
 		super(width, height);
@@ -55,6 +58,8 @@ public class DeferredRenderer extends Renderer{
 		SceneManager.shaderPrograms.get("finalPass").setUniform("lighting", 1);
 		SceneManager.shaderPrograms.get("finalPass").setUniform("ambient", .3f);
 		SceneManager.shaderPrograms.get("finalPass").setUniform("gamma", 1);
+		SceneManager.shaderPrograms.get("finalPass").setUniform("diffuseOnly", SceneManager.config.settings("diffuse-only").getAsBoolean());
+		SceneManager.shaderPrograms.get("finalPass").setUniform("lightingOnly", SceneManager.config.settings("lighting-only").getAsBoolean());
 	}
 	
 	public void render(Collection<Entity> meshes, 
@@ -71,7 +76,7 @@ public class DeferredRenderer extends Renderer{
 		//render geometry
 		for(Entity mesh : meshes){
 			SceneManager.shaderPrograms.get("geoPass").setUniform("model", mesh.getTransform().getMatrix());
-			Material mat = (Material) SceneManager.materials.get(mesh.getMesh().getMaterial());
+			Material mat = (Material) SceneManager.materials.get(mesh.getMaterial());
 			mat.bind(SceneManager.shaderPrograms.get("geoPass"));
 			mesh.getMesh().render();
 		}
@@ -99,8 +104,9 @@ public class DeferredRenderer extends Renderer{
 		gBuffer.finalPass();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SceneManager.shaderPrograms.get("finalPass").bind();
-		quad.render();
+		SceneManager.meshes.get("unit_quad").render();
 		SceneManager.shaderPrograms.get("finalPass").unbind();
+//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	
 	public void delete(){
@@ -109,6 +115,6 @@ public class DeferredRenderer extends Renderer{
 		SceneManager.shaderPrograms.get("stencilPass").delete(); 
 		SceneManager.shaderPrograms.get("lightPass").delete();
 		SceneManager.shaderPrograms.get("finalPass").delete();
-		quad.delete();
+//		quad.delete();
 	}
 }

@@ -263,20 +263,28 @@ public class BezierPath {
 				case C0:
 					return;
 				case G1:
+					//check if the joint is aligned with the incoming point and the outgoing point
 					if(VecUtil.distance(incoming, outgoing, joint) == 0){
+						//if they are then return from the function and stop any recursive calls
 						return;
 					}
+					//otherwise linearize the line
 					linearize(constrainIn, constrainOut);
 					break;
 				case C1:
+					//check if the joint is aligned with the incoming point and the outgoing point
 					if(VecUtil.distance(incoming, outgoing, joint) == 0){
+						//if it is aligned then shift the mid joint of the curves to even out the incoming and outgoing lines
 						midShift(constrainIn, constrainOut);
-					}else if(linearize(constrainIn, constrainOut)){
+					}else if(linearize(constrainIn, constrainOut)){//since they are not all aligned, align the joint
+						//then attempt a mid shift on the joint
 						midShift(constrainIn, constrainOut);
 					}
 					break;
 				case C2:
+					//at this point they will need to be linearized regardless to align with the requirements of a C2 smoothing
 					if(linearize(constrainIn, constrainOut)){
+						//then perform the mid shifting
 						midShift(constrainIn, constrainOut);
 						neighborShift();
 					}
@@ -356,7 +364,7 @@ public class BezierPath {
 		}
 		
 		/**
-		 * Given three linearized control points that define a joint between two bezier curves in the path this method will adjust both control points such 
+		 * Given three linearized control points that define a joint between two bezier curves in the path, this method will adjust both control points such 
 		 * that the joint point is the mid point between both control points.
 		 * 
 		 * @param constrainIn Determines if the incoming control should not be modified and only the outgoing or both

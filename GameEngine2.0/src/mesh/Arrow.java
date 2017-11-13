@@ -29,6 +29,12 @@ public class Arrow extends SpatialAsset{
 	private Vec3 direction, color;
 	private boolean useCube;
 	private Entity shaft, tip;
+	static{
+		//add meshes to the meshes manager
+		SceneManager.meshes.put("arrow_shaft", new Cylinder(1, 1, 10));
+		SceneManager.meshes.put("arrow_cone", new Cone(1, 1, 10, false));
+		SceneManager.meshes.put("arrow_cube", new Cube(1));
+	}
 
 	/**
 	 * Constructs an arrow that represents a Ray object
@@ -137,19 +143,6 @@ public class Arrow extends SpatialAsset{
 	 * @param cubeTip Boolean indicating what type of tip to use in rendering, true means a cube will be the tip, otherwise a cone
 	 */
 	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz, float r, float g, float b, boolean cubeTip){
-		//add meshes to the meshes manager if they don't exist already
-		//check if the shaft was added
-		if(SceneManager.meshes.get("arrow_shaft") == null){
-			SceneManager.meshes.put("arrow_shaft", new Cylinder(1, 1, 10));
-		}
-		//check if the pointed tip was added
-		if(SceneManager.meshes.get("arrow_cone") == null){
-			SceneManager.meshes.put("arrow_cone", new Cone(1, 1, 10, false));
-		}
-		//check if the cube tip was added
-		if(SceneManager.meshes.get("arrow_cube") == null){
-			SceneManager.meshes.put("arrow_cube", new Cube(1));
-		}
 		shaft = new Entity(SceneManager.meshes.get("arrow_shaft"), true);
 		useCube = cubeTip;
 		tip = new Entity(useCube ? SceneManager.meshes.get("arrow_cube") : SceneManager.meshes.get("arrow_cone"), true);

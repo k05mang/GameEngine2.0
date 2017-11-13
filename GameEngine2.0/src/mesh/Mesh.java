@@ -15,7 +15,6 @@ import core.managers.SceneManager;
 public abstract class Mesh implements Resource{
 	protected Geometry geometry;
 	protected VertexArray vao;
-	protected String material;
 	public static final String SOLID_MODE = "solid", EDGE_MODE = "edges";
 	protected static final String DEFAULT_VBO = "default";
 	
@@ -25,7 +24,6 @@ public abstract class Mesh implements Resource{
 	public Mesh(){
 		vao = new VertexArray();
 		geometry = new Geometry();
-		material = "default";
 	}
 	
 	/**
@@ -42,7 +40,7 @@ public abstract class Mesh implements Resource{
 	public Mesh(Mesh copy){
 		vao = copy.vao;
 		geometry = copy.geometry;//new Geometry(copy.geometry);
-		material = new String(copy.material);
+//		material = new String(copy.material);
 	}
 	
 	/**
@@ -104,26 +102,6 @@ public abstract class Mesh implements Resource{
 		vao.bind();
 		glDrawElements(vao.getRenderMode().mode, vao.getNumIndices(), vao.getIndexType().enumType, 0);
 		vao.unbind();
-	}
-	
-	/**
-	 * Sets the material this mesh should use when rendering
-	 * 
-	 * @param material Material to use when rendering this mesh
-	 */
-	public void setMaterial(String material){
-		if(SceneManager.materials.get(material) != null){
-			this.material = material;
-		}
-	}
-	
-	/**
-	 * Gets the material this mesh is currently using to render with
-	 * 
-	 * @return Id of the material this mesh is using to render with
-	 */
-	public String getMaterial(){
-		return material;
 	}
 	
 	/**

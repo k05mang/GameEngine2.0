@@ -33,7 +33,7 @@ import textures.enums.InternalFormat;
 public class GBuffer {
 
 	private FBO framebuffer;
-	private Texture2D diffuse, position, normal, lighting, depth;
+//	private Texture2D diffuse, position, normal, lighting, depth;
 	private HashMap<String, Texture2D> buffers;
 	private int width, height;
 	
@@ -43,18 +43,18 @@ public class GBuffer {
 		this.height = height;
 		framebuffer = new FBO();//create framebuffer
 		//create data buffers
-		diffuse = new Texture2D(InternalFormat.RGB32F, 0, width, height);
-		position = new Texture2D(InternalFormat.RGBA32F, 0, width, height);//specular power can be kept in the alpha channel
-		normal = new Texture2D(InternalFormat.RGBA32F, 0, width, height);//specular intensity can be kept in the alpha channel
-		lighting = new Texture2D(InternalFormat.RGB32F, 0, width, height);
-		depth = new Texture2D(InternalFormat.D24_S8, 0, width, height);
+		buffers.put("diffuse", new Texture2D(InternalFormat.RGB32F, 0, width, height));
+		buffers.put("position", new Texture2D(InternalFormat.RGBA32F, 0, width, height));//specular power can be kept in the alpha channel
+		buffers.put("normal", new Texture2D(InternalFormat.RGBA32F, 0, width, height));//specular intensity can be kept in the alpha channel
+		buffers.put("lighting", new Texture2D(InternalFormat.RGB32F, 0, width, height));
+		buffers.put("depth", new Texture2D(InternalFormat.D24_S8, 0, width, height));
 		
 		//attach data buffers
-		framebuffer.attachColor(0, diffuse, 0);
-		framebuffer.attachColor(1, position, 0);
-		framebuffer.attachColor(2, normal, 0);
-		framebuffer.attachColor(3, lighting, 0);
-		framebuffer.attachDepthStencil(depth, 0);
+		framebuffer.attachColor(0, buffers.get("diffuse"), 0);
+		framebuffer.attachColor(1, buffers.get("position"), 0);
+		framebuffer.attachColor(2, buffers.get("normal"), 0);
+		framebuffer.attachColor(3, buffers.get("lighting"), 0);
+		framebuffer.attachDepthStencil(buffers.get("depth"), 0);
 		
 		framebuffer.setDrawBuffers(0, 1, 2);
 	}
@@ -79,8 +79,8 @@ public class GBuffer {
 	    glBlendEquation(GL_FUNC_ADD);
 	    glBlendFunc(GL_ONE, GL_ONE);
 	    //set position and normal textures to be readable for the lighting pass
-		position.bindToTextureUnit(0);
-		normal.bindToTextureUnit(1);
+	    buffers.get("position").bindToTextureUnit(0);
+	    buffers.get("normal").bindToTextureUnit(1);
 		//set the lighting buffer to render in to
 		framebuffer.setDrawBuffers(3);
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -111,24 +111,28 @@ public class GBuffer {
 		glDisable(GL_BLEND);
 		framebuffer.unbind();//set the default framebuffer as the current framebuffer
 		//bind the textures for read back
-		diffuse.bindToTextureUnit(0);//0 will be the engine target for deferred diffuse texture
-		lighting.bindToTextureUnit(1);
+		buffers.get("diffuse").bindToTextureUnit(0);//0 will be the engine target for deferred diffuse texture
+		buffers.get("lighting").bindToTextureUnit(1);
 		glEnable(GL_DEPTH_TEST);
 //		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 	}
 	
-	public void bindDiffuse(){
-		diffuse.bindToTextureUnit(0);
+	public void bindBuffer(String buffer){
+		buffers.get(buffer).bindToTextureUnit(0);
 	}
 	
-	public void bindPosition(){
-		position.bindToTextureUnit(0);
-	}
-	
-	public void bindNormal(){
-		normal.bindToTextureUnit(0);
-	}
+//	public void bindDiffuse(){
+//		buffers.get("diffuse").bindToTextureUnit(0);
+//	}
+//	
+//	public void bindPosition(){
+//		buffers.get("position").bindToTextureUnit(0);
+//	}
+//	
+//	public void bindNormal(){
+//		buffers.get("normal").bindToTextureUnit(0);
+//	}
 	
 	public void unbind(){
 		framebuffer.unbind();
@@ -136,10 +140,8 @@ public class GBuffer {
 	
 	public void delete(){
 		framebuffer.delete();
-		diffuse.delete(); 
-		position.delete(); 
-		normal.delete(); 
-		lighting.delete();
-		depth.delete();
+		for(Texture2D buffer : buffers.values()){
+			buffer.delete();
+		}
 	}
 }
