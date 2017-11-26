@@ -68,6 +68,15 @@ public class FBO implements Resource {
 	}
 	
 	/**
+	 * Gets the id that identifies this framebuffer object on the GPU
+	 * 
+	 * @return Id if the framebuffer exists, otherwise 0
+	 */
+	public int getId(){
+		return id;
+	}
+	
+	/**
 	 * Unbinds this framebuffer from its previous framebuffer target effectively unbinding it from the context
 	 */
 	public void unbind(){
@@ -82,6 +91,21 @@ public class FBO implements Resource {
 	 */
 	public void setParam(FrameBufferParam param, int value){
 		glNamedFramebufferParameteri(id, param.value, value);
+	}
+	
+	/**
+	 * Sets the read buffer of this framebuffer object to the given attachment
+	 * @param attachment
+	 */
+	public void setReadBuffer(int attachment){
+		glNamedFramebufferReadBuffer(id, GL_COLOR_ATTACHMENT0+Math.max(0, attachment));
+	}
+	
+	/**
+	 * Sets the framebuffers read buffer to the default read buffer 0
+	 */
+	public void unsetReadBuffer(){
+		glNamedFramebufferReadBuffer(id, 0);
 	}
 	
 //---------------------COLOR ATTACHMENT FUNCTIONS-------------------------------------
@@ -300,6 +324,7 @@ public class FBO implements Resource {
 	@Override
 	public void delete() {
 		glDeleteFramebuffers(id);
+		id = 0;
 	}
 
 	/**

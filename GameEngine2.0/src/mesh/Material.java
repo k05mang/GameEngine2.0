@@ -27,7 +27,7 @@ public class Material implements Resource{
 		color = null;
 		specPower = 0;
 		specInt = 0;
-		isShaded = false;
+		isShaded = true;
 	}
 	
 	/**
@@ -290,6 +290,8 @@ public class Material implements Resource{
 		}else{
 			program.setUniform("useBump", false);
 		}
+		
+		program.setUniform("shade", isShaded);
 	}
 
 	@Override

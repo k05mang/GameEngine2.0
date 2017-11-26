@@ -2,7 +2,8 @@ package physics.collision;
 
 import java.util.ArrayList;
 
-import core.GameObject;
+import core.Entity;
+import core.Entity;
 import glMath.VecUtil;
 import glMath.vectors.Vec3;
 
@@ -11,7 +12,7 @@ public class SpatialOctree {
 	//the nodes will read in counter clockwise from the -z, +x quadrant
 	private OctreeNode root;
 	private Vec3 halfDim, center;
-	private ArrayList<GameObject> gameObjects;
+	private ArrayList<Entity> gameObjects;
 	private int leafCap, maxDepth;
 	
 //	public SpatialOctree(int leafCapacity, int depthCap){
@@ -19,16 +20,16 @@ public class SpatialOctree {
 //		center = new Vec3();
 //		halfDim = new Vec3();
 //		leafCap = leafCapacity;
-//		gameObjects = new ArrayList<GameObject>();
+//		gameObjects = new ArrayList<Entity>();
 //	}
 //	
-//	public SpatialOctree(int leafCapacity, int depthCap, ArrayList<GameObject> initializer){
+//	public SpatialOctree(int leafCapacity, int depthCap, ArrayList<Entity> initializer){
 //		root = new OctreeNode();
 //		center = new Vec3();
 //		halfDim = new Vec3();
 //		leafCap = leafCapacity;
-//		gameObjects = new ArrayList<GameObject>();
-//		for(GameObject obj : initializer){
+//		gameObjects = new ArrayList<Entity>();
+//		for(Entity obj : initializer){
 //			add(obj);
 //		}
 //	}
@@ -51,29 +52,29 @@ public class SpatialOctree {
 		root = new OctreeNode(null, this.center, this.halfDim, 0);
 		leafCap = leafCapacity;
 		maxDepth = depthCap;
-		gameObjects = new ArrayList<GameObject>();
+		gameObjects = new ArrayList<Entity>();
 	}
 	
-	public SpatialOctree(int leafCapacity, int depthCap, Vec3 center, Vec3 dimensions, ArrayList<GameObject> initializer){
+	public SpatialOctree(int leafCapacity, int depthCap, Vec3 center, Vec3 dimensions, ArrayList<Entity> initializer){
 		this(leafCapacity, depthCap, center.x, center.y, center.z, dimensions.x, dimensions.y, dimensions.z, initializer);
 	}
 	
-	public SpatialOctree(int leafCapacity, int depthCap, Vec3 center, float dX, float dY, float dZ, ArrayList<GameObject> initializer){
+	public SpatialOctree(int leafCapacity, int depthCap, Vec3 center, float dX, float dY, float dZ, ArrayList<Entity> initializer){
 		this(leafCapacity, depthCap, center.x, center.y, center.z, dX, dY, dZ, initializer);
 	}
 	
-	public SpatialOctree(int leafCapacity, int depthCap, float cX, float cY, float cZ, Vec3 dimensions, ArrayList<GameObject> initializer){
+	public SpatialOctree(int leafCapacity, int depthCap, float cX, float cY, float cZ, Vec3 dimensions, ArrayList<Entity> initializer){
 		this(leafCapacity, depthCap, cX, cY, cZ, dimensions.x, dimensions.y, dimensions.z, initializer);
 	}
 	
-	public SpatialOctree(int leafCapacity, int depthCap, float cX, float cY, float cZ, float dX, float dY, float dZ, ArrayList<GameObject> initializer){
+	public SpatialOctree(int leafCapacity, int depthCap, float cX, float cY, float cZ, float dX, float dY, float dZ, ArrayList<Entity> initializer){
 		center = new Vec3(cX, cY, cZ);
 		halfDim = new Vec3(dX/2.0f, dY/2.0f, dZ/2.0f);
 		root = new OctreeNode(null, this.center, this.halfDim, 0);
 		leafCap = leafCapacity;
 		maxDepth = depthCap;
-		gameObjects = new ArrayList<GameObject>();
-		for(GameObject obj : initializer){
+		gameObjects = new ArrayList<Entity>();
+		for(Entity obj : initializer){
 			add(obj);
 		}
 	}
@@ -84,7 +85,7 @@ public class SpatialOctree {
 	 * @param object Game object to be added
 	 * @return True if the object was added, false if it wasn't due to out of bounds volumes
 	 */
-	public boolean add(GameObject object){
+	public boolean add(Entity object){
 		//alternative might be to have the tree dynamically resize as items are added and removed
 		Vec3 relObjCenter = (Vec3)VecUtil.subtract(object.getTranslation(), root.volume.getCenter());
 		AABB objVolume = object.getBoundingVolume();
@@ -103,7 +104,7 @@ public class SpatialOctree {
 		return true;
 	}
 	
-	public void remove(GameObject object){
+	public void remove(Entity object){
 		//traverse the tree then iterate through the indices of the leaf node to find the array list element
 	}
 	
@@ -174,7 +175,7 @@ public class SpatialOctree {
 		 * @param object Actual game object to be added, this is used to check bounds and position against the node
 		 * @param curDepth The current traversal depth of the tree
 		 */
-		public void add(int index, GameObject object, int curDepth){
+		public void add(int index, Entity object, int curDepth){
 			//check if we have reached the depth cap for the tree, at this point the object can only be added to the 
 			//current node regardless of the leaf capacity set by the tree
 			if(curDepth == maxDepth){
@@ -200,7 +201,7 @@ public class SpatialOctree {
 						//parse the objects that are contained in this node and distribute them to the sub nodes
 						//that were made
 						for(Integer objIndex : gameIndices){
-							GameObject curObject = gameObjects.get(objIndex.intValue());
+							Entity curObject = gameObjects.get(objIndex.intValue());
 							//check which sub space to put the object in
 							for(int curNode = 0; curNode < 8; curNode++){
 								if(nodes[curNode].volume.colliding(curObject.getBoundingVolume())){

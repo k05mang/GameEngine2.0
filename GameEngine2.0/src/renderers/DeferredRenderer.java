@@ -109,12 +109,15 @@ public class DeferredRenderer extends Renderer{
 //		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	
+	public void debug(){
+		gBuffer.debug();
+	}
+	
 	public void delete(){
 		gBuffer.delete();
 		SceneManager.shaderPrograms.get("geoPass").delete(); 
 		SceneManager.shaderPrograms.get("stencilPass").delete(); 
 		SceneManager.shaderPrograms.get("lightPass").delete();
 		SceneManager.shaderPrograms.get("finalPass").delete();
-//		quad.delete();
 	}
 }

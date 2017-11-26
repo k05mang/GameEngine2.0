@@ -24,6 +24,7 @@ import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
 import static org.lwjgl.opengl.GL14.GL_INCR_WRAP;
 import static org.lwjgl.opengl.GL14.glBlendEquation;
 import static org.lwjgl.opengl.GL20.glStencilOpSeparate;
+import static org.lwjgl.opengl.GL45.glBlitNamedFramebuffer;
 
 import java.util.HashMap;
 
@@ -43,7 +44,7 @@ public class GBuffer {
 		this.height = height;
 		framebuffer = new FBO();//create framebuffer
 		//create data buffers
-		buffers.put("diffuse", new Texture2D(InternalFormat.RGB32F, 0, width, height));
+		buffers.put("diffuse", new Texture2D(InternalFormat.RGBA32F, 0, width, height));
 		buffers.put("position", new Texture2D(InternalFormat.RGBA32F, 0, width, height));//specular power can be kept in the alpha channel
 		buffers.put("normal", new Texture2D(InternalFormat.RGBA32F, 0, width, height));//specular intensity can be kept in the alpha channel
 		buffers.put("lighting", new Texture2D(InternalFormat.RGB32F, 0, width, height));
@@ -133,6 +134,30 @@ public class GBuffer {
 //	public void bindNormal(){
 //		buffers.get("normal").bindToTextureUnit(0);
 //	}
+	
+	/**
+	 * Sets iterates over this gbuffers list of textures and blits the main framebuffer to render all the buffers
+	 */
+	public void debug(){
+		//get the width and height required by the resulting screens
+		//use the square root to allow for dynamically sized squares to show each screen evenly
+		int divisor = (int)Math.floor(Math.sqrt(buffers.size()));
+		int startX = 0, startY = 0, 
+				endX = width/divisor, endY = height/divisor;
+		//iterate over the list of buffers minus 1 to account for not getting the depth buffer
+		for(int curBuffer = 0; curBuffer < buffers.size()-1; curBuffer++){
+			//set the framebuffers current read buffer
+			framebuffer.setReadBuffer(curBuffer);
+			//blit the framebuffer
+			glBlitNamedFramebuffer(framebuffer.getId(), 0, 
+					0, 0, width, height, 
+					startX+endX*(curBuffer%divisor), startY+endY*(curBuffer/divisor), 
+					endX*((curBuffer%divisor)+1), endY*((curBuffer/divisor)+1), 
+					GL_COLOR_BUFFER_BIT, textures.enums.TexParamEnum.LINEAR.value);
+		}
+		//unset the read buffer
+		framebuffer.unsetReadBuffer();
+	}
 	
 	public void unbind(){
 		framebuffer.unbind();
