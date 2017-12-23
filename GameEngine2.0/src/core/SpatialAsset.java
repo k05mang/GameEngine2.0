@@ -1,9 +1,9 @@
 package core;
 
-import glMath.Transform;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 
-public abstract class SpatialAsset {
+public abstract class SpatialAsset /*implements Cloneable*/{
 	
 	protected Transform transforms;
 	
@@ -19,8 +19,8 @@ public abstract class SpatialAsset {
 	 * 
 	 * @param copy SpatialAsset whose data to copy
 	 */
-	public SpatialAsset(SpatialAsset copy){
-		transforms = new Transform(copy.transforms);
+	public SpatialAsset(SpatialAsset copy, boolean copyListeners){
+		transforms = new Transform(copy.transforms, copyListeners);
 	}
 	
 	/**
@@ -58,4 +58,7 @@ public abstract class SpatialAsset {
 	public Vec3 getPos(){
 		return transforms.getTranslation();
 	}
+//	
+//	@Override
+//	public abstract SpatialAsset clone();
 }

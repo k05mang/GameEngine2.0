@@ -11,8 +11,8 @@ import core.Camera;
 import core.Entity;
 import core.managers.SceneManager;
 import glMath.Quaternion;
-import glMath.Transform;
 import glMath.VecUtil;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 import static core.gizmo.TransformType.ROTATE;
 

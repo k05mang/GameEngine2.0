@@ -18,7 +18,7 @@ public abstract class CollisionMesh extends SpatialAsset implements Cloneable{
 	 * @param copy CollisionMesh whose data to copy in the construction of this CollisionMesh
 	 */
 	public CollisionMesh(CollisionMesh copy){
-		super(copy);
+		super(copy, false);
 	}
 	
 	@Override

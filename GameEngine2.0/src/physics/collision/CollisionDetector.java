@@ -1,9 +1,9 @@
 package physics.collision;
 
 import glMath.Quaternion;
-import glMath.Transform;
 import glMath.VecUtil;
 import glMath.matrices.Mat4;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
 import glMath.vectors.Vec4;

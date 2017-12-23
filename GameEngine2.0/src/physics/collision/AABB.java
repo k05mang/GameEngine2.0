@@ -1,6 +1,6 @@
 package physics.collision;
 
-import glMath.Transform;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 import mesh.Geometry;
 import mesh.Mesh;

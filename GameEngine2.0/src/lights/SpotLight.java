@@ -1,8 +1,8 @@
 package lights;
 
 import glMath.Quaternion;
-import glMath.Transform;
 import glMath.VecUtil;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 import mesh.Mesh;
 import mesh.primitives.geometry.Cone;

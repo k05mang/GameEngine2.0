@@ -1,7 +1,7 @@
 package lights;
 
-import glMath.Transform;
 import glMath.VecUtil;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 import mesh.Mesh;
 import mesh.primitives.geometry.Sphere;

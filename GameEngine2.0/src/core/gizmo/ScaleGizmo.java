@@ -3,8 +3,8 @@ package core.gizmo;
 import static core.gizmo.TransformType.SCALE;
 
 import glMath.Quaternion;
-import glMath.Transform;
 import glMath.VecUtil;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 import mesh.Arrow;
 import physics.collision.CollisionDetector;

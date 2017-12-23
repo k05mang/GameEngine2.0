@@ -2,11 +2,13 @@ package glMath;
 
 import glMath.matrices.Mat3;
 import glMath.matrices.Mat4;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 import glMath.vectors.Vec4;
 
 public class Quaternion {
 	private Vec4 data;//retains this quaternions data, which consists of 4 components
+    private static final float DOT_THRESHOLD = 0.9995f;
 	
 	/**
 	 * Constructs an unrotated quaternion
@@ -386,5 +388,60 @@ public class Quaternion {
 			//if not then the Quaternion generation can proceed as normal
 			return Quaternion.fromAxisAngle(axis, angle);
 		}
+	}
+	
+	/**
+	 * Spherical interpolation between two quaternions taken from
+	 * https://en.wikipedia.org/wiki/Slerp
+	 * 
+	 * @param start Quaternion to start from
+	 * @param end Quaternion to transform to
+	 * @param t Amount, from 0-1 denoting a percent, to transform the quaternion 
+	 * along the interpolation path from {@code start} to {@code end}
+	 * 
+	 * @return Quaternion representing the transformation from the start quaterion to the end quaternion
+	 * by a percent amount denoted by {@code t}
+	 */
+	public static Quaternion slerp(Quaternion start, Quaternion end, float t) {
+		Vec4 startQ = new Vec4(start.data);
+		Vec4 endQ = new Vec4(end.data);
+	    // Only unit quaternions are valid rotations.
+	    // Normalize to avoid undefined behavior.
+		startQ.normalize();
+		endQ.normalize();
+
+	    // Compute the cosine of the angle between the two vectors.
+	    float dot = startQ.dot(endQ);
+	    if (Math.abs(dot) > DOT_THRESHOLD) {
+	        // If the inputs are too close for comfort, linearly interpolate
+	        // and normalize the result.
+
+	        //Quaternion result = v0 + t*(v1 – v0);
+	        Quaternion result = new Quaternion(VecUtil.subtract(endQ, startQ).scale(t).add(startQ));
+	        result.normalize();
+	        return result;
+	    }
+
+	    // If the dot product is negative, the quaternions
+	    // have opposite handed-ness and slerp won't take
+	    // the shorter path. Fix by reversing one quaternion.
+	    if (dot < 0.0f) {
+	        endQ.scale(-1);
+	        dot = -dot;
+	    }  
+
+	    //Clamp(dot, -1, 1);
+	    dot = Math.max(1, Math.min(-1,  dot));//Stay within domain of acos()
+	    double theta_0 = Math.acos(dot);  // theta_0 = angle between input vectors
+	    double theta = theta_0*t;    // theta = angle between v0 and result 
+
+	    Vec4 v2 = new Vec4(endQ.subtract(startQ.scale(dot)));
+	    //Quaternion v2 = v1 – v0*dot;
+	    v2.normalize();              // { start, v2 } is now an orthonormal basis
+
+	    //start*cos(theta) + v2*sin(theta);
+	    Vec4 left = startQ.scale((float)Math.cos(theta));
+	    Vec4 right = v2.scale((float)Math.sin(theta));
+	    return new Quaternion(left.add(right));
 	}
 }

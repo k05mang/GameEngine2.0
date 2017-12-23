@@ -1,7 +1,7 @@
 package core.gizmo;
 
-import glMath.Transform;
 import glMath.VecUtil;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 import mesh.Arrow;
 import physics.collision.CollisionDetector;

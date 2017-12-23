@@ -1,11 +1,11 @@
 package physics.collision;
 
-import glMath.Transform;
 import glMath.VecUtil;
+import glMath.transforms.Transform;
 import glMath.vectors.Vec3;
 import core.SpatialAsset;
 
-public class Ray extends SpatialAsset {
+public class Ray extends SpatialAsset implements Cloneable{
 
 	private Vec3 direction;
 	private float length;
@@ -79,7 +79,7 @@ public class Ray extends SpatialAsset {
 	 * @param copy Ray whose data to copy into this Ray
 	 */
 	public Ray(Ray copy) {
-		super(copy);
+		super(copy, false);
 		direction = new Vec3(copy.direction);
 		length = copy.length;
 	}
@@ -123,6 +123,11 @@ public class Ray extends SpatialAsset {
 	 */
 	public Vec3 getPoint(float t){
 		return VecUtil.add(transforms.getTranslation(), VecUtil.scale(transforms.getOrientation().multVec(direction), length*Math.max(1, Math.min(0,t))));
+	}
+	
+	@Override
+	public Ray clone(){
+		return new Ray(this);
 	}
 
 	@Override

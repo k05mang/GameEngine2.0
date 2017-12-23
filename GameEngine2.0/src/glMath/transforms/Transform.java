@@ -1,5 +1,10 @@
-package glMath;
+package glMath.transforms;
 
+import java.util.ArrayList;
+
+import glMath.MatrixUtil;
+import glMath.Quaternion;
+import glMath.VecUtil;
 import glMath.matrices.Mat3;
 import glMath.matrices.Mat4;
 import glMath.vectors.Vec2;
@@ -9,6 +14,7 @@ import glMath.vectors.Vec4;
 public class Transform {
 	private Quaternion orientation;
 	private Vec3 position, scale;
+	private ArrayList<TransformListener> listeners;
 	public static final Vec3 
 	xAxis = new Vec3(1,0,0),
 	yAxis = new Vec3(0,1,0),
@@ -21,6 +27,7 @@ public class Transform {
 		orientation = new Quaternion();
 		position = new Vec3();
 		scale = new Vec3(1);
+		listeners = new ArrayList<TransformListener>();
 	}
 	
 	/**
@@ -28,10 +35,61 @@ public class Transform {
 	 * 
 	 * @param copy Transform to copy from
 	 */
-	public Transform(Transform copy){
+	public Transform(Transform copy, boolean copyListeners){
 		orientation = new Quaternion(copy.orientation);
 		position = new Vec3(copy.position);
 		scale = new Vec3(copy.scale);
+		//check if the listeners are meant to be copied
+		if(copyListeners){
+			listeners = new ArrayList<TransformListener>(copy.listeners);
+		}else{
+			listeners = new ArrayList<TransformListener>();
+		}
+	}
+	
+	/**
+	 * Adds a listener to this Transformation object to handle transformation events
+	 * 
+	 * @param listener Listener to add
+	 */
+	public void addListener(TransformListener listener){
+		listeners.add(listener);
+	}
+	
+	/**
+	 * Removes the given listener from this Transform object
+	 * 
+	 * @param listener Listener object to remove
+	 */
+	public void removeListener(TransformListener listener){
+		listeners.remove(listener);
+	}
+	
+	private void propogateListeners(Quaternion rotation,
+			float transX, float transY, float transZ,
+			float scaleX, float scaleY, float scaleZ){
+
+		//before calling each function check the input is valid, if any of the values are 
+		//non transformation values then it doesn't need to call that listener function
+		boolean rotate = rotation != null;
+		boolean translate = transX != 0 && transY != 0 && transZ != 0;
+		boolean scale = scaleX != 1 && scaleY != 1 && scaleZ != 1;
+		
+		//call each listener function for the given transformations
+		for(TransformListener listener : listeners){
+			//before calling each function check if the function needs to be called
+			if(rotate){
+				listener.rotated(rotation);
+			}
+			
+			if(translate){
+				listener.translated(transX, transY, transZ);
+			}
+			
+			if(scale){
+				listener.scaled(scaleX, scaleY, scaleZ);
+			}
+		}
 	}
 	
 	/**
@@ -44,7 +102,10 @@ public class Transform {
 	 * @return This transform post operation
 	 */
 	public Transform scale(float x, float y, float z){
+		//scale this transform object
 		scale.set(scale.x*x, scale.y*y, scale.z*z);
+		//propogate to listeners
+		propogateListeners(null, 0,0,0, x, y, z);
 		return this;
 	}
 
@@ -57,6 +118,8 @@ public class Transform {
 	 */
 	public Transform scale(Vec3 scalars){
 		scale.set(scale.x*scalars.x, scale.y*scalars.y, scale.z*scalars.z);
+		//propogate to listeners
+		propogateListeners(null, 0,0,0, scalars.x, scalars.y, scalars.z);
 		return this;
 	}
 	
@@ -70,6 +133,8 @@ public class Transform {
 	 */
 	public Transform scale(float scalar){
 		scale.set(scale.x*scalar, scale.y*scalar, scale.z*scalar);
+		//propogate to listeners
+		propogateListeners(null, 0,0,0, scalar, scalar, scalar);
 		return this;
 	}
 	
@@ -82,6 +147,8 @@ public class Transform {
 	 */
 	public Transform scale(Transform trans){
 		scale.set(scale.x*trans.scale.x, scale.y*trans.scale.y, scale.z*trans.scale.z);
+		//propogate to listeners
+		propogateListeners(null, 0,0,0, trans.scale.x, trans.scale.y, trans.scale.z);
 		return this;
 	}
 
@@ -96,6 +163,8 @@ public class Transform {
 	 */
 	public Transform translate(float x, float y, float z){
 		position.add(x, y, z);
+		//propogate to listeners
+		propogateListeners(null, x,y,z, 1,1,1);
 		return this;
 	}
 	
@@ -108,6 +177,8 @@ public class Transform {
 	 */
 	public Transform translate(Vec3 vector){
 		position.add(vector);
+		//propogate to listeners
+		propogateListeners(null, vector.x, vector.y, vector.z, 1,1,1);
 		return this;
 	}
 	
@@ -120,6 +191,8 @@ public class Transform {
 	 */
 	public Transform translate(Transform trans){
 		position.add(trans.position);
+		//propogate to listeners
+		propogateListeners(null, trans.position.x, trans.position.y, trans.position.z, 1,1,1);
 		return this;
 	}
 
@@ -269,6 +342,8 @@ public class Transform {
 	 */
 	public Transform rotate(Quaternion rotation){
 		orientation.set(Quaternion.multiply(rotation, orientation));
+		//propogate to listeners
+		propogateListeners(rotation, 0,0,0, 1,1,1);
 		return this;
 	}
 	
@@ -291,6 +366,10 @@ public class Transform {
 		orientation = Quaternion.multiply(value.orientation, orientation);
 		position.add(value.position);
 		scale.set(scale.x*value.scale.x, scale.y*value.scale.y, scale.z*value.scale.z);
+		//propogate changes to all listeners
+		propogateListeners(value.orientation, 
+				value.position.x, value.position.y, value.position.z, 
+				value.scale.x, value.scale.y, value.scale.z);
 		
 		return this;
 	}
@@ -315,21 +394,20 @@ public class Transform {
 	}
 	
 	/**
-	 * Transforms the {@code target} Transform by the inverse transformation of this transform object.
-	 * The resulting Transform is transformed in place and is modified by this function.
+	 * Transforms this object by the inverse of the {@code target} objects transformations
 	 * 
-	 * @param target Transform to transform by the inverse transformation
+	 * @param target Target whose inverse transforms to apply to this object
 	 * 
-	 * @return The target Transform post inverse transformation
+	 * @return This object post inverse transformation
 	 */
 	public Transform inverseTransform(Transform target){
 		//translate by the negative translation of this transform
-		target.translate(-position.x, -position.y, -position.z);
+		this.translate(-target.position.x, -target.position.y, -target.position.z);
 		//rotate it by the conjugate orientation
-		target.rotate(orientation.conjugate());
+		this.rotate(target.orientation.conjugate());
 		//then scale, each value needs to be 1/scalar
-		target.scale(1/scale.x, 1/scale.y, 1/scale.z);
-		return target;
+		this.scale(1/target.scale.x, 1/target.scale.y, 1/target.scale.z);
+		return this;
 	}
 	
 	/**
@@ -357,6 +435,18 @@ public class Transform {
 	 * @param trans Transform to copy into this transform
 	 */
 	public void set(Transform trans){
+		//propogate changes to all listeners
+		propogateListeners(
+				Quaternion.slerp(orientation, trans.orientation, 1), 
+				
+				position.x - trans.position.x, 
+				position.y - trans.position.y, 
+				position.z - trans.position.z, 
+
+				trans.scale.x/scale.x, 
+				trans.scale.y/scale.y, 
+				trans.scale.z/scale.z);
+		
 		orientation.set(trans.orientation);
 		position.set(trans.position);
 		scale.set(trans.scale);
@@ -371,6 +461,11 @@ public class Transform {
 	 * @param z Z axis scale
 	 */
 	public void setScale(float x, float y, float z){
+		//propogate changes to all listeners
+		propogateListeners(null, 0, 0, 0, 
+				x/scale.x, 
+				y/scale.y, 
+				z/scale.z);
 		scale.set(x, y, z);
 	}
 	
@@ -381,7 +476,7 @@ public class Transform {
 	 * @param scalars Scalars to set this transforms scale to
 	 */
 	public void setScale(Vec3 scalars){
-		scale.set(scalars);
+		this.setScale(scalars.x, scalars.y, scalars.z);
 	}
 	
 	/**
@@ -391,7 +486,7 @@ public class Transform {
 	 * @param scalar Scalar to set all the scaling values to
 	 */
 	public void setScale(float scalar){
-		scale.set(scalar, scalar, scalar);
+		this.setScale(scalar, scalar, scalar);
 	}
 	
 	/**
@@ -400,7 +495,7 @@ public class Transform {
 	 * @param trans Transform whose scale to set this Transforms scale to
 	 */
 	public void setScale(Transform trans){
-		scale.set(trans.scale);
+		this.setScale(trans.scale);
 	}
 	
 	/**
@@ -409,6 +504,10 @@ public class Transform {
 	 * @param orientation Orientation to set this transform to
 	 */
 	public void setOrientation(Quaternion orientation){
+		//propogate changes to all listeners
+		propogateListeners(Quaternion.slerp(this.orientation, orientation, 1), 
+				0, 0, 0, 
+				1, 1, 1);
 		this.orientation.set(orientation);
 	}
 	
@@ -418,7 +517,7 @@ public class Transform {
 	 * @param trans Transform whose rotation to set this Transforms rotation to
 	 */
 	public void setOrientation(Transform trans){
-		orientation.set(trans.orientation);
+		this.setOrientation(trans.orientation);
 	}
 	
 	/**
@@ -429,6 +528,8 @@ public class Transform {
 	 * @param z Z translation
 	 */
 	public void setTranslation(float x, float y, float z){
+		//propogate changes to all listeners
+		propogateListeners(null, x, y, z, 1, 1, 1);
 		position.set(x, y, z);
 	}
 	
@@ -438,7 +539,7 @@ public class Transform {
 	 * @param trans Translation to set this transforms translation to
 	 */
 	public void setTranslation(Vec3 trans){
-		position.set(trans);
+		this.setTranslation(trans.x, trans.y, trans.z);
 	}
 	
 	/**
@@ -447,7 +548,7 @@ public class Transform {
 	 * @param trans Transform whose translation to use in setting this Transforms translation to
 	 */
 	public void setTranslation(Transform trans){
-		position.set(trans.position);
+		this.setTranslation(trans.position.x, trans.position.y, trans.position.z);
 	}
 	
 	/**
