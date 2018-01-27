@@ -72,8 +72,8 @@ public class Transform {
 		//before calling each function check the input is valid, if any of the values are 
 		//non transformation values then it doesn't need to call that listener function
 		boolean rotate = rotation != null;
-		boolean translate = transX != 0 && transY != 0 && transZ != 0;
-		boolean scale = scaleX != 1 && scaleY != 1 && scaleZ != 1;
+		boolean translate = transX != 0 || transY != 0 || transZ != 0;
+		boolean scale = scaleX != 1 || scaleY != 1 || scaleZ != 1;
 		
 		//call each listener function for the given transformations
 		for(TransformListener listener : listeners){
@@ -407,6 +407,11 @@ public class Transform {
 		this.rotate(target.orientation.conjugate());
 		//then scale, each value needs to be 1/scalar
 		this.scale(1/target.scale.x, 1/target.scale.y, 1/target.scale.z);
+		//propogate changes to all listeners
+		propogateListeners(target.orientation.conjugate(), 
+				-target.position.x, -target.position.y, -target.position.z, 
+				1/target.scale.x, 1/target.scale.y, 1/target.scale.z);
+				
 		return this;
 	}
 	
@@ -437,11 +442,11 @@ public class Transform {
 	public void set(Transform trans){
 		//propogate changes to all listeners
 		propogateListeners(
-				Quaternion.slerp(orientation, trans.orientation, 1), 
+				Quaternion.slerp(trans.orientation, orientation, 1), 
 				
-				position.x - trans.position.x, 
-				position.y - trans.position.y, 
-				position.z - trans.position.z, 
+				trans.position.x - position.x, 
+				trans.position.y - position.y, 
+				trans.position.z - position.z, 
 
 				trans.scale.x/scale.x, 
 				trans.scale.y/scale.y, 
@@ -505,7 +510,7 @@ public class Transform {
 	 */
 	public void setOrientation(Quaternion orientation){
 		//propogate changes to all listeners
-		propogateListeners(Quaternion.slerp(this.orientation, orientation, 1), 
+		propogateListeners(Quaternion.slerp(orientation, this.orientation, 1), 
 				0, 0, 0, 
 				1, 1, 1);
 		this.orientation.set(orientation);
@@ -529,7 +534,11 @@ public class Transform {
 	 */
 	public void setTranslation(float x, float y, float z){
 		//propogate changes to all listeners
-		propogateListeners(null, x, y, z, 1, 1, 1);
+		propogateListeners(null, 
+				x - position.x, 
+				y - position.y, 
+				z - position.z,
+				1, 1, 1);
 		position.set(x, y, z);
 	}
 	

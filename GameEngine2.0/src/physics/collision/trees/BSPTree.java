@@ -1,4 +1,4 @@
-package physics.collision;
+package physics.collision.trees;
 import java.util.ArrayList;
 
 import glMath.vectors.Vec3;

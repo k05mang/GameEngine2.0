@@ -5,7 +5,7 @@ import glMath.Quaternion;
 import glMath.VecUtil;
 import glMath.matrices.Mat3;
 import glMath.vectors.Vec3;
-import core.GameObject;
+import core.Entity;
 
 import java.util.ArrayList;
 
@@ -13,9 +13,9 @@ import physics.collision.CollisionData;
 
 public class ContactPair {
 	private ArrayList<CollisionData> contactData;
-	private GameObject contactA, contactB;
+	public Entity contactA, contactB;
 	
-	public ContactPair(GameObject a, GameObject b){
+	public ContactPair(Entity a, Entity b){
 		contactData = new ArrayList<CollisionData>();
 		contactA = a;
 		contactB = b;
@@ -29,104 +29,104 @@ public class ContactPair {
 		return contactData;
 	}
 	
-	public void resolve(int iterations){
-		for(int curIter = 0; curIter < iterations; curIter++){
-			for(CollisionData curContact : contactData){
-				//velocity relative to object A (this)
-				Vec3 aRelB = VecUtil.subtract(contactB.velocity, contactA.velocity);
-				//the magnitude of the end velocity
-				float velAlongNormal = aRelB.dot(curContact.normal);
-//				curContact.normal.print();
-				if (velAlongNormal > 0) {
-					float sumInv = contactA.massInv+contactB.massInv;
-					//calculation of impulses of a collision
-					float elasticCoeff = (contactA.restitution > contactB.restitution ? contactB.restitution : contactA.restitution);
-					
-					Vec3 pointA = (Vec3)VecUtil.subtract(curContact.contactA, contactA.position);
-					Vec3 pointB = (Vec3)VecUtil.subtract(curContact.contactB, contactB.position);
-					
-					Vec3 raCrossN = pointA.cross(curContact.normal);
-					Vec3 rbCrossN = pointB.cross(curContact.normal);
-					
-					//map the inertia tensor to be oriented to the objects current orientation, since it was computed when the object was at rest
-					Mat3 aFinalInertia = (Mat3)MatrixUtil.multiply(contactA.geometry.getOrientation().asMat3(), contactA.invInertiaTensor);
-					Mat3 bFinalInertia = (Mat3)MatrixUtil.multiply(contactB.geometry.getOrientation().asMat3(), contactB.invInertiaTensor);
-					
-					
-					/* raCrossN = torque(force being applied to the angular component of the object)
-					 * aFinalInertia.multVec(raCrossN) = rotation (amount of movement per unit of torque)
-					 */
-					//the angular resistance to change
-					float angularInertiaA = raCrossN.dot(aFinalInertia.multVec(raCrossN));
-					float angularInertiaB = rbCrossN.dot(bFinalInertia.multVec(rbCrossN));
-					
-					//the total resistance of the collision to change
-					float totalInertia = sumInv + angularInertiaA + angularInertiaB;
-					
-					//the total change in the velocity of the collision in this instant
-					float impulse = (1+elasticCoeff)*(velAlongNormal+raCrossN.dot(contactA.angVel)+rbCrossN.dot(contactB.angVel))
-							/totalInertia;
-					
-					//the vector representing the impulse applied in the direction of the contact normal
-					Vec3 impulseVec = new Vec3(curContact.normal).scale(impulse);
-					
-					contactA.velocity.add(new Vec3(curContact.normal).getScaleMat(contactA.massInv * impulse));
-					contactB.velocity.add(new Vec3(curContact.normal).getScaleMat(contactB.massInv * -impulse));
-					
-					//the torque being applied to the bodies by the impulse
-					Vec3 angularImpulseA = contactA.invInertiaTensor.multVec(impulseVec.cross(pointA));
-					Vec3 angularImpulseB = contactB.invInertiaTensor.multVec(impulseVec.scale(-1).cross(pointB));
-					
-					contactA.angVel.add(angularImpulseA);
-					contactB.angVel.add(angularImpulseB);
-					
-					//frictional tangent vector 
-					Vec3 frictionVec = VecUtil.subtract(aRelB, new Vec3(curContact.normal).scale(velAlongNormal));
-					frictionVec.trunc();
-					
-					if(!frictionVec.isZero()){
-						frictionVec.normalize();
-						float fImpulse = aRelB.dot(frictionVec)/sumInv;
-//						float fImpulse = aRelB.dot(frictionVec)/totalInertia;
-						float coeffFric = (contactA.sFriction+contactB.sFriction)/2.0f;
-						
-						if(fImpulse < impulse*coeffFric){
-							contactA.velocity.add(new Vec3(frictionVec).getScaleMat(contactA.massInv*fImpulse));
-							contactB.velocity.add(new Vec3(frictionVec).getScaleMat(contactB.massInv*-fImpulse));
-							
-//							contactA.angVel.add(contactA.inertiaTensor.multVec(new Vec3(frictionVec).scale(fImpulse)));
-//							contactB.angVel.add(contactB.inertiaTensor.multVec(new Vec3(frictionVec).scale(-fImpulse)));
-						}else{
-							coeffFric = (contactA.dFriction+contactB.dFriction)/2.0f;
-							contactA.velocity.add(new Vec3(frictionVec).getScaleMat(contactA.massInv*impulse*coeffFric));
-							contactB.velocity.add(new Vec3(frictionVec).getScaleMat(contactB.massInv*-impulse*coeffFric));
-							
-//							contactA.angVel.add(contactA.inertiaTensor.multVec(new Vec3(frictionVec).scale(impulse*coeffFric)));
-//							contactB.angVel.add(contactB.inertiaTensor.multVec(new Vec3(frictionVec).scale(-impulse*coeffFric)));
-						}
-					}
-					
-					float correction = (curContact.depth > 0 ? curContact.depth : 0)/sumInv;
-//					float correction = (curContact.depth > 0 ? curContact.depth : 0)/totalInertia;
-					Vec3 restCorrection = new Vec3(curContact.normal).getScaleMat(contactA.massInv*correction);
-					contactA.geometry.makeTranslate(restCorrection);
-//					contactA.collider.translate(restCorrection);
-					contactA.position.add(restCorrection);
-					//rotational correction
-//					contactA.mesh.setOrientation(contactA.mesh.getOrientation().addVector(
-//							contactA.invInertiaTensor.multVec(new Vec3(curContact.normal).scale(correction))));
-					
-					//resolve for object B
-					Vec3 bRestCorr = new Vec3(curContact.normal).getScaleMat(contactB.massInv*-correction);
-					contactB.geometry.makeTranslate(bRestCorr);
-//					contactB.collider.translate(bRestCorr);
-					contactB.position.add(bRestCorr);
-					//adding a negative component currently causes infinite looping somewhere
-//					contactB.mesh.setOrientation(contactB.mesh.getOrientation().addVector(
-//							contactB.invInertiaTensor.multVec(new Vec3(curContact.normal).scale(-correction))));
-				}
-			}
-		}
+//	public void resolve(int iterations){
+//		for(int curIter = 0; curIter < iterations; curIter++){
+//			for(CollisionData curContact : contactData){
+//				//velocity relative to object A (this)
+//				Vec3 aRelB = VecUtil.subtract(contactB.velocity, contactA.velocity);
+//				//the magnitude of the end velocity
+//				float velAlongNormal = aRelB.dot(curContact.normal);
+////				curContact.normal.print();
+//				if (velAlongNormal > 0) {
+//					float sumInv = contactA.massInv+contactB.massInv;
+//					//calculation of impulses of a collision
+//					float elasticCoeff = (contactA.restitution > contactB.restitution ? contactB.restitution : contactA.restitution);
+//					
+//					Vec3 pointA = (Vec3)VecUtil.subtract(curContact.contactA, contactA.position);
+//					Vec3 pointB = (Vec3)VecUtil.subtract(curContact.contactB, contactB.position);
+//					
+//					Vec3 raCrossN = pointA.cross(curContact.normal);
+//					Vec3 rbCrossN = pointB.cross(curContact.normal);
+//					
+//					//map the inertia tensor to be oriented to the objects current orientation, since it was computed when the object was at rest
+//					Mat3 aFinalInertia = (Mat3)MatrixUtil.multiply(contactA.geometry.getOrientation().asMat3(), contactA.invInertiaTensor);
+//					Mat3 bFinalInertia = (Mat3)MatrixUtil.multiply(contactB.geometry.getOrientation().asMat3(), contactB.invInertiaTensor);
+//					
+//					
+//					/* raCrossN = torque(force being applied to the angular component of the object)
+//					 * aFinalInertia.multVec(raCrossN) = rotation (amount of movement per unit of torque)
+//					 */
+//					//the angular resistance to change
+//					float angularInertiaA = raCrossN.dot(aFinalInertia.multVec(raCrossN));
+//					float angularInertiaB = rbCrossN.dot(bFinalInertia.multVec(rbCrossN));
+//					
+//					//the total resistance of the collision to change
+//					float totalInertia = sumInv + angularInertiaA + angularInertiaB;
+//					
+//					//the total change in the velocity of the collision in this instant
+//					float impulse = (1+elasticCoeff)*(velAlongNormal+raCrossN.dot(contactA.angVel)+rbCrossN.dot(contactB.angVel))
+//							/totalInertia;
+//					
+//					//the vector representing the impulse applied in the direction of the contact normal
+//					Vec3 impulseVec = new Vec3(curContact.normal).scale(impulse);
+//					
+//					contactA.velocity.add(new Vec3(curContact.normal).getScaleMat(contactA.massInv * impulse));
+//					contactB.velocity.add(new Vec3(curContact.normal).getScaleMat(contactB.massInv * -impulse));
+//					
+//					//the torque being applied to the bodies by the impulse
+//					Vec3 angularImpulseA = contactA.invInertiaTensor.multVec(impulseVec.cross(pointA));
+//					Vec3 angularImpulseB = contactB.invInertiaTensor.multVec(impulseVec.scale(-1).cross(pointB));
+//					
+//					contactA.angVel.add(angularImpulseA);
+//					contactB.angVel.add(angularImpulseB);
+//					
+//					//frictional tangent vector 
+//					Vec3 frictionVec = VecUtil.subtract(aRelB, new Vec3(curContact.normal).scale(velAlongNormal));
+//					frictionVec.trunc();
+//					
+//					if(!frictionVec.isZero()){
+//						frictionVec.normalize();
+//						float fImpulse = aRelB.dot(frictionVec)/sumInv;
+////						float fImpulse = aRelB.dot(frictionVec)/totalInertia;
+//						float coeffFric = (contactA.sFriction+contactB.sFriction)/2.0f;
+//						
+//						if(fImpulse < impulse*coeffFric){
+//							contactA.velocity.add(new Vec3(frictionVec).getScaleMat(contactA.massInv*fImpulse));
+//							contactB.velocity.add(new Vec3(frictionVec).getScaleMat(contactB.massInv*-fImpulse));
+//							
+////							contactA.angVel.add(contactA.inertiaTensor.multVec(new Vec3(frictionVec).scale(fImpulse)));
+////							contactB.angVel.add(contactB.inertiaTensor.multVec(new Vec3(frictionVec).scale(-fImpulse)));
+//						}else{
+//							coeffFric = (contactA.dFriction+contactB.dFriction)/2.0f;
+//							contactA.velocity.add(new Vec3(frictionVec).getScaleMat(contactA.massInv*impulse*coeffFric));
+//							contactB.velocity.add(new Vec3(frictionVec).getScaleMat(contactB.massInv*-impulse*coeffFric));
+//							
+////							contactA.angVel.add(contactA.inertiaTensor.multVec(new Vec3(frictionVec).scale(impulse*coeffFric)));
+////							contactB.angVel.add(contactB.inertiaTensor.multVec(new Vec3(frictionVec).scale(-impulse*coeffFric)));
+//						}
+//					}
+//					
+//					float correction = (curContact.depth > 0 ? curContact.depth : 0)/sumInv;
+////					float correction = (curContact.depth > 0 ? curContact.depth : 0)/totalInertia;
+//					Vec3 restCorrection = new Vec3(curContact.normal).getScaleMat(contactA.massInv*correction);
+//					contactA.geometry.makeTranslate(restCorrection);
+////					contactA.collider.translate(restCorrection);
+//					contactA.position.add(restCorrection);
+//					//rotational correction
+////					contactA.mesh.setOrientation(contactA.mesh.getOrientation().addVector(
+////							contactA.invInertiaTensor.multVec(new Vec3(curContact.normal).scale(correction))));
+//					
+//					//resolve for object B
+//					Vec3 bRestCorr = new Vec3(curContact.normal).getScaleMat(contactB.massInv*-correction);
+//					contactB.geometry.makeTranslate(bRestCorr);
+////					contactB.collider.translate(bRestCorr);
+//					contactB.position.add(bRestCorr);
+//					//adding a negative component currently causes infinite looping somewhere
+////					contactB.mesh.setOrientation(contactB.mesh.getOrientation().addVector(
+////							contactB.invInertiaTensor.multVec(new Vec3(curContact.normal).scale(-correction))));
+//				}
+//			}
+//		}
 //		CollisionData curContact = contactData.get(0);
 //		//velocity relative to object A (this)
 //		Vec3 aRelB = VecUtil.subtract(contactB.velocity, contactA.velocity);
@@ -227,7 +227,7 @@ public class ContactPair {
 //			contactB.mesh.setOrientation(contactB.mesh.getOrientation().addVector(
 //					contactB.invInertiaTensor.multVec(new Vec3(curContact.normal).scale(-correction))));//			contactB.mesh.setOrientation(contactB.mesh.getOrientation().addVector(contactB.invInertiaTensor.multVec(new Vec3(curContact.normal).scale(-correction))));
 //		}
-	}
+//	}
 	
 	/*public void resolve(){
 		//matrix transforming from world coords to contact coords

@@ -1,9 +1,11 @@
 package physics.collision;
 
-import glMath.vectors.Vec3;
 import core.SpatialAsset;
+import glMath.Quaternion;
+import glMath.transforms.TransformListener;
+import glMath.vectors.Vec3;
 
-public abstract class CollisionMesh extends SpatialAsset implements Cloneable{
+public abstract class CollisionMesh extends SpatialAsset implements Cloneable, TransformListener{
 	
 	/**
 	 * Constructs a CollisionMesh
@@ -39,4 +41,19 @@ public abstract class CollisionMesh extends SpatialAsset implements Cloneable{
 	 * @return Point on the mesh in the direction the given vector
 	 */
 	public abstract Vec3 support(Vec3 direction);
+	
+	@Override 
+	public void scaled(float x, float y, float z){
+		this.transforms.scale(x, y, z);
+	}
+
+	@Override 
+	public void translated(float x, float y, float z){
+		this.transforms.translate(x, y, z);
+	}
+
+	@Override 
+	public void rotated(Quaternion rotation){
+		this.transforms.rotate(rotation);
+	}
 }

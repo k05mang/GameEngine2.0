@@ -45,6 +45,8 @@ public class Entity extends SpatialAsset{
 				}else{
 					this.collider = convexHull;
 				}
+				this.collider.setTransform(this.transforms);
+				this.transforms.addListener(this.collider);
 			}else{
 				this.collider = null;
 			}
@@ -64,6 +66,8 @@ public class Entity extends SpatialAsset{
 		this.mesh = mesh;
 		if(collider != null){
 			this.collider = collider.clone();
+			this.collider.setTransform(this.transforms);
+			this.transforms.addListener(this.collider);
 		}
 		material = "default";
 	}
@@ -85,6 +89,8 @@ public class Entity extends SpatialAsset{
 	public void set(CollisionMesh collider){
 		if(collider != null){
 			this.collider = collider.clone();//copy the collision mesh
+			this.collider.setTransform(this.transforms);
+			this.transforms.addListener(this.collider);
 		}else{
 			this.collider = null;
 		}
@@ -106,7 +112,13 @@ public class Entity extends SpatialAsset{
 	 */
 	public boolean genHull(){
 		collider = ConvexHull.get(mesh);
-		return collider != null;
+		boolean result = collider != null;
+		//check that the hull generation was successful and bind the collision mesh to this entity as a listener
+		if(result){
+			collider.setTransform(this.transforms);
+			this.transforms.addListener(this.collider);
+		}
+		return result;
 	}
 	
 	/**
@@ -116,7 +128,7 @@ public class Entity extends SpatialAsset{
 	 * @return CollisionMesh or null if none was set to this Entity
 	 */
 	public CollisionMesh getCollider(){
-		collider.setTransform(transforms);
+//		this.collider.setTransform(this.transforms);
 		return collider;
 	}
 	

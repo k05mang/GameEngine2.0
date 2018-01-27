@@ -57,6 +57,15 @@ public class ScaleGizmo extends TransformGizmo {
 	}
 	
 	@Override
+	public boolean isSelected(Ray click){
+		//perform each collision check, starting with the center sphere
+		return CollisionDetector.intersects(click, center) 
+				|| xaxis.colliding(click) 
+				|| yaxis.colliding(click) 
+				|| zaxis.colliding(click);
+	}
+	
+	@Override
 	public void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY) {
 		//first check to make sure there is a target to modify
 		if(TransformGizmo.target != null && modifier == SCALE){

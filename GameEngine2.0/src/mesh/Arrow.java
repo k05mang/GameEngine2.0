@@ -24,14 +24,14 @@ import core.managers.SceneManager;
  */
 public class Arrow extends SpatialAsset{
 	
-	private float shaftLength, tipLength;
+	private float bodyLength, headLength;
 	private final float origLength, origTipLength;
 	private Vec3 direction, color;
 	private boolean useCube;
-	private Entity shaft, tip;
+	private Entity body, head;
 	static{
 		//add meshes to the meshes manager
-		SceneManager.meshes.put("arrow_shaft", new Cylinder(1, 1, 10));
+		SceneManager.meshes.put("arrow_body", new Cylinder(1, 1, 10));
 		SceneManager.meshes.put("arrow_cone", new Cone(1, 1, 10, false));
 		SceneManager.meshes.put("arrow_cube", new Cube(1));
 	}
@@ -87,14 +87,14 @@ public class Arrow extends SpatialAsset{
 	
 	/**
 	 * Constructs an Arrow object with the given {@code length}, {@code position}, {@code direction}, and {@code color}.
-	 * {@code cubeTip} is used to specify the type of tip that is used in rendering the Arrow, if true the tip will be a 
+	 * {@code cubeTip} is used to specify the type of head that is used in rendering the Arrow, if true the head will be a 
 	 * cube, else a cone will be used.
 	 * 
-	 * @param length Length of the Arrow from the base to the tip
+	 * @param length Length of the Arrow from the base to the head
 	 * @param position Position of the base of the Arrow
 	 * @param direction Direction of the Arrow
 	 * @param color Color of the Arrow
-	 * @param cubeTip Boolean indicating what type of tip to use in rendering, true means a cube will be the tip, otherwise a cone
+	 * @param cubeTip Boolean indicating what type of head to use in rendering, true means a cube will be the head, otherwise a cone
 	 */
 	public Arrow(float length, Vec3 position, Vec3 direction, Vec3 color, boolean cubeTip){
 		this(length, position.x, position.y, position.z, direction.x, direction.y, direction.z, color.x, color.y, color.z, cubeTip);
@@ -127,10 +127,10 @@ public class Arrow extends SpatialAsset{
 	/**
 	 * Constructs an Arrow object with the given {@code length}, position given by {@code posx}, {@code posy}, and {@code posz}.
 	 * Direction given by {@code dirx}, {@code diry}, and {@code dirz} relative to the base position of the Arrow. And color 
-	 * specified by {@code r}, {@code g}, and {@code b}. {@code cubeTip} is used to specify the type of tip that is used in 
-	 * rendering the Arrow, if true the tip will be a cube, else a cone will be used.
+	 * specified by {@code r}, {@code g}, and {@code b}. {@code cubeTip} is used to specify the type of head that is used in 
+	 * rendering the Arrow, if true the head will be a cube, else a cone will be used.
 	 * 
-	 * @param length Length of the Arrow from base to tip
+	 * @param length Length of the Arrow from base to head
 	 * @param posx X value of the position of the Arrow
 	 * @param posy Y value of the position of the Arrow
 	 * @param posz Z value of the position of the Arrow
@@ -140,43 +140,43 @@ public class Arrow extends SpatialAsset{
 	 * @param r Red component of the Arrow's color
 	 * @param g Green component of the Arrow's color
 	 * @param b Blue component of the Arrow's color
-	 * @param cubeTip Boolean indicating what type of tip to use in rendering, true means a cube will be the tip, otherwise a cone
+	 * @param cubeTip Boolean indicating what type of head to use in rendering, true means a cube will be the head, otherwise a cone
 	 */
 	public Arrow(float length, float posx, float posy, float posz, float dirx, float diry, float dirz, float r, float g, float b, boolean cubeTip){
-		shaft = new Entity(SceneManager.meshes.get("arrow_shaft"), true);
+		body = new Entity(SceneManager.meshes.get("arrow_body"), true);
 		useCube = cubeTip;
-		tip = new Entity(useCube ? SceneManager.meshes.get("arrow_cube") : SceneManager.meshes.get("arrow_cone"), true);
+		head = new Entity(useCube ? SceneManager.meshes.get("arrow_cube") : SceneManager.meshes.get("arrow_cone"), true);
 		
-		tipLength = origTipLength = useCube ? 2 : 2.5f;
-		//subtract tip length from the length of the shaft so that the arrow will span the entire length
-		shaftLength = origLength = Math.max(length, 3)-origTipLength;
+		headLength = origTipLength = useCube ? 2 : 2.5f;
+		//subtract head length from the length of the body so that the arrow will span the entire length
+		bodyLength = origLength = Math.max(length, 3)-origTipLength;
 		
 		color = new Vec3(r, g, b);
 		direction = new Vec3(dirx, diry, dirz).normalize();
-		//create the initial transforms for the shaft and tip
-		Transform shaftTrans = new Transform().scale(.5f, shaftLength, .5f);
-		float xzScale = useCube ? tipLength : 1;
-		Transform tipTrans = new Transform().scale(xzScale, tipLength, xzScale);
+		//create the initial transforms for the body and head
+		Transform bodyTrans = new Transform().scale(.5f, bodyLength, .5f);
+		float xzScale = useCube ? headLength : 1;
+		Transform headTrans = new Transform().scale(xzScale, headLength, xzScale);
 		//first orient the meshes
 		Vec3 axis = Transform.yAxis.cross(direction);
 		float angle = (float)(Math.toDegrees(Math.acos(Transform.yAxis.dot(direction))));
-		shaftTrans.rotate(angle == 180 ? Transform.xAxis : axis, angle);
-		tipTrans.rotate(angle == 180 ? Transform.xAxis : axis, angle);
+		bodyTrans.rotate(angle == 180 ? Transform.xAxis : axis, angle);
+		headTrans.rotate(angle == 180 ? Transform.xAxis : axis, angle);
 		//translate the cylinder
-		float halfLength = shaftLength/2;
-		shaftTrans.translate(halfLength*direction.x, halfLength*direction.y, halfLength*direction.z);
-		//translate the tip
-		tipTrans.translate(
-				(shaftLength+tipLength/2)*direction.x, 
-				(shaftLength+tipLength/2)*direction.y, 
-				(shaftLength+tipLength/2)*direction.z);
+		float halfLength = bodyLength/2;
+		bodyTrans.translate(halfLength*direction.x, halfLength*direction.y, halfLength*direction.z);
+		//translate the head
+		headTrans.translate(
+				(bodyLength+headLength/2)*direction.x, 
+				(bodyLength+headLength/2)*direction.y, 
+				(bodyLength+headLength/2)*direction.z);
 		
 		//translate both to the position
-		shaftTrans.translate(posx, posy, posz);
-		tipTrans.translate(posx, posy, posz);
+		bodyTrans.translate(posx, posy, posz);
+		headTrans.translate(posx, posy, posz);
 		
-		shaft.setTransform(shaftTrans);
-		tip.setTransform(tipTrans);
+		body.setTransform(bodyTrans);
+		head.setTransform(headTrans);
 	}
 	
 	/**
@@ -188,68 +188,68 @@ public class Arrow extends SpatialAsset{
 	 */
 	public void render(ShaderProgram program){
 		program.setUniform("color", color);
-		program.setUniform("model", shaft.getTransform().getMatrix());
-		shaft.getMesh().render();
-		program.setUniform("model", tip.getTransform().getMatrix());
-		tip.getMesh().render();
+		program.setUniform("model", body.getTransform().getMatrix());
+		body.getMesh().render();
+		program.setUniform("model", head.getTransform().getMatrix());
+		head.getMesh().render();
 	}
 	
 	@Override
 	public void transform(Transform trans){
 		super.transform(trans);
-		Transform shaftTrans = new Transform().translate(trans.getTranslation()).scale(trans.getScalars().y);
-		Transform tipTrans = new Transform().translate(trans.getTranslation()).scale(trans.getScalars().y);
+		Transform bodyTrans = new Transform().translate(trans.getTranslation()).scale(trans.getScalars().y);
+		Transform headTrans = new Transform().translate(trans.getTranslation()).scale(trans.getScalars().y);
 
 		//scale
 		//these are the differences between the old lengths and the new
-		float newLength = (trans.getScalars().y-1)*shaftLength;
-		float newTipLength = (trans.getScalars().y-1)*tipLength;
+		float newLength = (trans.getScalars().y-1)*bodyLength;
+		float newTipLength = (trans.getScalars().y-1)*headLength;
 		//translate the meshes to maintain the position
-		shaftTrans.translate(newLength/2*direction.x, newLength/2*direction.y, newLength/2*direction.z);
-		tipTrans.translate(
+		bodyTrans.translate(newLength/2*direction.x, newLength/2*direction.y, newLength/2*direction.z);
+		headTrans.translate(
 				(newLength+newTipLength/2)*direction.x, 
 				(newLength+newTipLength/2)*direction.y, 
 				(newLength+newTipLength/2)*direction.z
 				);
 		//get the entire new length
-		shaftLength = newLength+shaftLength;
-		tipLength = newTipLength+tipLength;
+		bodyLength = newLength+bodyLength;
+		headLength = newTipLength+headLength;
 		
 		//rotate
 		Quaternion rotation = trans.getOrientation();
 		//store the new direction of the vector
 		direction = rotation.multVec(direction);
 		
-		shaft.transform(shaftTrans);
-		tip.transform(tipTrans);
-		shaft.getTransform().rotate(getPos(), rotation);
-		tip.getTransform().rotate(getPos(), rotation);
+		body.transform(bodyTrans);
+		head.transform(headTrans);
+		body.getTransform().rotate(getPos(), rotation);
+		head.getTransform().rotate(getPos(), rotation);
 	}
 	
 	/**
-	 * Sets the length of the Arrow to the given length, the length only changes the length of the shaft of the Arrow. The
-	 * tip retains it's length after the length of the Arrow has been changed, however the full length of the Arrow from the
-	 * base to the tip of the tip will be equal to the length passed to this function.
+	 * Sets the length of the Arrow to the given length, the length only changes the length of the body of the Arrow. The
+	 * head retains it's length after the length of the Arrow has been changed, however the full length of the Arrow from the
+	 * base to the head of the head will be equal to the length passed to this function.
 	 * 
 	 * @param length The new length to set this Arrow to 
 	 */
 	public void setLength(float length){
-		float scale = (length-tipLength)/shaftLength;//calculate how much to scale the cylinder by
-		shaft.getTransform().scale(1, scale, 1);//scale the shaft
+		float scale = (length-headLength)/bodyLength;//calculate how much to scale the cylinder by
+		body.getTransform().scale(1, scale, 1);//scale the body
 		Vec3 translation = new Vec3(direction);//copy the direction vector for translating the pieces of the arrow
-		translation.scale((length-tipLength-shaftLength)/2);//scale direction copy for translation of cylinder
-		shaft.getTransform().translate(translation);//translate the shaft
-		tip.getTransform().translate(translation.scale(2));//translate the tip after scaling the translation vector
-		shaftLength = length-tipLength;
+		translation.scale((length-headLength-bodyLength)/2);//scale direction copy for translation of cylinder
+		body.getTransform().translate(translation);//translate the body
+		head.getTransform().translate(translation.scale(2));//translate the head after scaling the translation vector
+		bodyLength = length-headLength;
 	}
 	
 	/**
-	 * Gets the length of the Arrow, the length is defined as the span between the starting point of the Arrow to the tip of the Arrow
+	 * Gets the length of the Arrow, the length is defined as the span between the starting point of the Arrow to the head of the Arrow
 	 * 
-	 * @return The length of the Arrow from the base to the tip
+	 * @return The length of the Arrow from the base to the head
 	 */
 	public float getLength(){
-		return shaftLength+tipLength;
+		return bodyLength+headLength;
 	}
 	
 	/**
@@ -259,7 +259,7 @@ public class Arrow extends SpatialAsset{
 	 * @param scale Scale to set this Arrow to
 	 */
 	public void setScale(float scale){
-		transform(new Transform().scale(scale/(shaftLength/origLength)));
+		transform(new Transform().scale(scale/(bodyLength/origLength)));
 	}
 	
 	/**
@@ -279,7 +279,8 @@ public class Arrow extends SpatialAsset{
 	 * @param z Z value to set this Arrows position to
 	 */
 	public void setPos(float x, float y, float z){
-		transform(new Transform().translate(x-getPos().x, y-getPos().y, z-getPos().z));
+		Vec3 position = getPos();
+		transform(new Transform().translate(x-position.x, y-position.y, z-position.z));
 	}
 	
 	/**
@@ -321,15 +322,15 @@ public class Arrow extends SpatialAsset{
 	}
 	
 	public boolean colliding(CollisionMesh mesh){
-		return CollisionDetector.intersects(mesh, shaft) || CollisionDetector.intersects(mesh, tip);
+		return CollisionDetector.intersects(mesh, body) || CollisionDetector.intersects(mesh, head);
 	}
 	
 	public boolean colliding(Ray ray){
-		return CollisionDetector.intersects(ray, shaft) || CollisionDetector.intersects(ray, tip);
+		return CollisionDetector.intersects(ray, body) || CollisionDetector.intersects(ray, head);
 	}
 	
 	public boolean colliding(Arrow arrow){
-		return CollisionDetector.intersects(arrow.shaft, shaft) || CollisionDetector.intersects(arrow.tip, tip) ||
-				CollisionDetector.intersects(arrow.tip, shaft) || CollisionDetector.intersects(arrow.shaft, tip);
+		return CollisionDetector.intersects(arrow.body, body) || CollisionDetector.intersects(arrow.head, head) ||
+				CollisionDetector.intersects(arrow.head, body) || CollisionDetector.intersects(arrow.body, head);
 	}
 }

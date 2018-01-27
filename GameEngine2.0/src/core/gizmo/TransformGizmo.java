@@ -22,7 +22,7 @@ public abstract class TransformGizmo implements MouseListener{
 	protected static Vec3 centerColor = new Vec3(1,1,0);
 	protected static SpatialAsset target;
 	protected static Camera view;
-	protected static ActiveControl activeController;//represents what controlling axis should be used in modifying the object
+	protected static ActiveControl activeController = ActiveControl.CENTER;//represents what controlling axis should be used in modifying the object
 	protected static TransformType modifier = TransformType.TRANSLATE;
 	protected static final float viewScale = 150f;//reduces the scaling factor when scaling the gizmo to make use easier at further distances
 	protected static final float controllerLength = 10f;//length for the arrow controllers on certain gizmos
@@ -120,6 +120,8 @@ public abstract class TransformGizmo implements MouseListener{
 	public void setModifier(TransformType type){
 		this.modifier = type;
 	}
+	
+	public abstract boolean isSelected(Ray click);
 
 	@Override
 	public abstract void onMouseMove(Window window, double xpos, double ypos, double prevX, double prevY);

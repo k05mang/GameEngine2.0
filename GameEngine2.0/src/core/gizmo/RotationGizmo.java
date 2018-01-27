@@ -34,7 +34,16 @@ public class RotationGizmo extends TransformGizmo {
 		yzWheel.getTransform().rotate(0,0,1,90);
 		xzWheel = new Entity(SceneManager.meshes.get("rot_wheel"), true);
 	}
-
+	
+	@Override
+	public boolean isSelected(Ray click){
+		//perform each collision check, starting with the center sphere
+		return CollisionDetector.intersects(click, center) 
+				|| CollisionDetector.intersects(click, xyWheel) 
+				|| CollisionDetector.intersects(click, yzWheel) 
+				|| CollisionDetector.intersects(click, xzWheel); 
+	}
+	
 	@Override
 	public void render(ShaderProgram program){
 		super.render(program);
