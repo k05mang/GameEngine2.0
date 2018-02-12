@@ -122,7 +122,8 @@ public class Ray extends SpatialAsset implements Cloneable{
 	 * @return Point at t along the ray
 	 */
 	public Vec3 getPoint(float t){
-		return VecUtil.add(transforms.getTranslation(), VecUtil.scale(transforms.getOrientation().multVec(direction), length*Math.max(1, Math.min(0,t))));
+		return VecUtil.add(transforms.getTranslation(), VecUtil.scale(transforms.getOrientation().multVec(direction), length*t));
+//		return VecUtil.add(transforms.getTranslation(), VecUtil.scale(transforms.getOrientation().multVec(direction), length*Math.min(1, Math.max(0,t))));
 	}
 	
 	@Override

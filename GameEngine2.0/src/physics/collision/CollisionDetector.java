@@ -1,61 +1,20 @@
 package physics.collision;
 
+import java.util.Set;
+
 import glMath.Quaternion;
 import glMath.VecUtil;
-import glMath.matrices.Mat4;
 import glMath.transforms.Transform;
 import glMath.vectors.Vec2;
 import glMath.vectors.Vec3;
-import glMath.vectors.Vec4;
-
-import java.util.Set;
-
 import mesh.primitives.HalfEdge;
 import mesh.primitives.Triangle;
-import core.Entity;
+import physics.collision.data.CollisionData;
+import physics.collision.data.RayIntersection;
 
 public abstract class CollisionDetector {
 	
 	protected static final float MAX_THRESHOLD = .001f;
-	
-	/**
-	 * Determines whether the given collision mesh {@code objA} and the collision mesh of Entity {@code objB}
-	 * are intersecting
-	 * 
-	 * @param objA Collision mesh to test intersection (collision)
-	 * @param objB Entity to test intersection (collision)
-	 * 
-	 * @return True if the two objects are colliding, false otherwise
-	 */
-	public static boolean intersects(CollisionMesh objA, Entity objB){
-		return intersects(objA, objB.getCollider());
-	}
-	
-	/**
-	 * Determines whether the collision mesh of Entity {@code objA} and the collision mesh {@code objB}
-	 * are intersecting
-	 * 
-	 * @param objA Entity to test intersection (collision)
-	 * @param objB Collision mesh to test intersection (collision)
-	 * 
-	 * @return True if the two objects are colliding, false otherwise
-	 */
-	public static boolean intersects(Entity objA, CollisionMesh objB){
-		return intersects(objA.getCollider(), objB);
-	}
-
-	/**
-	 * Determines whether the collision mesh of Entity {@code objA} and the collision mesh of Entity {@code objB}
-	 * are intersecting
-	 * 
-	 * @param objA Entity to test intersection (collision)
-	 * @param objB Entity to test intersection (collision)
-	 * 
-	 * @return True if the two objects are colliding, false otherwise
-	 */
-	public static boolean intersects(Entity objA, Entity objB){
-		return intersects(objA.getCollider(), objB.getCollider());
-	}
 
 	/**
 	 * Determines whether the collision mesh {@code objA} and the collision mesh {@code objB}
@@ -66,7 +25,7 @@ public abstract class CollisionDetector {
 	 * 
 	 * @return True if the two objects are colliding, false otherwise
 	 */
-	public static boolean intersects(CollisionMesh objA, CollisionMesh objB){
+	public static CollisionData intersects(CollisionMesh objA, CollisionMesh objB){
 		Vec3 direction = new Vec3(1,1,1);//create a simple starting search direction
 		//construct a base simplex that is a line
 		Simplex simplex = new Simplex(
@@ -79,33 +38,17 @@ public abstract class CollisionDetector {
 			//this means that the new direction we would search in is in the opposite direction of where we
 			//just searched meaning the origin cannot be encapsulated
 			if(newPoint.dot(direction) < 0){
-				return false;
+				return new CollisionData(objA, objB, false);
 			}
 			//add the new point to the simplex
 			simplex.add(newPoint);
 		}
-		return true;
-	}
-	
-	public static boolean intersects(Entity obj, Ray ray){
-		return intersects(ray, obj.getCollider());
-	}
-	
-	public static boolean intersects(Entity obj, Vec3 point){
-		return intersects(point, obj.getCollider());
-	}
-	
-	public static boolean intersects(Ray ray, Entity obj){
-		return intersects(ray, obj.getCollider());
-	}
-	
-	public static boolean intersects(Vec3 point, Entity obj){
-		return intersects(point, obj.getCollider());
+		return new CollisionData(objA, objB, true);
 	}
 
-	public static boolean intersects(Ray ray, CollisionMesh mesh){
+	public static RayIntersection intersects(Ray ray, CollisionMesh mesh){
 		if(ray.getPos().equals(ray.getPoint(1))){//test if the ray is actually a point
-			return intersects(ray.getPos(), mesh);
+			return new RayIntersection(ray, mesh, intersects(ray.getPos(), mesh), 0,0);
 		}else if(mesh instanceof ConvexHull2D){
 			return intersects(ray, (ConvexHull2D)mesh);
 		}else if(mesh instanceof ConvexHull3D){
@@ -128,11 +71,7 @@ public abstract class CollisionDetector {
 		
 		*/
 		
-		return false;
-	}
-	
-	public static boolean intersects(CollisionMesh mesh, Ray ray){
-		return intersects(ray, mesh);
+		return new RayIntersection(ray, mesh, false, 0,0);
 	}
 	
 	public static boolean intersects(Vec3 point, CollisionMesh mesh){
@@ -159,10 +98,6 @@ public abstract class CollisionDetector {
 		*/
 		
 		return false;
-	}
-	
-	public static boolean intersects(CollisionMesh mesh, Vec3 point){
-		return intersects(point, mesh);
 	}
 	
 	private static boolean intersects(Vec3 point, ConvexHull2D hull){
@@ -221,10 +156,10 @@ public abstract class CollisionDetector {
 		return false;
 	}
 	
-	private static boolean intersects(Ray ray, ConvexHull2D hull){
+	private static RayIntersection intersects(Ray ray, ConvexHull2D hull){
 		//check for null input
 		if(ray == null || hull == null){
-			return false;
+			return new RayIntersection(ray, hull, false, 0, 0);
 		}
 		Vec3 planeNormal = hull.getPlaneNormal();//this guarantees a plane normal for the hull that represents the current state of the hull
 		//post transformations
@@ -249,8 +184,8 @@ public abstract class CollisionDetector {
 				//get new ray direction
 				Vec3 rayDir = VecUtil.subtract(p1,p0);
 				
-				float tE = 0.0f;//maximum t for entering the hull from the ray pos
-				float tL = 1.0f;//minimum value the ray can leave the hull from
+				float rayEntry = 0.0f;//maximum t for entering the hull from the ray pos
+				float rayExit = 1.0f;//minimum value the ray can leave the hull from
 				HalfEdge curEdge = hull.baseEdge;//tracks the current edge
 				do{
 					Vec3 vi = hull.mesh.getVertex(curEdge.sourceVert).getPos();
@@ -264,7 +199,7 @@ public abstract class CollisionDetector {
 			        	//if it is we need to test if the ray is outside the hull at this point
 			        	//this will determine if we should even continue to search for intersection points
 			            if (n < 0){
-			                 return false;
+			            	return new RayIntersection(ray, hull, false, 0, 0);
 			            }
 			        }
 
@@ -272,28 +207,28 @@ public abstract class CollisionDetector {
 			        float t = n/d;//the case for when d would be 0 is handled above
 			        //determine whether the ray is entering the edge or leaving the edge
 			        if (d < 0){//entering the edge case
-			            tE = Math.max(tE, t);
+			            rayEntry = Math.max(rayEntry, t);
 			            //check if the depth that the ray enters the hull is greater than the depth the ray leaves the hull
-			            if (tE > tL){
+			            if (rayEntry > rayExit){
 			            	//if the entry depth is greater than the exit depth then the ray is not intersecting
-			                return false;
+			            	return new RayIntersection(ray, hull, false, 0, 0);
 			            }
 			        }else{//leaving the edge
-			            tL = Math.min(tL, t);
+			            rayExit = Math.min(rayExit, t);
 			        	//check if the depth that the ray leaves the hull is less than the depth the ray enters the hull
-			            if (tL < tE){
+			            if (rayExit < rayEntry){
 			            	//if the exit depth is less than the entry depth then the ray is not intersecting
-			                return false;
+			            	return new RayIntersection(ray, hull, false, 0, 0);
 			            }
 			        }
 					curEdge = curEdge.next;//advance the pointer
 				}
 				while(!curEdge.equals(hull.baseEdge));
 				
-			    return tE <= 1.0f && tL >= 0.0f;
+			    return new RayIntersection(ray, hull, rayEntry <= 1.0f && rayExit >= 0.0f, rayEntry, rayExit);
 			}else{
 				//otherwise we know the ray cannot intersect the convex hull
-				return false;
+				return new RayIntersection(ray, hull, false, 0, 0);
 			}
 		}else{
 			//if it doesn't then calculate the intersection of the ray with the plane
@@ -303,24 +238,25 @@ public abstract class CollisionDetector {
 			//check if the depth is negative, in this case the arrow is pointing away from the plane but could still mathematically intersect
 			//if the ray is considered an infinite line, additionally check for cases where the depth is longer than the rays length
 			if(depth < 0 || depth > ray.getLength()){
-				return false;
+				return new RayIntersection(ray, hull, false, 0, 0);
 			}
-
-			Vec3 point = VecUtil.add(ray.getPos(), VecUtil.scale(ray.getDirection(), depth));
+			float normalD = depth/ray.getLength();
+//			Vec3 point = VecUtil.add(ray.getPos(), VecUtil.scale(ray.getDirection(), depth));
+			Vec3 point = ray.getPoint(normalD);
 			//then determine if this point is contained inside the convex hull
 			
-			return intersects(point, hull);
+			return new RayIntersection(ray, hull, intersects(point, hull), normalD, normalD);
 		}
 	}
 	
-	private static boolean intersects(Ray ray, ConvexHull3D hull){
+	public static RayIntersection intersects(Ray ray, ConvexHull3D hull){
 		//check for null input
 		if(ray == null || hull == null){
-			return false;
+			return new RayIntersection(ray, hull, false, 0,0);
 		}
 		//check if the ray is actually a point
 		if(ray.getLength() == 0){
-			return intersects(ray.getPos(), hull);
+			return new RayIntersection(ray, hull, intersects(ray.getPos(), hull), 0,0);
 		}
 		Set<Triangle> faces = hull.normals.keySet();
 		//first we need to transform the ray to be in the hulls model space, this will reduce the need to transform the hull
@@ -332,8 +268,8 @@ public abstract class CollisionDetector {
 		//get new ray direction
 		Vec3 rayDir = VecUtil.subtract(p1,p0);
 		
-		float tE = 0.0f;//maximum t for entering the hull from the ray pos
-		float tL = 1.0f;//minimum value the ray can leave the hull from
+		float rayEntry = 0.0f;//maximum t for entering the hull from the ray pos
+		float rayExit = 1.0f;//minimum value the ray can leave the hull from
 		for(Triangle curFace : faces){
 			Vec3 vi = hull.mesh.getVertex(curFace.he1.sourceVert).getPos();
 			Vec3 faceNormal = hull.normals.get(curFace);//get the face normal
@@ -344,7 +280,7 @@ public abstract class CollisionDetector {
 	        	//if it is we need to test if the ray is outside the hull at this point
 	        	//this will determine if we should even continue to search for intersection points
 	            if (n < 0){
-	                 return false;
+	                 return new RayIntersection(ray, hull, false, 0,0);
 	            }
 	        }
 
@@ -352,55 +288,66 @@ public abstract class CollisionDetector {
 	        float t = n/d;//the case for when d would be 0 is handled above
 	        //determine whether the ray is entering the edge or leaving the edge
 	        if (d < 0){//entering the edge case
-	            tE = Math.max(tE, t);
+	            rayEntry = Math.max(rayEntry, t);
 	            //check if the depth that the ray enters the hull is greater than the depth the ray leaves the hull
-	            if (tE > tL){
+	            if (rayEntry > rayExit){
 	            	//if the entry depth is greater than the exit depth then the ray is not intersecting
-	                return false;
+	            	return new RayIntersection(ray, hull, false, 0,0);
 	            }
 	        }else{//leaving the edge
-	            tL = Math.min(tL, t);
+	            rayExit = Math.min(rayExit, t);
 	        	//check if the depth that the ray leaves the hull is less than the depth the ray enters the hull
-	            if (tL < tE){
+	            if (rayExit < rayEntry){
 	            	//if the exit depth is less than the entry depth then the ray is not intersecting
-	                return false;
+	            	return new RayIntersection(ray, hull, false, 0,0);
 	            }
 	        }
 		}
-		
-	    return tE <= 1.0f && tL >= 0.0f;
+//		Ray hullRay = new Ray(10000, 0,0,0, rayDir);
+//		System.out.println("Ray direction: "+VecUtil.normalize(ray.getDirection()));
+//		System.out.println("rayDir transformed back with math: "+VecUtil.normalize(VecUtil.subtract(hullTrans.transform(rayDir), hullTrans.getTranslation())));
+//		System.out.println("rayDir transformed back: "+VecUtil.normalize(hullTrans.transform(rayDir)));
+//		System.out.println("Ray entered at: "+rayEntry);
+//		System.out.println("Ray exited at: "+rayExit);
+//		System.out.println("Ray entered at: "+ray.getPoint(rayEntry));
+//		System.out.println("Ray entered at: "+hullRay.getPoint(rayEntry));
+//		System.out.println("Ray exited at: "+ray.getPoint(rayExit));
+//		System.out.println("Ray exited at: "+hullRay.getPoint(rayExit));
+		//if the ray enters at a depth before the end of the ray and exits a point greater than the rays start then it intersects
+		return new RayIntersection(ray, hull, rayEntry <= 1.0f && rayExit >= 0.0f, rayEntry, rayExit);
 	}
 	
-	private static boolean intersects(Ray ray, CollisionPlane plane){
+	private static RayIntersection intersects(Ray ray, CollisionPlane plane){
 		Vec2 planeHalfDim = plane.getHalfDimensions();
 		//compute the point intersection for the 3 planes defined by the normals above
-			//x face of the bounding box
-				float lDotn = plane.getNormal().dot(ray.getDirection());
-				//first check if the ray could intersect the plane at all
-				if(lDotn <= 0){
-					//compute the depth along the line for the point on the line that intersects the plane
-					float d = depth(ray, plane.getNormal(), plane.getPos());
-					//check if the point computed along the line is within the range of the ray
-					if(ray.getLength() >= 0 && d > ray.getLength()){
-						return false;
-					}
-					Quaternion inverseOrient = plane.getTransform().getOrientation().conjugate();
-					//get the point on the plane by getting the point along the line in the direction of the ray using d
-					//translating that point by the ray position to get the point on the plane in world space
-					//translate that point so that it is relative to the plane origin
-					//orient that final point to make it relative to the plane before it is oriented
-					Vec3 planePoint = inverseOrient.multVec(VecUtil.scale(ray.getDirection(), d).add(ray.getPos()).subtract(plane.getPos()));
-					if(Math.abs(planePoint.x) <= planeHalfDim.x && Math.abs(planePoint.z) <= planeHalfDim.y){
-						return true;
-					}
-				}
-		return false;
+		//x face of the bounding box
+		float lDotn = plane.getNormal().dot(ray.getDirection());
+		//first check if the ray could intersect the plane at all
+		if(lDotn <= 0){
+			//compute the depth along the line for the point on the line that intersects the plane
+			float d = depth(ray, plane.getNormal(), plane.getPos());
+			//check if the point computed along the line is within the range of the ray
+			if(ray.getLength() >= 0 && d > ray.getLength()){
+				return new RayIntersection(ray, plane, false, 0,0);
+			}
+			Quaternion inverseOrient = plane.getTransform().getOrientation().conjugate();
+			//get the point on the plane by getting the point along the line in the direction of the ray using d
+			//translating that point by the ray position to get the point on the plane in world space
+			//translate that point so that it is relative to the plane origin
+			//orient that final point to make it relative to the plane before it is oriented
+			Vec3 planePoint = inverseOrient.multVec(VecUtil.scale(ray.getDirection(), d).add(ray.getPos()).subtract(plane.getPos()));
+//			Vec3 planePoint = inverseOrient.multVec(ray.getPoint(d).subtract(plane.getPos()));
+			if(Math.abs(planePoint.x) <= planeHalfDim.x && Math.abs(planePoint.z) <= planeHalfDim.y){
+				return new RayIntersection(ray, plane, true, d, d);
+			}
+		}
+		return new RayIntersection(ray, plane, false, 0,0);
 	}
 	
-	private static boolean intersects(Ray ray, AABB bbox){
+	private static RayIntersection intersects(Ray ray, AABB bbox){
 		//check if the ray was emitted from the box center which means the ray collides with the box
 		if(ray.getPos().equals(bbox.getPos())){
-			return true;
+			return new RayIntersection(ray, bbox, true, 0, 0);
 		}
 		CollisionPlane plane = new CollisionPlane(1,1);//collision plane that will be modified for use with the faces
 		Transform trans = new Transform();//transform used to modify the plane
@@ -421,7 +368,8 @@ public abstract class CollisionDetector {
 		//set the collision plane to the computed transform
 		plane.setTransform(trans);
 		//perform the computation for the x face
-		if(!intersects(ray, plane)){
+		RayIntersection result = intersects(ray, plane);
+		if(!result.areColliding()){
 			//if that failed try the y face
 			//scale the plane
 			trans.setScale(boxHalfDim.x*2, 1, boxHalfDim.z*2);
@@ -433,9 +381,9 @@ public abstract class CollisionDetector {
 			
 			//set the collision plane to the computed transform
 			plane.setTransform(trans);
-			
+			result = intersects(ray, plane);
 			//perform the computation for the y face
-			if(!intersects(ray, plane)){
+			if(!result.areColliding()){
 				//if that failed try the z face
 				//scale the plane
 				trans.setScale(boxHalfDim.x*2, 1, boxHalfDim.y*2);
@@ -451,10 +399,10 @@ public abstract class CollisionDetector {
 				//perform the computation for the z face
 				return intersects(ray, plane);//since this is the final one it will decide true or false
 			}else{
-				return true;
+				return result;
 			}
 		}else{
-			return true;
+			return result;
 		}
 	}
 	

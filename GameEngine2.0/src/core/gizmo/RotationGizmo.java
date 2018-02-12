@@ -38,10 +38,10 @@ public class RotationGizmo extends TransformGizmo {
 	@Override
 	public boolean isSelected(Ray click){
 		//perform each collision check, starting with the center sphere
-		return CollisionDetector.intersects(click, center) 
-				|| CollisionDetector.intersects(click, xyWheel) 
-				|| CollisionDetector.intersects(click, yzWheel) 
-				|| CollisionDetector.intersects(click, xzWheel); 
+		return CollisionDetector.intersects(click, center.getCollider()).areColliding()
+				|| CollisionDetector.intersects(click, xyWheel.getCollider()).areColliding() 
+				|| CollisionDetector.intersects(click, yzWheel.getCollider()).areColliding() 
+				|| CollisionDetector.intersects(click, xzWheel.getCollider()).areColliding(); 
 	}
 	
 	@Override
@@ -121,13 +121,13 @@ public class RotationGizmo extends TransformGizmo {
 			//first create the ray to test collision with
 			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
 			//perform each collision check, starting with the center sphere
-			if(CollisionDetector.intersects(clickRay, center)){
+			if(CollisionDetector.intersects(clickRay, center.getCollider()).areColliding()){
 				activeController = ActiveControl.CENTER;
-			}else if(CollisionDetector.intersects(clickRay, xyWheel)){
+			}else if(CollisionDetector.intersects(clickRay, xyWheel.getCollider()).areColliding()){
 				activeController = ActiveControl.X_AXIS;
-			}else if(CollisionDetector.intersects(clickRay, yzWheel)){
+			}else if(CollisionDetector.intersects(clickRay, yzWheel.getCollider()).areColliding()){
 				activeController = ActiveControl.Y_AXIS;
-			}else if(CollisionDetector.intersects(clickRay, xzWheel)){
+			}else if(CollisionDetector.intersects(clickRay, xzWheel.getCollider()).areColliding()){
 				activeController = ActiveControl.Z_AXIS;
 			}else{
 				activeController = ActiveControl.NO_CONTROLLER;

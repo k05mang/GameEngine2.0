@@ -42,6 +42,39 @@ public abstract class VecUtil {
 	}
 	
 	/**
+	 * Produces a normalized version of the given vector without modifying the vector
+	 * 
+	 * @param vec Vector to normalize
+	 * 
+	 * @return A vector representing the given vector normalized
+	 */
+	public static Vec2 normalize(Vec2 vec){
+		return new Vec2(vec).normalize();
+	}
+	
+	/**
+	 * Produces a normalized version of the given vector without modifying the vector
+	 * 
+	 * @param vec Vector to normalize
+	 * 
+	 * @return A vector representing the given vector normalized
+	 */
+	public static Vec3 normalize(Vec3 vec){
+		return new Vec3(vec).normalize();
+	}
+	
+	/**
+	 * Produces a normalized version of the given vector without modifying the vector
+	 * 
+	 * @param vec Vector to normalize
+	 * 
+	 * @return A vector representing the given vector normalized
+	 */
+	public static Vec4 normalize(Vec4 vec){
+		return new Vec4(vec).normalize();
+	}
+	
+	/**
 	 * Adds vectors together, returning the result of their sum
 	 * 
 	 * @param vectors Vectors to be added together from left to right

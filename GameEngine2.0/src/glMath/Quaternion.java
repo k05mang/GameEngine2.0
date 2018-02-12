@@ -364,8 +364,8 @@ public class Quaternion {
 	 */
 	public static Quaternion interpolate(Vec3 start, Vec3 end){
 		//First make normalized copies of the input vectors
-		Vec3 startNorm = new Vec3(start).normalize();
-		Vec3 endNorm = new Vec3(end).normalize();
+		Vec3 startNorm = VecUtil.normalize(start);//new Vec3(start).normalize();
+		Vec3 endNorm = VecUtil.normalize(end);
 		
 		Vec3 axis = startNorm.cross(endNorm);//get the axis of rotation
 		//due to floating point errors dot product can produce -/+1.000001 resulting in NaN results from acos
@@ -403,12 +403,12 @@ public class Quaternion {
 	 * by a percent amount denoted by {@code t}
 	 */
 	public static Quaternion slerp(Quaternion start, Quaternion end, float t) {
-		Vec4 startQ = new Vec4(start.data);
-		Vec4 endQ = new Vec4(end.data);
+		Vec4 startQ = VecUtil.normalize(start.data);//new Vec4(start.data);
+		Vec4 endQ = VecUtil.normalize(end.data);//new Vec4(end.data);
 	    // Only unit quaternions are valid rotations.
 	    // Normalize to avoid undefined behavior.
-		startQ.normalize();
-		endQ.normalize();
+//		startQ.normalize();
+//		endQ.normalize();
 
 	    // Compute the cosine of the angle between the two vectors.
 	    float dot = startQ.dot(endQ);

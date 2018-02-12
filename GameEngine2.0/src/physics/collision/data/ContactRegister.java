@@ -1,4 +1,4 @@
-package physics;
+package physics.collision.data;
 import java.util.ArrayList;
 import java.util.HashMap;
 

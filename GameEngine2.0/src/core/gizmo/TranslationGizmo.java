@@ -49,7 +49,7 @@ public class TranslationGizmo extends TransformGizmo{
 	@Override
 	public boolean isSelected(Ray click){
 		//perform each collision check, starting with the center sphere
-		return CollisionDetector.intersects(click, center) 
+		return CollisionDetector.intersects(click, center.getCollider()).areColliding() 
 				|| xaxis.colliding(click) 
 				|| yaxis.colliding(click) 
 				|| zaxis.colliding(click);
@@ -122,7 +122,7 @@ public class TranslationGizmo extends TransformGizmo{
 			//first create the ray to test collision with
 			Ray clickRay = view.genRay((float)window.cursorX, (float)window.cursorY);
 			//perform each collision check, starting with the center sphere
-			if(CollisionDetector.intersects(clickRay, center)){
+			if(CollisionDetector.intersects(clickRay, center.getCollider()).areColliding()){
 				activeController = ActiveControl.CENTER;
 			}else if(xaxis.colliding(clickRay)){
 				activeController = ActiveControl.X_AXIS;

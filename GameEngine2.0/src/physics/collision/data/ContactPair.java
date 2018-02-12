@@ -1,4 +1,4 @@
-package physics;
+package physics.collision.data;
 
 import glMath.MatrixUtil;
 import glMath.Quaternion;
@@ -8,8 +8,6 @@ import glMath.vectors.Vec3;
 import core.Entity;
 
 import java.util.ArrayList;
-
-import physics.collision.CollisionData;
 
 public class ContactPair {
 	private ArrayList<CollisionData> contactData;

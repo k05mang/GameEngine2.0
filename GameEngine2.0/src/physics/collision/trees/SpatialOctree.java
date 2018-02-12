@@ -1,21 +1,25 @@
 package physics.collision.trees;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 
 import core.Entity;
 import glMath.Quaternion;
 import glMath.transforms.TransformListener;
 import glMath.vectors.Vec3;
-import physics.ContactPair;
 import physics.collision.CollisionDetector;
+import physics.collision.CollisionMesh;
 import physics.collision.Ray;
+import physics.collision.data.ContactPair;
+import physics.collision.data.RayIntersection;
 
 public class SpatialOctree {
 	//first half of nodes will represent the upper portion of space
 	//the nodes will read in counter clockwise from the -z, +x quadrant
 	private OctreeNode root;
 	private Vec3 halfDim, center;
-	private ArrayList<Entity> entities;
+	private Hashtable<CollisionMesh, Entity> entities;
 	private int leafCap;
 	
 //	public SpatialOctree(int leafCapacity, int depthCap){
@@ -66,7 +70,7 @@ public class SpatialOctree {
 		halfDim = new Vec3(dX/2.0f, dY/2.0f, dZ/2.0f);
 //		root = new OctreeNode(null, this.center, this.halfDim, 0);
 		leafCap = leafCapacity;
-		entities = new ArrayList<Entity>();
+		entities = new Hashtable<CollisionMesh, Entity>();
 	}
 	
 	public void add(Entity object){
@@ -86,7 +90,9 @@ public class SpatialOctree {
 //			return false;
 //		}
 //		return true;
-		entities.add(object);
+		if(object.getCollider() != null){
+			entities.put(object.getCollider(), object);
+		}
 	}
 	
 	public void remove(Entity object){
@@ -100,14 +106,15 @@ public class SpatialOctree {
 	public ArrayList<ContactPair> getCollisions(){
 		ArrayList<ContactPair> pairs = new ArrayList<ContactPair>();
 		
+		Entity[] objects = entities.values().toArray(new Entity[0]);
 		//loop through each of the objects in the list
-		for(int curObject = 0; curObject < entities.size(); curObject++){
+		for(int curObject = 0; curObject < objects.length; curObject++){
 			//perform a second loop on all the remaining elements to determine if there is a collision
-			for(int secondObj = curObject+1; secondObj < entities.size(); secondObj++){
-				Entity objA = entities.get(curObject);
-				Entity objB = entities.get(secondObj);
+			for(int secondObj = curObject+1; secondObj < objects.length; secondObj++){
+				Entity objA = objects[curObject];
+				Entity objB = objects[secondObj];
 				//check if they are colliding
-				if(CollisionDetector.intersects(objA , objB)){
+				if(CollisionDetector.intersects(objA.getCollider(), objB.getCollider()).areColliding()){
 					//if they are then add them to the results array
 					pairs.add(new ContactPair(objA, objB));
 				}
@@ -117,18 +124,47 @@ public class SpatialOctree {
 		return pairs;
 	}
 	
-	public ArrayList<Entity> getCollisions(Ray collider){
-		ArrayList<Entity> pairs = new ArrayList<Entity>();
+	/**
+	 * Gets a list of the objects in this tree that are intersecting with the given ray object. The returned list contains
+	 * various information about he intersection of the ray with the object. Additionally the list provided is depth sorted,
+	 * the first element of the list will always be the closest element to the ray origin.
+	 * 
+	 * @param ray Ray to be tested for intersection with
+	 * @return Depth sorted list of elements that intersect with the given ray from this tree.
+	 */
+	public ArrayList<RayIntersection> getCollisions(Ray ray){
+		ArrayList<RayIntersection> pairs = new ArrayList<RayIntersection>();
 		
 		//loop through each of the objects in the list
-		for(int curObject = 0; curObject < entities.size(); curObject++){
-			if(CollisionDetector.intersects(collider, entities.get(curObject))){
+		for(CollisionMesh curCollider : entities.keySet()){
+			RayIntersection current = CollisionDetector.intersects(ray, curCollider);
+			if(current.areColliding()){
 				//if they are then add them to the results array
-				pairs.add(entities.get(curObject));
+				//perform a binary search looking for the position to insert this values depth
+				int start = 0;
+				int end = pairs.size();
+				
+				//continue searching until we find the index we are looking to insert on
+				while(start != end){
+					//continuously adjust the mid point depending on the half of the array we are searching on
+					//addition is necessary to get the mid point index of the upper half of the array
+					int mid = (start+end)/2;
+					if(current.getDepthEntered() < pairs.get(mid).getDepthEntered()){
+						end = mid;
+					}else{
+						start = mid+1;
+					}
+				}
+				
+				pairs.add(start, current);
 			}
 		}
 		
 		return pairs;
+	}
+	
+	public Entity getEntity(CollisionMesh mesh){
+		return entities.get(mesh);
 	}
 	
 	private class OctreeNode implements TransformListener{

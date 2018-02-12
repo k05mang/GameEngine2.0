@@ -59,7 +59,7 @@ public class ScaleGizmo extends TransformGizmo {
 	@Override
 	public boolean isSelected(Ray click){
 		//perform each collision check, starting with the center sphere
-		return CollisionDetector.intersects(click, center) 
+		return CollisionDetector.intersects(click, center.getCollider()).areColliding() 
 				|| xaxis.colliding(click) 
 				|| yaxis.colliding(click) 
 				|| zaxis.colliding(click);
@@ -122,7 +122,7 @@ public class ScaleGizmo extends TransformGizmo {
 			//then get the distance of this point from the targets position
 			origClickDist = VecUtil.subtract(clickPoint, target.getPos()).length();
 			//perform each collision check, starting with the center sphere
-			if(CollisionDetector.intersects(clickRay, center)){
+			if(CollisionDetector.intersects(clickRay, center.getCollider()).areColliding()){
 				activeController = ActiveControl.CENTER;
 			}else if(xaxis.colliding(clickRay)){
 				activeController = ActiveControl.X_AXIS;

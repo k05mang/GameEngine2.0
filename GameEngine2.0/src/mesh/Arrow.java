@@ -322,15 +322,19 @@ public class Arrow extends SpatialAsset{
 	}
 	
 	public boolean colliding(CollisionMesh mesh){
-		return CollisionDetector.intersects(mesh, body) || CollisionDetector.intersects(mesh, head);
+		return CollisionDetector.intersects(mesh, body.getCollider()).areColliding() || 
+				CollisionDetector.intersects(mesh, head.getCollider()).areColliding();
 	}
 	
 	public boolean colliding(Ray ray){
-		return CollisionDetector.intersects(ray, body) || CollisionDetector.intersects(ray, head);
+		return CollisionDetector.intersects(ray, body.getCollider()).areColliding() || 
+				CollisionDetector.intersects(ray, head.getCollider()).areColliding();
 	}
 	
 	public boolean colliding(Arrow arrow){
-		return CollisionDetector.intersects(arrow.body, body) || CollisionDetector.intersects(arrow.head, head) ||
-				CollisionDetector.intersects(arrow.head, body) || CollisionDetector.intersects(arrow.body, head);
+		return CollisionDetector.intersects(arrow.body.getCollider(), body.getCollider()).areColliding() || 
+				CollisionDetector.intersects(arrow.head.getCollider(), head.getCollider()).areColliding() ||
+				CollisionDetector.intersects(arrow.head.getCollider(), body.getCollider()).areColliding() || 
+				CollisionDetector.intersects(arrow.body.getCollider(), head.getCollider()).areColliding();
 	}
 }
