@@ -103,7 +103,7 @@ public class Window {
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
         // Enable v-sync
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
         
         // Make the window visible
         show();
@@ -163,6 +163,7 @@ public class Window {
 		//while the user has not attempted to close the window keep looping
 		while ( glfwWindowShouldClose(window) == GL_FALSE ) {
             control.computeScene(this);
+//            glfwSwapInterval(0);
  
             glfwSwapBuffers(window); // swap the color buffers
  

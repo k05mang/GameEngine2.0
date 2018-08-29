@@ -55,31 +55,31 @@ public class Uniform {
 		if(type.isFloat()){
 			switch(type.size){
 				case 1:
-					glProgramUniform1fv(program, location, 1, dataBuffer);
+					glProgramUniform1fv(program, location, dataBuffer.asFloatBuffer());
 					break;
 				case 2:
-					glProgramUniform2fv(program, location, 1, dataBuffer);
+					glProgramUniform2fv(program, location, dataBuffer.asFloatBuffer());
 					break;
 				case 3:
-					glProgramUniform3fv(program, location, 1, dataBuffer);
+					glProgramUniform3fv(program, location, dataBuffer.asFloatBuffer());
 					break;
 				case 4:
-					glProgramUniform4fv(program, location, 1, dataBuffer);
+					glProgramUniform4fv(program, location, dataBuffer.asFloatBuffer());
 					break;
 			}
 		}else if(type.isInt()){
 			switch(type.size){
 				case 1:
-					glProgramUniform1iv(program, location, 1, dataBuffer);
+					glProgramUniform1iv(program, location, dataBuffer.asIntBuffer());
 					break;
 				case 2:
-					glProgramUniform2iv(program, location, 1, dataBuffer);
+					glProgramUniform2iv(program, location, dataBuffer.asIntBuffer());
 					break;
 				case 3:
-					glProgramUniform3iv(program, location, 1, dataBuffer);
+					glProgramUniform3iv(program, location, dataBuffer.asIntBuffer());
 					break;
 				case 4:
-					glProgramUniform4iv(program, location, 1, dataBuffer);
+					glProgramUniform4iv(program, location, dataBuffer.asIntBuffer());
 					break;
 			}
 		}else if(type.isMatrix()){
@@ -138,31 +138,31 @@ public class Uniform {
 		if(type.isMatrix()){
 			switch (type) {
 				case MAT2:
-					glProgramUniformMatrix2fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix2fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 				case MAT2X3:
-					glProgramUniformMatrix2x3fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix2x3fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 				case MAT2X4:
-					glProgramUniformMatrix2x4fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix2x4fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 				case MAT3:
-					glProgramUniformMatrix3fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix3fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 				case MAT3X2:
-					glProgramUniformMatrix3x2fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix3x2fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 				case MAT3X4:
-					glProgramUniformMatrix3x4fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix3x4fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 				case MAT4:
-					glProgramUniformMatrix4fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix4fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 				case MAT4X2:
-					glProgramUniformMatrix4x2fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix4x2fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 				case MAT4X3:
-					glProgramUniformMatrix4x3fv(program, location, 1, transpose, dataBuffer);
+					glProgramUniformMatrix4x3fv(program, location, transpose, dataBuffer.asFloatBuffer());
 					break;
 			}
 			return true;

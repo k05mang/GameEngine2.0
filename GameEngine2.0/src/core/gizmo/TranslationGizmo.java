@@ -103,6 +103,12 @@ public class TranslationGizmo extends TransformGizmo{
 						prevPoint.x = 0;
 						curPoint.x = 0;
 						break;
+//					case NO_CONTROLLER:
+//						prevPoint.x = 0;
+//						prevPoint.y = 0;
+//						curPoint.x = 0;
+//						curPoint.y = 0;
+//						break;
 				}
 				//then subtract the two click positions to get the resulting translation
 				//apply the translation to the appropriate objects

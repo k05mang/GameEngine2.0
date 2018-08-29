@@ -22,10 +22,15 @@ public abstract class TransformGizmo implements MouseListener{
 	protected static Vec3 centerColor = new Vec3(1,1,0);
 	protected static SpatialAsset target;
 	protected static Camera view;
-	protected static ActiveControl activeController = ActiveControl.CENTER;//represents what controlling axis should be used in modifying the object
+	protected static ActiveControl activeController = ActiveControl.NO_CONTROLLER;//represents what controlling axis should be used in modifying the object
 	protected static TransformType modifier = TransformType.TRANSLATE;
 	protected static final float viewScale = 150f;//reduces the scaling factor when scaling the gizmo to make use easier at further distances
 	protected static final float controllerLength = 10f;//length for the arrow controllers on certain gizmos
+	static{
+		//create the center controller
+		SceneManager.meshes.put("gizmo_center", new Sphere(1.5f, 20));
+		center = new Entity(SceneManager.meshes.get("gizmo_center"), true);
+	}
 	
 //	protected static final char 
 //	NO_CONTROLLER = 0,
@@ -46,16 +51,6 @@ public abstract class TransformGizmo implements MouseListener{
 	 * This constructor sets up the gizmo sphere center, which acts as a transformation without any restriction.
 	 */
 	public TransformGizmo(Camera view){
-		//add the center sphere to the list of meshes if it exists
-		if(SceneManager.meshes.get("gizmo_center") == null){
-			SceneManager.meshes.put("gizmo_center", new Sphere(1.5f, 20));
-		}
-		
-		//additionally check if the center sphere Entity has been created, if not then create it
-		if(center == null){
-			center = new Entity(SceneManager.meshes.get("gizmo_center"), true);//have it auto generate a convex hull
-		}
-		
 		TransformGizmo.view = view;
 	}
 	
@@ -118,7 +113,7 @@ public abstract class TransformGizmo implements MouseListener{
 	}
 
 	public void setModifier(TransformType type){
-		this.modifier = type;
+		TransformGizmo.modifier = type;
 	}
 	
 	public abstract boolean isSelected(Ray click);
